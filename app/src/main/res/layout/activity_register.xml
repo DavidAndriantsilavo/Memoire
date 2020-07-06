@@ -143,11 +143,11 @@
         android:paddingLeft="30dp"
         android:textSize="15sp"
         android:layout_marginTop="5dp"
-        android:labelFor="@+id/editText_confirmPassword"
+        android:labelFor="@+id/editText_confirm_password"
         />
 
     <EditText
-        android:id="@+id/editText_confirmPassword"
+        android:id="@+id/editText_confirm_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"

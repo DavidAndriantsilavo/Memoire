@@ -11,7 +11,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInApi;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 
 import mg.didavid.firsttry.Models.PageAdapter;
 import mg.didavid.firsttry.R;
@@ -67,10 +74,22 @@ public class MainActivity extends AppCompatActivity{
             case R.id.menu_activity_main_params:
                 Toast.makeText(this, "Il n'y a rien à paramétrer ici, passez votre chemin...", Toast.LENGTH_LONG).show();
                 return true;
-            case R.id.menu_activity_main_search:
-                Toast.makeText(this, "Informations inexistantes ... Vous n'existez pas !!!", Toast.LENGTH_LONG).show();
+
+            case R.id.menu_activity_main_profile:
+                Intent toProfile =  new Intent(getApplicationContext(), ProfileActivity.class);
+                startActivity(toProfile);
                 return true;
+
             case R.id.menu_activity_main_log_out:
+                FirebaseAuth.getInstance().signOut();
+                GoogleSignIn.getClient(
+                        this,
+                        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                ).signOut();
+
+                Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(logOut);
+
                 this.finish();
                 return true;
             default:

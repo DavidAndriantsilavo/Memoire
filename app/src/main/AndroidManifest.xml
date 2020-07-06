@@ -12,24 +12,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity
+            android:name=".Controllers.Activities.ProfileActivity"
+            android:label="Profile"
+            android:parentActivityName=".Controllers.Activities.MainActivity"
+            android:theme="@style/WithActionBarTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.MainActivity"/>
+
+        </activity>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-
-        <activity android:name=".Controllers.Activities.MainActivity"></activity>
-
+        <activity android:name=".Controllers.Activities.MainActivity" />
         <activity
             android:name=".Controllers.Activities.RegisterActivity"
             android:label="Register"
-            android:theme="@style/WithActionBarTheme"
-            android:parentActivityName=".Controllers.Activities.LoginActivity">
+            android:parentActivityName=".Controllers.Activities.LoginActivity"
+            android:theme="@style/WithActionBarTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.LoginActivity" />
         </activity>
-
         <activity
             android:name=".Controllers.Activities.LoginActivity"
             android:theme="@style/WithActionBarTheme">

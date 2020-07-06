@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">First Try</string>
+    <string name="web_client_id">539074519621-a15a22i7j19sncb54jrqaumn5o9c493n.apps.googleusercontent.com</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

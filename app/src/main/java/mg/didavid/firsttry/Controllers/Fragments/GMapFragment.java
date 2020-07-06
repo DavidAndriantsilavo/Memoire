@@ -1,33 +1,29 @@
 package mg.didavid.firsttry.Controllers.Fragments;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
-import android.util.Log;
-import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.MapsInitializer;
+
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+
 
 import mg.didavid.firsttry.R;
 
-import static androidx.constraintlayout.widget.Constraints.TAG;
+
 
 public class GMapFragment extends Fragment implements OnMapReadyCallback{
+
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
 
     public static GMapFragment newInstance() {
         return (new GMapFragment());
@@ -65,8 +61,18 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             mGoogleMap.getUiSettings().setZoomGesturesEnabled(true);
             mGoogleMap.getUiSettings().setCompassEnabled(true);
 
-            mGoogleMap.setMyLocationEnabled(true);
-        }
+                if (ContextCompat.checkSelfPermission(getActivity(),
+                        android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    mGoogleMap.setMyLocationEnabled(true);
+                    mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                }
+                else {
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                }
+            }
 
         @Override
         public void onResume() {

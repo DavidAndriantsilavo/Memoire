@@ -1,14 +1,18 @@
 package mg.didavid.firsttry.Controllers.Activities;
 
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+
 import android.graphics.Rect;
 import android.os.Bundle;
+
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+
 
 import mg.didavid.firsttry.R;
 
@@ -19,6 +23,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
     }
+
+
 
     //THE FOLLOWING METHOD IS USED TO DETACH EDIT_TEXT FOCUS WHEN WE CLICK OUTSIDE OF IT
     @Override
