@@ -12,5 +12,6 @@
 /captures
 .externalNativeBuild
 .cxx
-.gradle.properties
-.APIKey.txt
+.gitignore
+gradle.properties
+APIKey.txt
