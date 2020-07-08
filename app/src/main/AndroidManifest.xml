@@ -32,14 +32,16 @@
             android:name=".Controllers.Activities.RegisterActivity"
             android:label="Register"
             android:parentActivityName=".Controllers.Activities.LoginActivity"
-            android:theme="@style/WithActionBarTheme">
+            android:theme="@style/WithActionBarTheme"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.LoginActivity" />
         </activity>
         <activity
             android:name=".Controllers.Activities.LoginActivity"
-            android:theme="@style/WithActionBarTheme">
+            android:theme="@style/WithActionBarTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

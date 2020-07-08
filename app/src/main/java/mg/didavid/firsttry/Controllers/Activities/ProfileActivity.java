@@ -82,6 +82,10 @@ public class ProfileActivity extends AppCompatActivity {
                     AlertDialog alert = builder.create();
                     alert.show();
                 }
+
+                else{
+                    Toast.makeText(getApplicationContext(), "Y a rien à supprimer vous n'existez pas !!!", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
