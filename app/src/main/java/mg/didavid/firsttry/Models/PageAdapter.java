@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
 import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
-import mg.didavid.firsttry.Controllers.Fragments.Page1Fragment;
+import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
 import mg.didavid.firsttry.Controllers.Fragments.Page2Fragment;
 import mg.didavid.firsttry.Controllers.Fragments.Page3Fragment;
 import mg.didavid.firsttry.Controllers.Fragments.Page4Fragment;
@@ -26,7 +26,7 @@ public class PageAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position){
             case 0: //Page number 1
-                return Page1Fragment.newInstance();
+                return ActuFragment.newInstance();
             case 1: //Page number 2
                 return Page2Fragment.newInstance();
             case 2: //Page number 3
