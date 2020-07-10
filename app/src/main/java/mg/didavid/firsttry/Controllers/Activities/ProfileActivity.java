@@ -33,9 +33,9 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        textView_displayName = findViewById(R.id.textView_displayName);
-        textView_email = findViewById(R.id.textView_email);
-        button_delete = findViewById(R.id.button_delete);
+       textView_displayName = findViewById(R.id.nom_profile);
+        textView_email = findViewById(R.id.email_profile);
+        button_delete = findViewById(R.id.bouton_delete_profile);
 
         //DISPLAY THE USER INFORMATIONS IN THE TEXTVIEW
         displayInformations();
@@ -65,6 +65,9 @@ public class ProfileActivity extends AppCompatActivity {
                                                         Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec SUCCES ... BYE-BYE", Toast.LENGTH_LONG).show();
 
                                                         logOut();
+
+                                                        Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
+                                                        startActivity(logOut);
                                                     }
                                                 }
                                             });
