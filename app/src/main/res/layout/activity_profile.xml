@@ -7,44 +7,197 @@
     tools:context=".Controllers.Activities.ProfileActivity"
     android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="50dp"
-        android:textSize="50sp"
-        android:textStyle="bold"
-        android:text="PROFILE"/>
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/textView_displayName"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/image_view_profile"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_margin="30dp"
+                android:background="@android:drawable/ic_menu_camera" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/button_image_profile"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@android:drawable/ic_menu_gallery" />
+
+            <Button
+                android:id="@+id/button_video_profile"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@android:drawable/ic_media_play" />
+
+            <Button
+                android:id="@+id/button_map_profile"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@android:drawable/ic_dialog_map" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="50dp"
-        android:textSize="20sp"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_weight="0.8">
 
-    <TextView
-        android:id="@+id/textView_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_marginTop="50dp"
-        android:textSize="20sp"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp">
 
-    <Button
-        android:id="@+id/button_delete"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="DELETE"
-        android:textColor="@android:color/holo_red_dark"
-        android:background="@drawable/rounded_primary_button"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:layout_gravity="center"
-        android:gravity="center"/>
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Nom"
+                android:textSize="25dp"/>
+
+            <TextView
+                android:id="@+id/nom_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="nom"
+                android:textSize="25dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Prénom"
+                android:textSize="25dp"/>
+
+            <TextView
+                android:id="@+id/prenom_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="prenom"
+                android:textSize="25dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Sexe"
+                android:textSize="25dp"/>
+
+            <TextView
+                android:id="@+id/sexe_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="sexe"
+                android:textSize="25dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Tél."
+                android:textSize="25dp"/>
+
+            <TextView
+                android:id="@+id/phoneNo_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="None"
+                android:textSize="25dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textSize="25dp"/>
+
+            <TextView
+                android:id="@+id/email_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="None"
+                android:textSize="25dp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="bottom">
+
+            <Button
+                android:id="@+id/bouton_delete_profile"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="suprimer compte"
+                android:layout_marginBottom="15dp"
+                android:layout_marginLeft="20dp"
+                android:background="@drawable/rounded_primary_button"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/floatting_btn_edit_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="70dp"
+                android:layout_marginBottom="30dp"
+                android:background="@android:drawable/ic_menu_edit"
+                android:src="@android:drawable/ic_menu_edit" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
 </LinearLayout>

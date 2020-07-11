@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/map_navv"
+        android:title="Map"
+        android:icon="@drawable/ic_map_icon"/>
+
+    <item
+        android:id="@+id/fil_d_actu_nav"
+        android:title="Actu"
+        android:icon="@drawable/ic_fil_d_actu_icon"/>
+
+    <item
+        android:id="@+id/resto_nav"
+        android:title="Resto"
+        android:icon="@drawable/ic_resto_icon"/>
+
+    <item
+        android:id="@+id/message_nav"
+        android:title="Message"
+        android:icon="@drawable/ic_message_icon"/>
+
+    <item
+        android:id="@+id/parametre_nav"
+        android:title="Parammetre"
+        android:icon="@drawable/ic_setting_icon"/>
+
+</menu>

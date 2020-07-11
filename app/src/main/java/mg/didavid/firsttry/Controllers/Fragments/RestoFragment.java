@@ -10,10 +10,10 @@ import android.view.ViewGroup;
 
 import mg.didavid.firsttry.R;
 
-public class Page2Fragment extends Fragment {
+public class RestoFragment extends Fragment {
 
-    public static Page2Fragment newInstance() {
-        return (new Page2Fragment());
+    public static RestoFragment newInstance() {
+        return (new RestoFragment());
     }
 
     @Override

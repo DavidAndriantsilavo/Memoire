@@ -8,6 +8,7 @@ import android.content.Context;
 
 import android.content.Intent;
 import android.graphics.Rect;
+import android.icu.text.Collator;
 import android.os.Bundle;
 
 import android.view.MotionEvent;
@@ -29,9 +30,15 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.concurrent.TimeUnit;
 
+import mg.didavid.firsttry.Models.InfosUser;
 import mg.didavid.firsttry.R;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -40,6 +47,13 @@ public class RegisterActivity extends AppCompatActivity {
     private RadioButton male, female;
     private Button btnEnvoie;
     private ProgressBar loginProgress;
+
+    InfosUser infosUser;
+
+     DatabaseReference reference;
+
+    private int maxId = 0;
+
 
     private FirebaseAuth mAuth;
     private FirebaseUser mCurrentUser;
@@ -66,23 +80,48 @@ public class RegisterActivity extends AppCompatActivity {
 
         loginProgress = findViewById(R.id.progressBar_horizontal);
 
+        infosUser = new InfosUser();
+
         mAuth = FirebaseAuth.getInstance();
         mCurrentUser = mAuth.getCurrentUser();
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        reference = database.getReference("User");
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    maxId = (int) snapshot.getChildrenCount();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
 
 
         btnEnvoie.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String phone_num = phoneNo.getText().toString();
-                String completPhoneNo = M_COUNTRY_CODE + phone_num;
+                String completePhoneNo = M_COUNTRY_CODE + phone_num;
+
+                infosUser.setNom(nom.getText().toString());
+                infosUser.setPrenom(prenom.getText().toString());
+                infosUser.setPhoneNo(phoneNo.getText().toString());
+                infosUser.setMotDePasse(motDePasse.getText().toString());
 
                 if(phone_num.isEmpty()){
                     Toast.makeText(getApplicationContext(), "Entrer numéro !", Toast.LENGTH_LONG).show();
                 }else {
                     loginProgress.setVisibility(View.VISIBLE);
 
+                    reference.child(String.valueOf(maxId+1)).setValue(infosUser);
+
                     PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                            completPhoneNo,
+                            completePhoneNo,
                             60,
                             TimeUnit.SECONDS,
                             RegisterActivity.this,
@@ -102,6 +141,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onVerificationFailed(@NonNull FirebaseException e) {
                 Toast.makeText(getApplicationContext(), "Verification échouée !", Toast.LENGTH_LONG).show();
+                loginProgress.setVisibility(View.INVISIBLE);
             }
 
             @Override
@@ -140,14 +180,17 @@ public class RegisterActivity extends AppCompatActivity {
         finish();
     }
 
-   /* @Override
+    @Override
     protected void onStart() {
         super.onStart();
 
         if(mCurrentUser != null){
             sendUserHone();
         }
-    }*/
+    }
+
+
+
 
     //THE FOLLOWING METHOD IS USED TO DETACH EDIT_TEXT FOCUS WHEN WE CLICK OUTSIDE OF IT
     @Override

@@ -77,7 +77,7 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Erreur de verification de l'otp !", Toast.LENGTH_LONG).show();
                             }
                         }
-                        verifyProgressBer.setVisibility(View.VISIBLE);
+                        verifyProgressBer.setVisibility(View.INVISIBLE);
                     }
                 });
 
