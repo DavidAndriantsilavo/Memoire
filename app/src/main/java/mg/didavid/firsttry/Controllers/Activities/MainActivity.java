@@ -1,5 +1,5 @@
 package mg.didavid.firsttry.Controllers.Activities;
-;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
