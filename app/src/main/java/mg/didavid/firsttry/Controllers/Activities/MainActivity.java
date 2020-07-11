@@ -30,7 +30,6 @@ import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
 import mg.didavid.firsttry.Controllers.Fragments.MessageFragment;
 import mg.didavid.firsttry.Controllers.Fragments.ParametreFragment;
 import mg.didavid.firsttry.Controllers.Fragments.RestoFragment;
-import mg.didavid.firsttry.Models.PageAdapter;
 import mg.didavid.firsttry.R;
 
 public class MainActivity extends AppCompatActivity{
@@ -42,8 +41,7 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        actionBar = getSupportActionBar();
-
+        this.configureToolbar();
 
         BottomNavigationView navigationView = findViewById(R.id.menu_nav);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);
@@ -62,7 +60,6 @@ public class MainActivity extends AppCompatActivity{
 
                     switch (item.getItemId()){
                         case R.id.map_navv:
-                            //actionBar.setTitle("First try");
                             GMapFragment fragment3 = new GMapFragment();
                             FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
                             frag3.replace(R.id.content_nav, fragment3);
@@ -70,7 +67,6 @@ public class MainActivity extends AppCompatActivity{
                             return true;
 
                         case R.id.fil_d_actu_nav:
-                            //actionBar.setTitle("First try");
                             ActuFragment fragment1 = new ActuFragment();
                             FragmentTransaction frag1 = getSupportFragmentManager().beginTransaction();
                             frag1.replace(R.id.content_nav, fragment1);
@@ -78,7 +74,6 @@ public class MainActivity extends AppCompatActivity{
                             return true;
 
                         case R.id.resto_nav:
-                            //actionBar.setTitle("First try");
                             RestoFragment fragment2 = new RestoFragment();
                             FragmentTransaction frag2 = getSupportFragmentManager().beginTransaction();
                             frag2.replace(R.id.content_nav, fragment2);
@@ -86,7 +81,6 @@ public class MainActivity extends AppCompatActivity{
                             return true;
 
                         case R.id.message_nav:
-                            //actionBar.setTitle("First try");
                             MessageFragment fragment4 = new MessageFragment();
                             FragmentTransaction frag4 = getSupportFragmentManager().beginTransaction();
                             frag4.replace(R.id.content_nav, fragment4);
@@ -94,7 +88,6 @@ public class MainActivity extends AppCompatActivity{
                             return true;
 
                         case R.id.parametre_nav:
-                            //actionBar.setTitle("First try");
                             ParametreFragment fragment5 = new ParametreFragment();
                             FragmentTransaction frag5 = getSupportFragmentManager().beginTransaction();
                             frag5.replace(R.id.content_nav, fragment5);
@@ -104,4 +97,35 @@ public class MainActivity extends AppCompatActivity{
                     return false;
                 }
             };
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //2 - Inflate the menu and add it to the Toolbar
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
+        return true;
+    }
+
+    // ----
+
+    private void configureToolbar(){
+        // Get the toolbar view inside the activity layout
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        // Sets the Toolbar
+        setSupportActionBar(toolbar);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //3 - Handle actions on menu items
+        switch (item.getItemId()) {
+            case R.id.menu_activity_main_profile:
+                Intent toProfile =  new Intent(getApplicationContext(), ProfileActivity.class);
+                startActivity(toProfile);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 }
