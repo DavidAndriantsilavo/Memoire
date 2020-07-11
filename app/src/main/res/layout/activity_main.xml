@@ -13,21 +13,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/activity_main_viewpager"
+
+
+    <FrameLayout
+        android:id="@+id/content_nav"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_height="match_parent"
         android:layout_weight="1"/>
 
 
-    <!-- 1 | Add TabLayout to handle tabs -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/activity_main_tabs"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/menu_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        app:tabIndicatorColor="@android:color/darker_gray"
-        app:tabTextColor="#D4E0F8"
-        app:tabSelectedTextColor="#fff"/>
+        android:layout_gravity="bottom"
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/menu_nav"/>
+
 </LinearLayout>
