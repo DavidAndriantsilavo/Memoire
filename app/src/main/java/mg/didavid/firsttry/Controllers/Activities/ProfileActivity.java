@@ -26,7 +26,7 @@ import mg.didavid.firsttry.R;
 public class ProfileActivity extends AppCompatActivity {
 
     TextView textView_displayName, textView_email;
-    Button button_delete;
+    Button button_delete, button_logout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +36,18 @@ public class ProfileActivity extends AppCompatActivity {
        textView_displayName = findViewById(R.id.nom_profile);
         textView_email = findViewById(R.id.email_profile);
         button_delete = findViewById(R.id.bouton_delete_profile);
+        button_logout = findViewById(R.id.bouton_logout);
 
         //DISPLAY THE USER INFORMATIONS IN THE TEXTVIEW
         displayInformations();
+
+        //logout
+        button_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logOut();
+            }
+        });
 
         //DELETE ACCOUNT
         button_delete.setOnClickListener(new View.OnClickListener() {

@@ -1,65 +1,47 @@
 package mg.didavid.firsttry.Models;
 
 public class InfosUser {
-    private String nom, prenom, motDePasse, email;
+    private String Uid, nom, prenom, motDePasse, email;
     private String phoneNo;
-    private boolean sexeMale, sexeFemale;
+    private boolean sexe; // 1 = male and 0 = female
 
     public InfosUser() { }
 
-    public String getNom() {
-        return nom;
+    public InfosUser(String Uid, String nom, String prenom, String motDePasse, String email, String phoneNo, boolean sexe) {
+        this.Uid = Uid;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.motDePasse = motDePasse;
+        this.email = email;
+        this.phoneNo = phoneNo;
+        this.sexe = sexe;
     }
 
-    public void setNom(String nom) {
-        this.nom = nom;
+    public String getUid() {
+        return Uid;
+    }
+
+    public String getNom() {
+        return nom;
     }
 
     public String getPrenom() {
         return prenom;
     }
 
-    public void setPrenom(String prenom) {
-        this.prenom = prenom;
-    }
-
     public String getMotDePasse() {
         return motDePasse;
-    }
-
-    public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getPhoneNo() {
         return phoneNo;
     }
 
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public boolean isSexeMale() {
-        return sexeMale;
-    }
-
-    public void setSexeMale(boolean sexeMale) {
-        this.sexeMale = sexeMale;
-    }
-
-    public boolean isSexeFemale() {
-        return sexeFemale;
-    }
-
-    public void setSexeFemale(boolean sexeFemale) {
-        this.sexeFemale = sexeFemale;
+    public boolean isSexe() {
+        return sexe;
     }
 }
