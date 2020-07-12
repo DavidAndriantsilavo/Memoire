@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,7 +27,9 @@ import mg.didavid.firsttry.R;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    TextView textView_displayName, textView_email;
+    TextView textView_displayName, textView_displayFamilyName, textView_email;
+
+    ImageView imageView_pdp;
     Button button_delete, button_logout;
 
     @Override
@@ -34,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
        textView_displayName = findViewById(R.id.nom_profile);
+       textView_displayFamilyName = findViewById(R.id.prenom_profile);
         textView_email = findViewById(R.id.email_profile);
         button_delete = findViewById(R.id.bouton_delete_profile);
         button_logout = findViewById(R.id.bouton_logout);
@@ -119,7 +124,9 @@ public class ProfileActivity extends AppCompatActivity {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if(signInAccount != null)
         {
-            textView_displayName.setText(signInAccount.getDisplayName());
+            //imageView_pdp.setText(signInAccount.getPhotoUrl());
+            textView_displayName.setText(signInAccount.getFamilyName());
+            textView_displayFamilyName.setText(signInAccount.getGivenName());
             textView_email.setText(signInAccount.getEmail());
         }
         else
