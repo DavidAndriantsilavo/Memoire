@@ -136,7 +136,7 @@ public class RegisterActivity extends AppCompatActivity {
                 }
 
                 //MBOLA TSY METY******************************************************************************
-                if (pwdLength >= 6){
+                /*if (pwdLength >= 6){
                     for (j = 0; j < pwdLength; j++) {
                         char[] ascciiCode = uMotDePasse.toCharArray();
                         int t = Integer.parseInt(String.valueOf(ascciiCode[j]));
@@ -147,7 +147,8 @@ public class RegisterActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                } //*************************************************************************************************
+                } */
+                //*************************************************************************************************
 
                 loginProgress.setVisibility(View.VISIBLE);
 
