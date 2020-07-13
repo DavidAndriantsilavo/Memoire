@@ -99,8 +99,8 @@ public class RegisterActivity extends AppCompatActivity {
 
                     PhoneAuthProvider.getInstance().verifyPhoneNumber(
                             completePhoneNo,
-                            60,
-                            TimeUnit.SECONDS,
+                            1,
+                            TimeUnit.MINUTES,
                             RegisterActivity.this,
                             mCallback
                     );
@@ -117,7 +117,7 @@ public class RegisterActivity extends AppCompatActivity {
 
             @Override
             public void onVerificationFailed(@NonNull FirebaseException e) {
-                Toast.makeText(getApplicationContext(), "Verification échouée !", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Verification échouéeeeeeeeeeeeeeee !", Toast.LENGTH_LONG).show();
                 loginProgress.setVisibility(View.INVISIBLE);
             }
 

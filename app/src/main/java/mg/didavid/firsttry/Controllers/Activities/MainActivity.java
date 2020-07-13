@@ -21,6 +21,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInApi;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,8 +34,6 @@ import mg.didavid.firsttry.Controllers.Fragments.RestoFragment;
 import mg.didavid.firsttry.R;
 
 public class MainActivity extends AppCompatActivity{
-
-    ActionBar actionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
