@@ -89,22 +89,23 @@ public class RegisterActivity extends AppCompatActivity {
         btnSend.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String phone_num = phoneNo_r.getText().toString().trim();
+                String phone_num = phoneNo_r.getText().toString();
                 String completePhoneNo = M_COUNTRY_CODE + phone_num;
 
-                loginProgress.setVisibility(View.VISIBLE);
+                if(phone_num.isEmpty()){
+                    Toast.makeText(getApplicationContext(), "Entrer numéro !", Toast.LENGTH_LONG).show();
+                }else {
+                    loginProgress.setVisibility(View.VISIBLE);
 
-                PhoneAuthProvider.getInstance().verifyPhoneNumber(
-                        completePhoneNo,
-                        60,
-                        TimeUnit.SECONDS,
-                        RegisterActivity.this,
-                        mCallback
-                );
-
-                addUser();
+                    PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                            completePhoneNo,
+                            60,
+                            TimeUnit.SECONDS,
+                            RegisterActivity.this,
+                            mCallback
+                    );
+                }
             }
-
         });
 
 
@@ -125,6 +126,7 @@ public class RegisterActivity extends AppCompatActivity {
                 super.onCodeSent(s, forceResendingToken);
                 Intent intent = new Intent(RegisterActivity.this, VerificationPhoneNoActivity.class);
                 intent.putExtra("AuthCredential", s);
+                addUser();
                 startActivity(intent);
             }
         };
