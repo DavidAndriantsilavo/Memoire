@@ -8,6 +8,8 @@
     tools:context=".Controllers.Activities.RegisterActivity"
     android:orientation="vertical">
 
+
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,7 +31,7 @@
         />
 
     <EditText
-        android:id="@+id/editText_lastname"
+        android:id="@+id/editText_nom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
@@ -38,7 +40,7 @@
         />
 
     <TextView
-        android:id="@+id/textView_firstname"
+        android:id="@+id/textView_prenom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Prenom"
@@ -49,7 +51,7 @@
         />
 
     <EditText
-        android:id="@+id/editText_firstname"
+        android:id="@+id/editText_prenom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
@@ -106,14 +108,31 @@
         android:labelFor="@+id/editText_pseudo"
         />
 
-    <EditText
-        android:id="@+id/editText_pseudo"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:lines="1"
-        />
+        android:orientation="horizontal"
+        android:layout_marginLeft="30dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+261"
+            android:textSize="20dp"
+            android:layout_weight="4"
+            android:paddingLeft="20dp"/>
+
+        <EditText
+            android:id="@+id/editText_num"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="30dp"
+            android:inputType="phone"
+            android:lines="1"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textView_password"
@@ -165,5 +184,12 @@
         android:background="@drawable/rounded_primary_button"
         android:textColor="@android:color/white"
         android:textSize="15sp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:layout_marginTop="20dp"/>
 
 </LinearLayout>
