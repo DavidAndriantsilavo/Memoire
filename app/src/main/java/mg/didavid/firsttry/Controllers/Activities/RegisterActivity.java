@@ -190,19 +190,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        //send user home if he/she is already login
-        if(mCurrentUser != null){
-            sendUserHone();
-        }
-    }
-
-
-
-
     //THE FOLLOWING METHOD IS USED TO DETACH EDIT_TEXT FOCUS WHEN WE CLICK OUTSIDE OF IT
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {

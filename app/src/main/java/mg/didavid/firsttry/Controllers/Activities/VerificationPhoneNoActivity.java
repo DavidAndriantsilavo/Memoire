@@ -85,7 +85,7 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
     }
 
     private void sendUserHome() {
-        Intent intent = new Intent(VerificationPhoneNoActivity.this, MainActivity.class);
+        Intent intent = new Intent(VerificationPhoneNoActivity.this, WelcomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
