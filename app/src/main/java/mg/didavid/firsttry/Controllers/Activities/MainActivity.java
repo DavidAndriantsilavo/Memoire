@@ -1,29 +1,16 @@
 package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInApi;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.auth.FirebaseAuth;
 
 import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
 import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
@@ -44,7 +31,7 @@ public class MainActivity extends AppCompatActivity{
         BottomNavigationView navigationView = findViewById(R.id.menu_nav);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);
 
-        navigationView.setSelectedItemId(R.id.map_navv);
+        navigationView.setSelectedItemId(R.id.map_nav);
         itemGMap();
 
 
@@ -56,7 +43,7 @@ public class MainActivity extends AppCompatActivity{
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
                     switch (item.getItemId()){
-                        case R.id.map_navv:
+                        case R.id.map_nav:
                             itemGMap();
                             return true;
 

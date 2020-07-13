@@ -14,7 +14,7 @@
         android:icon="@drawable/ic_resto_icon"/>
 
     <item
-        android:id="@+id/map_navv"
+        android:id="@+id/map_nav"
         android:checked="true"
         android:icon="@drawable/ic_map_icon"
         android:title="Map" />
