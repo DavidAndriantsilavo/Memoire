@@ -3,13 +3,9 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -45,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
 
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -65,14 +62,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         button_register = findViewById(R.id.button_register);
-        button_connexion = findViewById(R.id.button_connexion);
-        button_google = findViewById(R.id.button_google);
-        button_facebook = findViewById(R.id.button_facebook);
-
-        createRequest();
-
-        mAuth= FirebaseAuth.getInstance();
-
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -81,24 +70,29 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        button_connexion = findViewById(R.id.button_connexion);
         button_connexion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkConnexion()) {
-                    Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(connexion);
+                Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(connexion);
 
-                    finish();
-                }
+                finish();
             }
         });
+
+        button_google = findViewById(R.id.button_google);
+        button_facebook = findViewById(R.id.button_facebook);
+
+
+        mAuth= FirebaseAuth.getInstance();
+
+        createRequest();
 
         button_google.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(checkConnexion()) {
-                    signIn();
-                }
+                signIn();
             }
         });
     }
@@ -196,35 +190,4 @@ public class LoginActivity extends AppCompatActivity {
         }
         return super.dispatchTouchEvent( event );
     }
-
-    // CHECK IF INTERNET CONNEXION IS AVAILABLE
-    public boolean checkConnexion(){
-        ConnectivityManager cm =
-                (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-
-        if(!isConnected)
-        {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-        return isConnected;
-    }
 }
-
-
-

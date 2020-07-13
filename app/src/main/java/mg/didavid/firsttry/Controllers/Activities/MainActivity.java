@@ -3,8 +3,6 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
@@ -96,18 +94,6 @@ public class MainActivity extends AppCompatActivity{
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-
-
-    @Override
-    public void onBackPressed() {
-        ViewPager pager = (ViewPager)findViewById(R.id.activity_main_viewpager);
-        if(pager.getCurrentItem() != 0) {
-            pager.setCurrentItem(0, true);
-        } else {
-            super.onBackPressed(); // This will pop the Activity from the stack.
         }
     }
 }
