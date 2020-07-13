@@ -58,6 +58,7 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
                 }else {
                     verifyProgressBer.setVisibility(View.VISIBLE);
 
+                    //OTP verification
                     PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mAuthVerificationId, otp);
                     singinWithAuthCredential(credential);
                 }
@@ -77,26 +78,18 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Erreur de verification de l'otp !", Toast.LENGTH_LONG).show();
                             }
                         }
-                        verifyProgressBer.setVisibility(View.VISIBLE);
+                        verifyProgressBer.setVisibility(View.INVISIBLE);
                     }
                 });
 
     }
 
     private void sendUserHome() {
-        Intent intent = new Intent(VerificationPhoneNoActivity.this, MainActivity.class);
+        Intent intent = new Intent(VerificationPhoneNoActivity.this, WelcomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
 
-    /*@Override
-    protected void onStart() {
-        super.onStart();
-
-        if(mCurrentUser != null){
-            sendUserHome();
-        }
-    }*/
 }

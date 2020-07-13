@@ -49,13 +49,14 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        //getting current user who has authenticated
         FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
+        //id user still login, redirect to MainActivity
         if(user != null)
         {
             Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
-
             finish();
         }
     }
@@ -65,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         button_register = findViewById(R.id.button_register);
+
         button_connexion = findViewById(R.id.button_connexion);
         button_google = findViewById(R.id.button_google);
         button_facebook = findViewById(R.id.button_facebook);
@@ -73,6 +75,10 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth= FirebaseAuth.getInstance();
 
+
+
+        //redirect to register if user hasn't account
+
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -80,6 +86,7 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(register);
             }
         });
+
 
         button_connexion.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,6 +99,28 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+
+        button_connexion = findViewById(R.id.button_connexion);
+
+        //A controller (plutard)
+        button_connexion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(connexion);
+                finish();
+            }
+        });
+
+        button_google = findViewById(R.id.button_google);
+        button_facebook = findViewById(R.id.button_facebook);
+
+
+        mAuth = FirebaseAuth.getInstance(); //get the instance of authentication
+
+        createRequest();
+
 
         button_google.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -10,16 +10,16 @@ import android.view.ViewGroup;
 
 import mg.didavid.firsttry.R;
 
-public class Page1Fragment extends Fragment {
+public class RestoFragment extends Fragment {
 
-    public static Page1Fragment newInstance() {
-        return (new Page1Fragment());
+    public static RestoFragment newInstance() {
+        return (new RestoFragment());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_page1, container, false);
+        return inflater.inflate(R.layout.fragment_page2, container, false);
     }
 }
