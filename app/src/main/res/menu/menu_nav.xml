@@ -9,9 +9,9 @@
         android:icon="@drawable/ic_fil_d_actu_icon"/>
 
     <item
-        android:id="@+id/resto_nav"
-        android:title="Resto"
-        android:icon="@drawable/ic_resto_icon"/>
+        android:id="@+id/message_nav"
+        android:title="Message"
+        android:icon="@drawable/ic_message_icon"/>
 
     <item
         android:id="@+id/map_navv"
@@ -20,9 +20,9 @@
         android:title="Map" />
 
     <item
-        android:id="@+id/message_nav"
-        android:title="Message"
-        android:icon="@drawable/ic_message_icon"/>
+        android:id="@+id/resto_nav"
+        android:title="Resto"
+        android:icon="@drawable/ic_resto_icon"/>
 
     <item
         android:id="@+id/parametre_nav"

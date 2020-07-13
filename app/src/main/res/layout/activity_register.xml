@@ -9,16 +9,6 @@
     android:orientation="vertical">
 
 
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CREER UN COMPTE"
-        android:gravity="center"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="30dp"/>
-
     <TextView
         android:id="@+id/textView_lastname"
         android:layout_width="match_parent"
@@ -37,7 +27,17 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:inputType="textPersonName"
+        android:textSize="20dp"
         android:lines="1"
+        />
+    <TextView
+        android:id="@+id/controle_nom_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Veillez entrer votre nom"
+        android:layout_marginLeft="40dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
         />
 
     <TextView
@@ -47,7 +47,6 @@
         android:text="Prenom"
         android:paddingLeft="30dp"
         android:textSize="15sp"
-        android:layout_marginTop="5dp"
         android:labelFor="@+id/editText_firstname"
         />
 
@@ -57,8 +56,18 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
+        android:textSize="20dp"
         android:inputType="textPersonName"
         android:lines="1"
+        />
+    <TextView
+        android:id="@+id/controle_prenom_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Veillez entrer votre prenom"
+        android:layout_marginLeft="40dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
         />
 
     <TextView
@@ -106,34 +115,48 @@
         android:text="Pseudo"
         android:paddingLeft="30dp"
         android:textSize="15sp"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="10dp"
         android:labelFor="@+id/editText_pseudo"
         />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="30dp">
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp">
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="+261"
+                android:textSize="20dp"
+                android:layout_weight="4"
+                android:paddingLeft="20dp"/>
+
+            <EditText
+                android:id="@+id/editText_num"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:textSize="20dp"
+                android:inputType="phone"
+                android:lines="1"
+                android:layout_weight="1"
+                />
+
+        </LinearLayout>
         <TextView
+            android:id="@+id/controle_phoneNo_rg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="+261"
-            android:textSize="20dp"
-            android:layout_weight="4"
-            android:paddingLeft="20dp"/>
-
-        <EditText
-            android:id="@+id/editText_num"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="30dp"
-            android:inputType="phone"
-            android:lines="1"
-            android:layout_weight="1"
+            android:text="Veillez entrer votre numero de téléphoe"
+            android:layout_marginLeft="70dp"
+            android:textColor="@color/red"
+            android:visibility="invisible"
             />
-
     </LinearLayout>
 
     <TextView
@@ -153,8 +176,18 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
+        android:textSize="20dp"
         android:lines="1"
         android:inputType="textPassword"/>
+    <TextView
+        android:id="@+id/controle_pwd_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Le mot de passe "
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
+        />
 
     <TextView
         android:id="@+id/textView_confirmPassword"
@@ -173,6 +206,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
+        android:textSize="20dp"
         android:lines="1"
         android:inputType="textPassword"/>
 
@@ -191,7 +225,8 @@
         android:id="@+id/progressBar_horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:visibility="invisible"
-        android:layout_marginTop="20dp"/>
+        android:foregroundGravity="center"/>
 
 </LinearLayout>
