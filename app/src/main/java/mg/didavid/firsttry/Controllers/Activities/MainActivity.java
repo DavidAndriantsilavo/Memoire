@@ -45,10 +45,9 @@ public class MainActivity extends AppCompatActivity{
         BottomNavigationView navigationView = findViewById(R.id.menu_nav);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);
 
-        GMapFragment fragment3 = new GMapFragment();
-        FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
-        frag3.replace(R.id.content_nav, fragment3);
-        frag3.commit();
+        navigationView.setSelectedItemId(R.id.map_navv);
+        itemGMap();
+
 
     }
 
@@ -59,10 +58,7 @@ public class MainActivity extends AppCompatActivity{
 
                     switch (item.getItemId()){
                         case R.id.map_navv:
-                            GMapFragment fragment3 = new GMapFragment();
-                            FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
-                            frag3.replace(R.id.content_nav, fragment3);
-                            frag3.commit();
+                            itemGMap();
                             return true;
 
                         case R.id.fil_d_actu_nav:
@@ -97,6 +93,13 @@ public class MainActivity extends AppCompatActivity{
                 }
             };
 
+    private void itemGMap() {
+
+        GMapFragment fragment3 = new GMapFragment();
+        FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
+        frag3.replace(R.id.content_nav, fragment3);
+        frag3.commit();
+    }
 
 
     @Override
