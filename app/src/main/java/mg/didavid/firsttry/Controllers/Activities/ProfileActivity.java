@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,20 +27,32 @@ import mg.didavid.firsttry.R;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    TextView textView_displayName, textView_email;
-    Button button_delete;
+    TextView textView_displayName, textView_displayFamilyName, textView_email;
+
+    ImageView imageView_pdp;
+    Button button_delete, button_logout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        textView_displayName = findViewById(R.id.textView_displayName);
-        textView_email = findViewById(R.id.textView_email);
-        button_delete = findViewById(R.id.button_delete);
+       textView_displayName = findViewById(R.id.nom_profile);
+       textView_displayFamilyName = findViewById(R.id.prenom_profile);
+        textView_email = findViewById(R.id.email_profile);
+        button_delete = findViewById(R.id.bouton_delete_profile);
+        button_logout = findViewById(R.id.bouton_logout);
 
         //DISPLAY THE USER INFORMATIONS IN THE TEXTVIEW
         displayInformations();
+
+        //logout
+        button_logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logOut();
+            }
+        });
 
         //DELETE ACCOUNT
         button_delete.setOnClickListener(new View.OnClickListener() {
@@ -65,6 +79,9 @@ public class ProfileActivity extends AppCompatActivity {
                                                         Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec SUCCES ... BYE-BYE", Toast.LENGTH_LONG).show();
 
                                                         logOut();
+
+                                                        Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
+                                                        startActivity(logOut);
                                                     }
                                                 }
                                             });
@@ -107,7 +124,9 @@ public class ProfileActivity extends AppCompatActivity {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if(signInAccount != null)
         {
-            textView_displayName.setText(signInAccount.getDisplayName());
+            //imageView_pdp.setText(signInAccount.getPhotoUrl());
+            textView_displayName.setText(signInAccount.getFamilyName());
+            textView_displayFamilyName.setText(signInAccount.getGivenName());
             textView_email.setText(signInAccount.getEmail());
         }
         else

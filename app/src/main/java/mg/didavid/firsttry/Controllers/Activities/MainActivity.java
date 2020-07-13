@@ -1,9 +1,9 @@
 package mg.didavid.firsttry.Controllers.Activities;
-;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
@@ -19,10 +19,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInApi;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 
-import mg.didavid.firsttry.Models.PageAdapter;
+import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
+import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
+import mg.didavid.firsttry.Controllers.Fragments.MessageFragment;
+import mg.didavid.firsttry.Controllers.Fragments.ParametreFragment;
+import mg.didavid.firsttry.Controllers.Fragments.RestoFragment;
 import mg.didavid.firsttry.R;
 
 public class MainActivity extends AppCompatActivity{
@@ -32,26 +39,67 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.configureViewPagerAndTabs();
-
-        //1 - Configuring Toolbar
         this.configureToolbar();
+
+        BottomNavigationView navigationView = findViewById(R.id.menu_nav);
+        navigationView.setOnNavigationItemSelectedListener(selectedListener);
+
+        navigationView.setSelectedItemId(R.id.map_navv);
+        itemGMap();
+
+
     }
 
-    private void configureViewPagerAndTabs()
-    {
-        //Get ViewPager from layout
-        ViewPager pager = (ViewPager)findViewById(R.id.activity_main_viewpager);
-        //Set Adapter PageAdapter and glue it together
-        pager.setAdapter(new PageAdapter(getSupportFragmentManager()));
+    BottomNavigationView.OnNavigationItemSelectedListener selectedListener =
+            new BottomNavigationView.OnNavigationItemSelectedListener() {
+                @Override
+                public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-        // 1 - Get TabLayout from layout
-        TabLayout tabs= (TabLayout)findViewById(R.id.activity_main_tabs);
-        // 2 - Glue TabLayout and ViewPager together
-        tabs.setupWithViewPager(pager);
-        // 3 - Design purpose. Tabs have the same width
-        tabs.setTabMode(TabLayout.MODE_FIXED);
+                    switch (item.getItemId()){
+                        case R.id.map_navv:
+                            itemGMap();
+                            return true;
+
+                        case R.id.fil_d_actu_nav:
+                            ActuFragment fragment1 = new ActuFragment();
+                            FragmentTransaction frag1 = getSupportFragmentManager().beginTransaction();
+                            frag1.replace(R.id.content_nav, fragment1);
+                            frag1.commit();
+                            return true;
+
+                        case R.id.resto_nav:
+                            RestoFragment fragment2 = new RestoFragment();
+                            FragmentTransaction frag2 = getSupportFragmentManager().beginTransaction();
+                            frag2.replace(R.id.content_nav, fragment2);
+                            frag2.commit();
+                            return true;
+
+                        case R.id.message_nav:
+                            MessageFragment fragment4 = new MessageFragment();
+                            FragmentTransaction frag4 = getSupportFragmentManager().beginTransaction();
+                            frag4.replace(R.id.content_nav, fragment4);
+                            frag4.commit();
+                            return true;
+
+                        case R.id.parametre_nav:
+                            ParametreFragment fragment5 = new ParametreFragment();
+                            FragmentTransaction frag5 = getSupportFragmentManager().beginTransaction();
+                            frag5.replace(R.id.content_nav, fragment5);
+                            frag5.commit();
+                            return true;
+                    }
+                    return false;
+                }
+            };
+
+    private void itemGMap() {
+
+        GMapFragment fragment3 = new GMapFragment();
+        FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
+        frag3.replace(R.id.content_nav, fragment3);
+        frag3.commit();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -73,41 +121,12 @@ public class MainActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
         switch (item.getItemId()) {
-            case R.id.menu_activity_main_params:
-                Toast.makeText(this, "Il n'y a rien à paramétrer ici, passez votre chemin...", Toast.LENGTH_LONG).show();
-                return true;
-
             case R.id.menu_activity_main_profile:
                 Intent toProfile =  new Intent(getApplicationContext(), ProfileActivity.class);
                 startActivity(toProfile);
                 return true;
-
-            case R.id.menu_activity_main_log_out:
-                FirebaseAuth.getInstance().signOut();
-                GoogleSignIn.getClient(
-                        this,
-                        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-                ).signOut();
-
-                Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(logOut);
-
-                this.finish();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-
-
-    @Override
-    public void onBackPressed() {
-        ViewPager pager = (ViewPager)findViewById(R.id.activity_main_viewpager);
-        if(pager.getCurrentItem() != 0) {
-            pager.setCurrentItem(0, true);
-        } else {
-            super.onBackPressed(); // This will pop the Activity from the stack.
         }
     }
 }

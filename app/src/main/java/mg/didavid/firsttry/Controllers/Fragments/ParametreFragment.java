@@ -9,14 +9,14 @@ import androidx.fragment.app.Fragment;
 
 import mg.didavid.firsttry.R;
 
-public class Page4Fragment extends Fragment {
+public class ParametreFragment extends Fragment {
 
-    public static Page4Fragment newInstance() {
-        return (new Page4Fragment());
+    public static ParametreFragment newInstance() {
+        return (new ParametreFragment());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_page4, container, false);
+        return inflater.inflate(R.layout.fragment_page3, container, false);
     }
 }
