@@ -124,7 +124,6 @@ public class ProfileActivity extends AppCompatActivity {
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(this);
         if(signInAccount != null)
         {
-            //imageView_pdp.setText(signInAccount.getPhotoUrl());
             textView_displayName.setText(signInAccount.getFamilyName());
             textView_displayFamilyName.setText(signInAccount.getGivenName());
             textView_email.setText(signInAccount.getEmail());

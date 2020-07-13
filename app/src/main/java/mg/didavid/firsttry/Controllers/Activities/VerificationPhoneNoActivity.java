@@ -58,6 +58,7 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
                 }else {
                     verifyProgressBer.setVisibility(View.VISIBLE);
 
+                    //OTP verification
                     PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mAuthVerificationId, otp);
                     singinWithAuthCredential(credential);
                 }
@@ -91,12 +92,4 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
         finish();
     }
 
-    /*@Override
-    protected void onStart() {
-        super.onStart();
-
-        if(mCurrentUser != null){
-            sendUserHome();
-        }
-    }*/
 }

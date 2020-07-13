@@ -42,9 +42,10 @@ public class MainActivity extends AppCompatActivity{
 
         this.configureToolbar();
 
-        BottomNavigationView navigationView = findViewById(R.id.menu_nav);
-        navigationView.setOnNavigationItemSelectedListener(selectedListener);
+        BottomNavigationView navigationView = findViewById(R.id.menu_nav); //associate view with the BottomNavigationView object
+        navigationView.setOnNavigationItemSelectedListener(selectedListener); //set BottomNavigationView focus onto the selected item
 
+        //default view
         navigationView.setSelectedItemId(R.id.map_navv);
         itemGMap();
 
@@ -57,35 +58,41 @@ public class MainActivity extends AppCompatActivity{
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
                     switch (item.getItemId()){
+
+                        //page GMap
                         case R.id.map_navv:
                             itemGMap();
                             return true;
 
+                         //page actu
                         case R.id.fil_d_actu_nav:
                             ActuFragment fragment1 = new ActuFragment();
                             FragmentTransaction frag1 = getSupportFragmentManager().beginTransaction();
-                            frag1.replace(R.id.content_nav, fragment1);
+                            frag1.replace(R.id.content_nav, fragment1); //replace default View
                             frag1.commit();
                             return true;
 
+                         //page resto
                         case R.id.resto_nav:
                             RestoFragment fragment2 = new RestoFragment();
                             FragmentTransaction frag2 = getSupportFragmentManager().beginTransaction();
-                            frag2.replace(R.id.content_nav, fragment2);
+                            frag2.replace(R.id.content_nav, fragment2); //replace default View
                             frag2.commit();
                             return true;
 
+                         //page message
                         case R.id.message_nav:
                             MessageFragment fragment4 = new MessageFragment();
                             FragmentTransaction frag4 = getSupportFragmentManager().beginTransaction();
-                            frag4.replace(R.id.content_nav, fragment4);
+                            frag4.replace(R.id.content_nav, fragment4); //replace default View
                             frag4.commit();
                             return true;
 
+                         //page parameters
                         case R.id.parametre_nav:
                             ParametreFragment fragment5 = new ParametreFragment();
                             FragmentTransaction frag5 = getSupportFragmentManager().beginTransaction();
-                            frag5.replace(R.id.content_nav, fragment5);
+                            frag5.replace(R.id.content_nav, fragment5); //replace default View
                             frag5.commit();
                             return true;
                     }
@@ -94,10 +101,9 @@ public class MainActivity extends AppCompatActivity{
             };
 
     private void itemGMap() {
-
         GMapFragment fragment3 = new GMapFragment();
         FragmentTransaction frag3 = getSupportFragmentManager().beginTransaction();
-        frag3.replace(R.id.content_nav, fragment3);
+        frag3.replace(R.id.content_nav, fragment3); //replace default View
         frag3.commit();
     }
 

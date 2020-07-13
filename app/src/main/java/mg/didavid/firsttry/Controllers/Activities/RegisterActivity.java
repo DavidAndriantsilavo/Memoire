@@ -8,7 +8,6 @@ import android.content.Context;
 
 import android.content.Intent;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 
 import android.text.TextUtils;
@@ -35,15 +34,11 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import mg.didavid.firsttry.Models.InfosUser;
 import mg.didavid.firsttry.R;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -97,6 +92,7 @@ public class RegisterActivity extends AppCompatActivity {
                 }else {
                     loginProgress.setVisibility(View.VISIBLE);
 
+                    //send message to verify phone number
                     PhoneAuthProvider.getInstance().verifyPhoneNumber(
                             completePhoneNo,
                             1,
@@ -108,7 +104,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
-
+        //verification stat change
         mCallback = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
@@ -198,6 +194,7 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        //send user home if he/she is already login
         if(mCurrentUser != null){
             sendUserHone();
         }
