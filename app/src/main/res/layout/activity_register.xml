@@ -210,13 +210,22 @@
         android:lines="1"
         android:inputType="textPassword"/>
 
+    <TextView
+        android:id="@+id/controle_confirmePwd_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Le mot de passe ne correspond pas"
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
+        />
+
     <Button
         android:id="@+id/button_send"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:text="envoyer"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
         android:background="@drawable/rounded_primary_button"
         android:textColor="@android:color/white"
         android:textSize="15sp"/>

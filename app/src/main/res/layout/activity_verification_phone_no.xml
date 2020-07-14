@@ -31,12 +31,21 @@
         android:lines="1"
         android:textSize="22sp" />
 
+    <TextView
+        android:id="@+id/controle_otp_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Code erroné"
+        android:textColor="@color/red"
+        android:gravity="center"
+        android:visibility="invisible"
+        />
+
     <Button
         android:id="@+id/button_confirmer"
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="30dp"
         android:background="@drawable/rounded_primary_button"
         android:text="Connfirmer"
         android:textColor="@android:color/white" />

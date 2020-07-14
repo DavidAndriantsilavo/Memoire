@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -20,6 +21,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
 
+import java.util.Map;
+
 import mg.didavid.firsttry.R;
 
 public class VerificationPhoneNoActivity extends AppCompatActivity {
@@ -28,10 +31,12 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
     private FirebaseUser mCurrentUser;
 
     private EditText mOtpText;
+    private TextView otpErreur;
     private Button mConfirmer;
     private ProgressBar verifyProgressBer;
 
     private String mAuthVerificationId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +50,8 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
         mConfirmer = findViewById(R.id.button_confirmer);
         verifyProgressBer = findViewById(R.id.progressBar_horizontal_otp);
 
+        otpErreur = findViewById(R.id.controle_otp_rg);
+
         mAuthVerificationId = getIntent().getStringExtra("AuthCredential");
 
 
@@ -54,6 +61,7 @@ public class VerificationPhoneNoActivity extends AppCompatActivity {
                 String otp = mOtpText.getText().toString();
 
                 if(otp.isEmpty()){
+                    otpErreur.setText("Entrer le code pour confirmer votre numéro");
                     Toast.makeText(getApplicationContext(), "Veillez entrer le code !", Toast.LENGTH_LONG).show();
                 }else {
                     verifyProgressBer.setVisibility(View.VISIBLE);
