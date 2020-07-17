@@ -52,7 +52,7 @@ public class RegisterActivity extends AppCompatActivity {
     private ProgressBar loginProgress;
 
 
-    boolean control_minuscule, control_majuscule, control_chiffre, control_comparePwd, control_nom, control_prenom, control_phoneNo;
+    boolean control_minuscule, control_majuscule, control_chiffre, control_comparePwd, control_nom, control_prenom, control_phoneNo, control_pwdLength = true;
 
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -94,6 +94,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
 
+
         btnSend.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("WrongConstant")
             @Override
@@ -127,24 +128,32 @@ public class RegisterActivity extends AppCompatActivity {
                 }
 
                 //control phone number
-                if(TextUtils.isEmpty(phone_num)){
+                if (phone_num.isEmpty()){
                     control_phoneNo = false;
-                    erreurEmptyPhoneNo();
-                }else if (phone_num.length() < 9 || phone_num.length() > 10){
+                    erreur_phoneNumber_length();
+                }
+                if (phone_num.length() < 9 || phone_num.length() > 10){
                     control_phoneNo = false;
                     erreurLengthPhoneNo();
                 }else if (phone_num.length() == 10){
                     control_phoneNo = false;
                     erreurGivingZero_phoneNo();
-                }else {
-                    control_phoneNo = true;
-                    phoneNO_ctrl.setVisibility(View.INVISIBLE);
+                }else { //verification du numero s'il commance bien par 33, 34 ou 32
+                    char[] ascciiCode_phoneNumber = phone_num.toCharArray();
+                    if ((ascciiCode_phoneNumber[0] == 0x33) && ((ascciiCode_phoneNumber[1] == 0x34) || (ascciiCode_phoneNumber[1] == 0x32))) {
+                        control_phoneNo = true;
+                        phoneNO_ctrl.setVisibility(View.INVISIBLE);
+                    }else {
+                        control_phoneNo = false;
+                        erreurBeging_phoneNo();
+                    }
                 }
 
                 //control password
-                int j = 0;
+                int j;
                 int pwdLength = uMotDePasse.length();
                 if (pwdLength < 6){
+                    control_pwdLength = false;
                     erreurPwdLength();
                 }
                 if (pwdLength >= 6){
@@ -153,48 +162,51 @@ public class RegisterActivity extends AppCompatActivity {
                     control_chiffre = false;
                     control_comparePwd = false;
                     for (j = 0; j < pwdLength; j++) {
-                        char[] ascciiCode = uMotDePasse.toCharArray();
+                        char[] ascciiCode_motDePasse = uMotDePasse.toCharArray();
                         //verification de presence d'une minuscule
-                        if ((ascciiCode[j] > 0x40) && (ascciiCode[j] < 0x5B)) {
+                        if ((ascciiCode_motDePasse[j] > 0x40) && (ascciiCode_motDePasse[j] < 0x5B)) {
                             if (!control_minuscule) {
                                 control_minuscule = true;
                             }
                         }
                         //verification de presence d'une mauscule
-                        else if ((ascciiCode[j] > 0x60) && (ascciiCode[j] < 0x7B)){
+                        else if ((ascciiCode_motDePasse[j] > 0x60) && (ascciiCode_motDePasse[j] < 0x7B)){
                             if (!control_majuscule) {
                                 control_majuscule = true;
                             }
                         }
                         //verification de presence d'un chiffre
-                        else if ((ascciiCode[j] > 0x29) && (ascciiCode[j] < 0x3A)){
+                        else if ((ascciiCode_motDePasse[j] > 0x29) && (ascciiCode_motDePasse[j] < 0x3A)){
                             if (!control_chiffre) {
                                 control_chiffre = true;
                             }
                         }
                     }
-                    //comparaison de mot de passe
-                    if (!uMotDePasse.equals(uConfirmePwd)){
-                        if (control_minuscule && control_majuscule && control_chiffre) {
-                            erreurPwdNotSame();
-                        }
-                    }else {
-                        confirmePwd_ctrl.setVisibility(View.INVISIBLE);
-                        control_comparePwd = true;
-                    }
-
+                    //verification presence de lettre dans le mot de passe
                     if (!control_minuscule && !control_majuscule){
                         erreurPwdLettre();
-                    } else if (!control_chiffre){
+                    }
+                    //verification presence de chiffre dans le mot de passe
+                    else if (!control_chiffre){
                         erreurPwdChiffre();
                     }else{
                         motDePasse_ctrl.setVisibility(View.INVISIBLE);
+                    }
+
+                    //comparaison de mot de passe
+                    if ((control_minuscule || control_majuscule) && control_chiffre) {
+                        if (!uMotDePasse.equals(uConfirmePwd)) {
+                            erreurPwdNotSame();
+                        }else {
+                            confirmePwd_ctrl.setVisibility(View.INVISIBLE);
+                            control_comparePwd = true;
+                        }
                     }
                 }
 
 
                 //evoie du code de vérification du numero de téléphone
-                if (control_minuscule && control_majuscule && control_chiffre && control_comparePwd && control_nom && control_prenom && control_phoneNo) {
+                if ((control_minuscule || control_majuscule) && control_chiffre && control_comparePwd && control_nom && control_prenom && control_phoneNo && control_pwdLength) {
                     loginProgress.setVisibility(View.VISIBLE);
 
                     //verification du numero de téléphone et encoie du code de confirmatsion
@@ -205,6 +217,8 @@ public class RegisterActivity extends AppCompatActivity {
                             RegisterActivity.this,
                             mCallback
                     );
+                }else{
+                    Toast.makeText(RegisterActivity.this, "il y a une erreur de contrôle !", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -226,12 +240,18 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
                 super.onCodeSent(s, forceResendingToken);
-                Intent intent = new Intent(RegisterActivity.this, VerificationPhoneNoActivity.class);
-                intent.putExtra("AuthCredential", s);   //renvoie du code de confirmation par Intent
-                addUser();   //ajout de l'user dans Firestore
-                startActivity(intent);
             }
         };
+    }
+
+    private void erreur_phoneNumber_length() {
+        phoneNO_ctrl.setText("Veillez entrer un numero de téléphone");
+        phoneNO_ctrl.setVisibility(View.VISIBLE);
+    }
+
+    private void erreurBeging_phoneNo() {
+        phoneNO_ctrl.setText("le numero doit commancer par 32, 33 ou 34");
+        phoneNO_ctrl.setVisibility(View.VISIBLE);
     }
 
     private void erreurPwdNotSame() {
@@ -254,19 +274,13 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
 
-    @SuppressLint("ResourceAsColor")
     private void erreurGivingZero_phoneNo() {
         phoneNO_ctrl.setText("Vous avez peut-être mis un \"0\" au début");
-        phoneNO_ctrl.setTextColor(R.color.colorPrimary);
         phoneNO_ctrl.setVisibility(View.VISIBLE);
     }
 
     private void erreurLengthPhoneNo() {
-        phoneNO_ctrl.setText("ce n'est pas un numéro de téléphone");
-        phoneNO_ctrl.setVisibility(View.VISIBLE);
-    }
-
-    private void erreurEmptyPhoneNo() {
+        phoneNO_ctrl.setText("Ce n'est pas un numéro de téléphone");
         phoneNO_ctrl.setVisibility(View.VISIBLE);
     }
 
@@ -286,7 +300,7 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
 
                         if(task.isSuccessful()){
-                            sendUserHone();
+                            sendUserOnWelcomeActivity();
                         }else{
                             if(task.getException() instanceof FirebaseAuthInvalidCredentialsException){
                                 Toast.makeText(getApplicationContext(), "Erreur de verification de l'otp !", Toast.LENGTH_LONG).show();
@@ -296,11 +310,20 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
-    //renvoie vers Home
-    private void sendUserHone() {
-        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+    //renvoie vers la page d'accueil
+    private void sendUserOnWelcomeActivity() {
+        String uName = nom_r.getText().toString();
+        String uLastname = prenom_r.getText().toString();
+        String uPhoneNo = "+261" + phoneNo_r.getText().toString();
+        String uMotDePasse = motDePasse_r.getText().toString();
+
+        Intent intent = new Intent(RegisterActivity.this, WelcomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("name", uName);
+        intent.putExtra("last name", uLastname);
+        intent.putExtra("phone number", uPhoneNo);
+        intent.putExtra("mot de passe", uMotDePasse);
         startActivity(intent);
         finish();
     }
@@ -350,6 +373,7 @@ public class RegisterActivity extends AppCompatActivity {
                 if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
                     v.clearFocus();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    assert imm != null;
                     imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
                 }
             }
