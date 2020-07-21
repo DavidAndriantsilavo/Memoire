@@ -24,6 +24,8 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -33,6 +35,8 @@ import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class ProfileActivity extends AppCompatActivity {
 
     TextView display_name, displayFirstname, email, phone;
@@ -41,12 +45,18 @@ public class ProfileActivity extends AppCompatActivity {
 
     final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
+    //FRIESTORE INSATANCE
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference userCollectionReference = db.collection("Users");
+
+    //REALTIME DATABASE INSTANCE
+    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+    private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
 
     private final String TAG ="ProfileActivity";
     private boolean isUserAuthDeleted = false;
     private boolean isUserDataDeleted = false;
+    private boolean isUserLocalisationDeleted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +106,28 @@ public class ProfileActivity extends AppCompatActivity {
         button_delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deleteUserAuth();
+                //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
+                AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
+                builder.setMessage("Etes-vous sûr de vouloir supprimer votre compte?");
+                builder.setCancelable(true);
+
+                builder.setPositiveButton(
+                        "SUPPRIMER",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                deleteUserLocalisation();
+                            }
+                        });
+
+                builder.setNegativeButton(
+                        "Annuler",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
             }
         });
 
@@ -104,49 +135,56 @@ public class ProfileActivity extends AppCompatActivity {
         displayInformations();
     }
 
+    //DELETE USER LOCALISATION IN REALTIME DATABASE
+    private void deleteUserLocalisation()
+    {
+        final User user = ((UserSingleton) getApplicationContext()).getUser();
+
+        if(user != null)
+        {
+            mUserLocationReference.child(user.getUser_id()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        //Task was successful, data written!
+                        Log.d(TAG, "ProfileActivity : deleted user localisation!!");
+                        isUserLocalisationDeleted = true;
+                        deleteUserAuth();
+                    }else{
+                        //Task was not successful,
+                        //Log the error message
+                        Log.i(TAG, "onComplete: DB Request unsuccessful, error: " + task.getException().getLocalizedMessage() + "/" + user.getUser_id());
+                    }
+                }
+            });
+        }
+    }
+
+    //DELETE USER AUTH IN FIREBASE AUTH
     private void deleteUserAuth() {
         if(firebaseUser!=null)
         {
-            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
-            AlertDialog.Builder builder = new AlertDialog.Builder(ProfileActivity.this);
-            builder.setMessage("Etes-vous sûr de vouloir supprimer votre compte?");
-            builder.setCancelable(true);
-
-            builder.setPositiveButton(
-                    "SUPPRIMER",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            firebaseUser.delete()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Log.d(TAG, "ProfileActivity : deleted user auth!!");
-                                                isUserAuthDeleted = true;
-                                                deleteUserData();
-                                            }
-                                        }
-                                    });
+            firebaseUser.delete()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "ProfileActivity : deleted user auth!!");
+                                isUserAuthDeleted = true;
+                                deleteUserData();
+                            }
+                            else {
+                                isUserAuthDeleted = false;
+                            }
                         }
                     });
-
-            builder.setNegativeButton(
-                    "Annuler",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-
-            AlertDialog alert = builder.create();
-            alert.show();
         }
-
         else{
             Toast.makeText(getApplicationContext(), "Y a rien à supprimer vous n'existez pas !!!", Toast.LENGTH_LONG).show();
         }
     }
 
+    //DELETE USER DATA IN FIRESTORE
     private void deleteUserData() {
         User user = ((UserSingleton) getApplicationContext()).getUser();
         if(user != null) {
@@ -169,6 +207,7 @@ public class ProfileActivity extends AppCompatActivity {
                                         deletedUser();
                                     } else {
                                         Log.e(TAG, "onComplete: Error: " + task.getException().getLocalizedMessage());
+                                        isUserDataDeleted = false;
                                     }
                                 }
                             });
@@ -194,13 +233,16 @@ public class ProfileActivity extends AppCompatActivity {
     //CHECK IF BOTH USER AUTH AND USER DATA ARE DELETED
     private void deletedUser()
     {
-        if(isUserAuthDeleted && isUserDataDeleted) {
+        if( isUserDataDeleted && isUserAuthDeleted && isUserLocalisationDeleted) {
             Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec SUCCES ... BYE-BYE", Toast.LENGTH_LONG).show();
 
             logOut();
 
             Intent logOut = new Intent(getApplicationContext(), LoginActivity.class);
             startActivity(logOut);
+        }
+        else {
+            Toast.makeText(getApplicationContext(), "Erreur, votre compte n'a pas pu être supprimé!!!", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -218,8 +260,6 @@ public class ProfileActivity extends AppCompatActivity {
                     }
 
                 }
-
-            firebaseUser.delete();
         }
 
         ((UserSingleton)getApplicationContext()).setUser(null);
