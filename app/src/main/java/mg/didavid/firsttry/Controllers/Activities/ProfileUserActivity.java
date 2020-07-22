@@ -523,7 +523,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         //3 - Handle actions on menu items
         switch (item.getItemId()) {
             case R.id.menu_logout_profil:
-                logOut();
+                avertissement();
                 return true;
             case R.id.menu_deleteprofile_profile:
                 deleteAccount();
@@ -579,6 +579,38 @@ public class ProfileUserActivity extends AppCompatActivity {
         }
     }
 
+
+    private void avertissement() {
+        if(user!=null)
+        {
+            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
+            AlertDialog.Builder builder = new AlertDialog.Builder(ProfileUserActivity.this);
+            builder.setMessage("Vous voulez vous déconnecter?");
+            builder.setCancelable(true);
+
+            builder.setPositiveButton(
+                    "OUI",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            progressDialog_logout.show();
+                            logOut();
+                        }
+                    });
+
+            builder.setNegativeButton(
+                    "NON",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            progressDialog_logout.dismiss();
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
 
     private void logOut() {
         progressDialog_logout.show();

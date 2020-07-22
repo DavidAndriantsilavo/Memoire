@@ -13,7 +13,9 @@
         android:icon="@drawable/ic_add_new_post_icon_dark"
         app:showAsAction="ifRoom"
         android:title="New post">
-
     </item>
 
+    <item
+        android:id="@+id/menu_logout_profil"
+        android:title="Se déconnecter"/>
 </menu>

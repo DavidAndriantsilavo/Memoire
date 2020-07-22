@@ -173,6 +173,9 @@ public class NewPostActivity extends AppCompatActivity {
 
     }
 
+    // pour que le bouton pour importer une image soit cliquable
+    // durant toute la vie de l'activité NewPostActivity
+    // on e met dans le onPostResume
     @Override
     protected void onPostResume() {
         super.onPostResume();

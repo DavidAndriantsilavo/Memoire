@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,8 +18,15 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
 import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
@@ -31,6 +39,9 @@ public class MainActivity extends AppCompatActivity{
 
     BottomNavigationView navigationView;
 
+    ProgressDialog  progressDialog_del_account, progressDialog_logout;
+
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +52,14 @@ public class MainActivity extends AppCompatActivity{
 
         navigationView = findViewById(R.id.menu_nav); //associate view with the BottomNavigationView object
         navigationView.setOnNavigationItemSelectedListener(selectedListener); //set BottomNavigationView focus onto the selected item
+
+
+        //init progressDialog
+        progressDialog_del_account = new ProgressDialog(this);
+        progressDialog_del_account.setMessage("Supression de votre compte...");
+        progressDialog_logout = new ProgressDialog(this);
+        progressDialog_logout.setMessage("Déconnexion...");
+
 
         //default view
         accueil();
@@ -126,35 +145,11 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        //2 - Inflate the menu and add it to the Toolbar
-        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
-        return true;
-    }
-
-    // ----
-
     private void configureToolbar(){
         // Get the toolbar view inside the activity layout
         Toolbar toolbar = findViewById(R.id.toolbar);
         // Sets the Toolbar
         setSupportActionBar(toolbar);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //3 - Handle actions on menu items
-        if (item.getItemId() == R.id.menu_activity_main_profile) {
-            startActivity(new Intent(getApplicationContext(), ProfileUserActivity.class));
-            return true;
-        }
-        if (item.getItemId() == R.id.menu_activity_main_addNewPost) {
-            startActivity(new Intent(getApplicationContext(), NewPostActivity.class));
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -195,6 +190,75 @@ public class MainActivity extends AppCompatActivity{
             alert.show();
         }
         return isConnected;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //3 - Handle actions on menu items
+        switch (item.getItemId()) {
+            case R.id.menu_logout_profil:
+                avertissement();
+                return true;
+            case R.id.menu_activity_main_profile:
+                startActivity(new Intent(getApplicationContext(), ProfileUserActivity.class));
+                return true;
+            case R.id.menu_activity_main_addNewPost:
+                startActivity(new Intent(getApplicationContext(), NewPostActivity.class));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void avertissement() {
+        if(user!=null)
+        {
+            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setMessage("Vous voulez vous déconnecter?");
+            builder.setCancelable(true);
+
+            builder.setPositiveButton(
+                    "OUI",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            progressDialog_logout.show();
+                            logOut();
+                        }
+                    });
+
+            builder.setNegativeButton(
+                    "NON",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            progressDialog_logout.dismiss();
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
+    private void logOut() {
+        progressDialog_logout.show();
+        FirebaseAuth.getInstance().signOut();
+        GoogleSignIn.getClient(
+                this,
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+        ).signOut();
+
+        Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
+        startActivity(logOut);
+
+        this.finish();
     }
 
 /*
