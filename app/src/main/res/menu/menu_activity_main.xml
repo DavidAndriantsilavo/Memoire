@@ -8,4 +8,12 @@
         android:title="Profile">
     </item>
 
+    <item
+        android:id="@+id/menu_activity_main_addNewPost"
+        android:icon="@drawable/ic_add_new_post_icon_dark"
+        app:showAsAction="ifRoom"
+        android:title="New post">
+
+    </item>
+
 </menu>

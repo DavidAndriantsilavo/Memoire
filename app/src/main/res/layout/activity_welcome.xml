@@ -1,17 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controllers.Activities.WelcomeActivity"
-    android:orientation="vertical">
+    tools:context=".Controllers.Activities.LoginActivity"
+    android:orientation="vertical"
+    android:gravity="center">
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:text="Soyez le bienvenue !!"
         android:textSize="100px"
         android:gravity="center"/>
+    <Button
+        android:id="@+id/btn_commancer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:text="Commancer"/>
 
 </LinearLayout>

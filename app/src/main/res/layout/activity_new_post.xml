@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Controllers.Activities.NewPostActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/edittextstle">
+
+            <EditText
+                android:id="@+id/editText_inputTitlePost_newPost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Entrer le titre de votre publication ici"
+                android:inputType="textCapWords"
+                android:singleLine="true"
+                android:padding="10dp"
+                android:layout_weight="1"/>
+
+            <Button
+                android:id="@+id/button_addImage_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="7dp"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/ic_add_new_image_post_icon_dark"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/imageView_inputImage_newPost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="0dp"
+                android:maxHeight="400dp"
+                android:background="@color/colorPrimaryDark"/>
+            <Button
+                android:id="@+id/button_delete_image_post"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:padding="20dp"
+                android:layout_alignEnd="@+id/imageView_inputImage_newPost"
+                android:background="@drawable/ic_delete_image_post_icon_dark"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
+
+        <EditText
+            android:id="@+id/editText_inputPostDescription_newPost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edittextstle"
+            android:padding="10dp"
+            android:inputType="textCapSentences|textMultiLine"
+            android:gravity="start"
+            android:height="100dp"
+            android:hint="Entrer votre description ici"/>
+
+        <Button
+            android:id="@+id/button_publish_post"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:text="Publier"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_primary_button"/>
+
+
+    </LinearLayout>
+
+</ScrollView>

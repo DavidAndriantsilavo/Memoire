@@ -5,17 +5,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.viewpager.widget.ViewPager;
-
-import androidx.core.view.KeyEventDispatcher;
 
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -148,13 +147,55 @@ public class MainActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
         if (item.getItemId() == R.id.menu_activity_main_profile) {
-            Intent toProfile = new Intent(getApplicationContext(), ProfileActivity.class);
-            startActivity(toProfile);
+            startActivity(new Intent(getApplicationContext(), ProfileUserActivity.class));
+            return true;
+        }
+        if (item.getItemId() == R.id.menu_activity_main_addNewPost) {
+            startActivity(new Intent(getApplicationContext(), NewPostActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkConnexion();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkConnexion();
+    }
+
+    // CHECK IF INTERNET CONNEXION IS AVAILABLE
+    public boolean checkConnexion(){
+        ConnectivityManager cm =
+                (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        if(!isConnected)
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Veuillez vous connecter à internet!");
+            builder.setCancelable(false);
+
+            builder.setPositiveButton(
+                    "retour",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+        return isConnected;
+    }
 
 /*
     @Override

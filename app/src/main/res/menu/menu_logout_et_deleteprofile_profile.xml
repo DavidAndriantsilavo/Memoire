@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_logout_profil"
+        android:title="Se déconnecter" />
+    <item
+        android:id="@+id/menu_deleteprofile_profile"
+        android:title="Suprimer mon compte"/>
+</menu>

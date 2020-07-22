@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -26,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -35,19 +38,28 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import mg.didavid.firsttry.R;
 
+import static com.google.common.base.Ascii.toLowerCase;
+
 public class LoginActivity extends AppCompatActivity {
 
     private Button button_register, button_connexion;
     private ImageButton button_google, button_facebook;
 
+    private EditText mPseudo_lg, mMotDePasse_lg;
+    private TextView erreurLoginTv, erreurPhoneNumber;
+
     private static final int RC_SIGN_IN = 1234;
     private static final String TAG = "RegisterActivity";
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onStart() {
         super.onStart();
+
+        //verifier a connexion internet dès le démarrage de l'application
+        checkConnexion();
 
         //getting current user who has authenticated
         FirebaseUser user = mAuth.getInstance().getCurrentUser();
@@ -65,15 +77,22 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //reuperation des vues
+        mPseudo_lg = findViewById(R.id.editText_num_login);
+        mMotDePasse_lg = findViewById(R.id.editText_password_login);
         button_register = findViewById(R.id.button_register);
-
         button_connexion = findViewById(R.id.button_connexion);
         button_google = findViewById(R.id.button_google);
         button_facebook = findViewById(R.id.button_facebook);
+        erreurLoginTv = findViewById(R.id.textView_erreur_login);
+        erreurPhoneNumber = findViewById(R.id.textView_erreurPhoneNumber_login);
 
         createRequest();
 
         mAuth= FirebaseAuth.getInstance();
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading ...");
 
 
 
@@ -88,28 +107,48 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
+        //connexion with pseudo and password
         button_connexion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(checkConnexion()) {
-                    Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(connexion);
+                    String pseudo = mPseudo_lg.getText().toString();
+                    String motDePasse = mMotDePasse_lg.getText().toString();
+                    String uCompletPseudo = toLowerCase(pseudo) + ".mg";
 
-                    finish();
+                    if (pseudo.isEmpty() && motDePasse.isEmpty()){
+                        erreurLoginTv.setText("Veillez completer tous les champs !");
+                        erreurLoginTv.setVisibility(View.VISIBLE);
+                    }else {
+                        progressDialog.show();
+
+                        mAuth.signInWithEmailAndPassword(uCompletPseudo, motDePasse)
+                                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (task.isSuccessful()) {
+                                            //redirection vers la page d'accueil
+                                            Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
+                                            startActivity(connexion);
+                                            finish();
+                                        } else {
+                                            // If sign in fails, display a message to the user.
+                                            Log.w(TAG, "signInWithEmail:failure", task.getException());
+                                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                                    Toast.LENGTH_SHORT).show();
+                                            progressDialog.dismiss();
+                                        }
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                erreurLoginTv.setText(e.getMessage());
+                                erreurLoginTv.setVisibility(View.VISIBLE);
+
+                            }
+                        });
+                    }
                 }
-            }
-        });
-
-
-        button_connexion = findViewById(R.id.button_connexion);
-
-        //A controller (plutard)
-        button_connexion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(connexion);
-                finish();
             }
         });
 
