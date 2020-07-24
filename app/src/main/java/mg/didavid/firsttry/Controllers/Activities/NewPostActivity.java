@@ -3,7 +3,6 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,9 +32,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -47,6 +44,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -173,20 +172,6 @@ public class NewPostActivity extends AppCompatActivity {
 
     }
 
-    // pour que le bouton pour importer une image soit cliquable
-    // durant toute la vie de l'activité NewPostActivity
-    // on e met dans le onPostResume
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        //get image from camera/gallery on click
-        getImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkImagePickDialog();
-            }
-        });
-    }
 
     //posting
     private void uploadPost(final String title, final String description, String uri) {
@@ -216,17 +201,18 @@ public class NewPostActivity extends AppCompatActivity {
                                 //store into Firestore
                                 Map<String, Object> result = new HashMap<>();
                                 result.put("Uid", uid);
-                                result.put("nom et prenom", nomEtPrenonm);
+                                result.put("nomEtPrenom", nomEtPrenonm);
                                 result.put("pseudo", pseudo);
-                                result.put("photo de profile", photoDeProfile);
+                                result.put("photoDeProfile", photoDeProfile);
                                 result.put("pId", timestamp);
                                 result.put("pTitre", title);
-                                result.put("pDesrciption", description);
+                                result.put("pDescription", description);
                                 result.put("pImage", downloadUri);
                                 result.put("pTemps", timestamp);
 
-                                DocumentReference reference = collectionUsers.document("Publications");
-                                reference.set(result)
+                                //store data on Firestore
+                                CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
+                                reference.document(timestamp).set(result)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
@@ -237,6 +223,10 @@ public class NewPostActivity extends AppCompatActivity {
                                                 postDescription.setText("");
                                                 imagePost.setImageURI(null);
                                                 imagePost.setMinimumHeight(0);
+
+                                                //go to main activity when finish
+                                                startActivity(new Intent(NewPostActivity.this, MainActivity.class));
+                                                finish();
                                             }
                                         }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -261,17 +251,18 @@ public class NewPostActivity extends AppCompatActivity {
         }else{//post without image
             Map<String, Object> result = new HashMap<>();
             result.put("Uid", uid);
-            result.put("nom et prenom", nomEtPrenonm);
+            result.put("nomEtPrenom", nomEtPrenonm);
             result.put("pseudo", pseudo);
-            result.put("photo de profile", photoDeProfile);
+            result.put("photoDeProfile", photoDeProfile);
             result.put("pId", timestamp);
             result.put("pTitre", title);
-            result.put("pDesrciption", description);
+            result.put("pDescription", description);
             result.put("pImage", "sans Image");
             result.put("pTemps", timestamp);
 
-            DocumentReference reference = collectionUsers.document("Publications");
-            reference.set(result)
+            //store data on Firestore
+            CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
+            reference.document(timestamp).set(result)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -282,6 +273,10 @@ public class NewPostActivity extends AppCompatActivity {
                             postTitle.setText("");
                             postDescription.setText("");
                             imagePost.setImageURI(null);
+
+                            //go to main activity when finish
+                            startActivity(new Intent(NewPostActivity.this, MainActivity.class));
+                            finish();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -416,15 +411,6 @@ public class NewPostActivity extends AppCompatActivity {
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
                 image_uri = data.getData();
                 imagePost.setImageURI(image_uri);
-
-                //suprimer l'image séléctionnée
-                getImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        imagePost.setImageURI(null);
-                        imagePost.setMinimumHeight(0);
-                    }
-                });
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
                 imagePost.setImageURI(image_uri);
@@ -453,6 +439,16 @@ public class NewPostActivity extends AppCompatActivity {
         super.onResume();
         checkConnexion();
         checkUserStatus();
+
+        // pour que le bouton pour importer une image soit cliquable
+        // durant toute la vie de l'activité NewPostActivity
+        // on le met dans le onResume
+        getImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkImagePickDialog();
+            }
+        });
     }
 
     // CHECK IF INTERNET CONNEXION IS AVAILABLE
@@ -464,21 +460,23 @@ public class NewPostActivity extends AppCompatActivity {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Veuillez vous connecter à internet!");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+                "retour",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
         if(!isConnected)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
             alert.show();
+        }else {
+            alert.dismiss();
         }
         return isConnected;
     }

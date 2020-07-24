@@ -48,15 +48,14 @@
 
                 <RelativeLayout
                     android:id="@+id/linearLayout_pdp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:layout_marginStart="20dp">
                     <ImageView
                         android:id="@+id/imageView_photoDeProfile_profile"
-                        android:layout_width="170dp"
-                        android:layout_height="170dp"
-                        android:padding="5sp"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
                         android:src="@drawable/ic_image_profile_icon_dark"
-                        android:layout_marginStart="20dp"
                         android:background="@color/colorPrimary"/>
 
                     <LinearLayout
@@ -70,9 +69,9 @@
                         android:alpha="0.3">
                         <Button
                             android:id="@+id/add_profile_photo_profile"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_marginEnd="4dp"
+                            android:layout_width="25dp"
+                            android:layout_height="25dp"
+                            android:layout_marginEnd="2.2dp"
                             android:background="@drawable/ic_image_add_photo_de_profile_profile_icon_dark" />
 
                     </LinearLayout>

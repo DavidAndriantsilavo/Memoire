@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationItemView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -159,8 +160,8 @@ public class MainActivity extends AppCompatActivity{
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onPostResume() {
+        super.onPostResume();
         checkConnexion();
     }
 
@@ -173,21 +174,25 @@ public class MainActivity extends AppCompatActivity{
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Veuillez vous connecter à internet!");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+                "retour",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+
         if(!isConnected)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
             alert.show();
+        }else {
+            alert.dismiss();
         }
         return isConnected;
     }
@@ -261,14 +266,14 @@ public class MainActivity extends AppCompatActivity{
         this.finish();
     }
 
-/*
+
     @Override
     public void onBackPressed() {
-        ViewPager pager = (ViewPager)findViewById(R.id.activity_main_viewpager);
-        if(pager.getCurrentItem() != 0) {
-            pager.setCurrentItem(0, true);
+        if(navigationView.getSelectedItemId() !=  R.id.fil_d_actu_nav) {
+            navigationView.setSelectedItemId(R.id.fil_d_actu_nav);
+            itemActu();
         } else {
             super.onBackPressed(); // This will pop the Activity from the stack.
         }
-    }*/
+    }
 }

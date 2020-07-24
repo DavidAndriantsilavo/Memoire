@@ -133,7 +133,7 @@ public class ProfileUserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //modifier photo de profile
-                progressDialog_editProfile.setMessage("Edition de la photo de profile");
+                progressDialog_editProfile.setMessage("Importation de la photo de profile");
                 showImagePicDialog();
             }
         });
@@ -149,8 +149,8 @@ public class ProfileUserActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onPostResume() {
+        super.onPostResume();
         checkConnexion();
         checkingUserInfo();
     }
@@ -164,27 +164,30 @@ public class ProfileUserActivity extends AppCompatActivity {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Veuillez vous connecter à internet!");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+                "retour",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
         if(!isConnected)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
             alert.show();
+        }else {
+            alert.dismiss();
         }
         return isConnected;
     }
 
     //check if user has already informations
     private void checkingUserInfo() {
+        progressDialog_loadingProfile.show();
         String Uid = user.getUid();
         docRefProfileUser = collectionUsers.document(Uid);
         docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {

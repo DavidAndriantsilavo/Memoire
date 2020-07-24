@@ -72,6 +72,13 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         }
     }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        checkConnexion();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -274,21 +281,24 @@ public class LoginActivity extends AppCompatActivity {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Veuillez vous connecter à internet!");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+                "retour",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+
         if(!isConnected)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
             alert.show();
+        }else {
+            alert.dismiss();
         }
         return isConnected;
     }

@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Controllers.Activities.LoginActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center">
 
     <!--message de bienvenue-->
     <TextView
@@ -15,7 +16,6 @@
         android:text="BIENVENUE"
         android:textSize="@android:dimen/app_icon_size"
         android:gravity="center"
-        android:layout_marginTop="80dp"
         android:textStyle="bold" />
 
     <!--phone number input-->
@@ -83,6 +83,7 @@
         android:background="@drawable/rounded_primary_button"
         android:gravity="center"
         android:text="Connexion"
+        android:textAllCaps="false"
         android:textColor="@android:color/white" />
 
     <TextView
@@ -110,7 +111,8 @@
             android:background="@drawable/rounded_white_button"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Créer un compte" />
+            android:text="Créer un compte"
+            android:textAllCaps="false"/>
 
         <!--Bouton pour se connecter via compte Google-->
         <ImageButton
