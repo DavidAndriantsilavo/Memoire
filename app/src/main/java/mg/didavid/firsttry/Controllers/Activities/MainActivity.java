@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,10 +48,13 @@ public class MainActivity extends AppCompatActivity{
     private String password = "NULL";
     private final String TAG= "MainActivity";
 
+    public static Activity stopActivity;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        stopActivity = this;
 
         this.configureToolbar();
 

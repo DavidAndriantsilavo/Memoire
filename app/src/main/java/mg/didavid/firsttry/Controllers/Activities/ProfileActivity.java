@@ -269,6 +269,7 @@ public class ProfileActivity extends AppCompatActivity {
         Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(logOut);
 
+        MainActivity.stopActivity.finish();
         this.finish();
     }
 
@@ -278,7 +279,7 @@ public class ProfileActivity extends AppCompatActivity {
         {
             //imageView_pdp.setText(signInAccount.getPhotoUrl());
             display_name.setText(user.getName());
-            //displayFirstname.setText(signInAccount.getGivenName());
+            displayFirstname.setText(user.getUser_id());
             email.setText(user.getEmail());
             phone.setText((user.getPhone()));
 

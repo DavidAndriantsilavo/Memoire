@@ -1,5 +1,6 @@
 package mg.didavid.firsttry.Controllers.Fragments;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -15,6 +16,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,6 +47,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 
@@ -55,11 +60,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import mg.didavid.firsttry.Controllers.Activities.MainActivity;
+import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 
+import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
@@ -83,6 +91,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
+
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+    private static final int LOCATION_UPDATE_INTERVAL = 3000;
 
     User user = new User();
 
@@ -171,66 +183,158 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         }
         // [END maps_current_place_update_location_ui]
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //START REALTIME SERVICES - UPDATE USER'S LOCATION TO FIREBASE AND RETRIEVING OTHERS' LOCATIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //START THE SERVICE TO SEND THE CURRENT LOCATION TO REALTIME DATABASE
+        private void startLocationService(){
+        if(!isLocationServiceRunning()){
+            Intent serviceIntent = new Intent(getActivity(), LocationService.class);
+//        this.startService(serviceIntent);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+
+                getActivity().startForegroundService(serviceIntent);
+            }else{
+                getActivity().startService(serviceIntent);
+            }
+        }
+    }
+
+        //CHECK IF THE REALTIME SERVICE IS RUNNING
+        private boolean isLocationServiceRunning() {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            if("mg.didavid.firsttry.Models.LocationService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+        return false;
+    }
+
+
+        //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
+        private void startUserLocationsRunnable(){
+        Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
+        mHandler.postDelayed(mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                getOtherLocation();
+                mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
+            }
+        }, LOCATION_UPDATE_INTERVAL);
+    }
+
+        //STOP THE SERVICE
+        private void stopLocationUpdates(){
+        mHandler.removeCallbacks(mRunnable);
+    }
+
         //CHECK THE SWITCH CHANGE STATE
+        // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
+        //IF NOT STOP THE RUNNABLE AND CLEAR THE MARKERS AND THE LIST
         private void checkSwitchShowOthers(){
             mShowOthers = getView().findViewById(R.id.switch_show_other);
 
             mShowOthers.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    getOtherLocation(isChecked);
+                    if(isChecked){
+                        Log.d(TAG, " test : SWITCH ON");
+                        //LISTEN JUST ONCE
+                       mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                int i=0;
+                                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                                    //Getting User object from dataSnapshot
+                                    UserLocation userLocation = data.getValue(UserLocation.class);
+                                    LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+                                    Marker marker;
+                                    if(userLocation != null){
+                                        if(userLocation.getUser_id() != user.getUser_id() ){
+                                            Log.d(TAG, " test : onDataChange: " + userLocation.getDisplay_name());
+
+                                            marker = mGoogleMap.addMarker(new MarkerOptions()
+                                                    .position(otherPosition)
+                                                    .title(userLocation.getDisplay_name()));
+
+                                            otherMarker.add(i, marker);
+                                            i++;
+                                        }
+                                    }
+                                }
+                                Log.d(TAG, " test : All position get");
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                Log.e(TAG, "%s" + error);
+                            }
+                        });
+
+                        startUserLocationsRunnable();
+
+                    }
+                    else{
+                        Log.d(TAG, " test : SWITCH Off");
+                        stopLocationUpdates();
+
+                        if(!otherMarker.isEmpty())
+                        {
+                            for(Marker marker : otherMarker){
+                                marker.remove();
+                            }
+                            otherMarker.clear();
+                            Log.d(TAG, " test : Clear the position list");
+                        }
+
+                    }
                 }
             });
         }
 
-        //CHECK TEH SWITCH STATE
-        //IF CHECKED THEN PUT THE OTHER'S POSITION INTO A LIST AND SHOW THEM
-        //IF NOT DELETE THE MARKERS ANS CLEAR THE LIST
-        private void getOtherLocation(Boolean isChecked) {
-            Log.d(TAG, "FT : getOtherLocation()");
-            if(isChecked) {
-                if(otherMarker.isEmpty())
-                {
-                    mUserLocationReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot data : dataSnapshot.getChildren()) {
-                                //Getting User object from dataSnapshot
-                                UserLocation userLocation = data.getValue(UserLocation.class);
-
-                                LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                                Marker marker;
-                                if(userLocation.getUser_id() != user.getUser_id() ){
-                                    Log.d(TAG, " FT : onDataChange: " + userLocation.getDisplay_name());
-                                    marker = mGoogleMap.addMarker(new MarkerOptions()
-                                            .position(otherPosition)
-                                            .title(userLocation.getDisplay_name()));
-
-                                    otherMarker.add(marker);
-                                }
-                            }
-                            Log.d(TAG, " FT : All position get");
+        //UPDATE OTHERS' LOCATION IF THE RUNNABLE IS RUNNING
+        private void getOtherLocation() {
+            Log.d(TAG, "test : switch always ON");
+            mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    int i=0;
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        //Getting User object from dataSnapshot
+                        UserLocation userLocation = data.getValue(UserLocation.class);
+                        LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+                        Marker marker;
+                        try {
+                            marker = otherMarker.get(i);
+                            marker.setPosition(otherPosition);
+                            otherMarker.set(i, marker);
+                            i++;
+                        }catch (Exception e){
+                            Log.e(TAG, "%s" + e);
                         }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e(TAG, "%s" + error);
-                        }
-                    });
-                }
-
-            }else{
-                if(!otherMarker.isEmpty())
-                {
-                    for(Marker marker : otherMarker){
-                        marker.remove();
                     }
-                    otherMarker.clear();
-                    Log.d(TAG, " FT : Clear the position list");
-                }
 
-            }
+                    Log.d(TAG, " test : All position updated");
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e(TAG, "%s" + error);
+                }
+            });
         }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //END REALTIME SERVICES - UPDATE USER'S LOCATION TO FIREBASE AND RETRIEVING OTHERS' LOCATIONS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //START RETRIEVE USER LOCATION AND MOVE THE CAMERA - SAVE USER INFO TO FIRESTORE
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //GET THE USER INFO FROM THE SINGLETON AND INSTANCIATE THE USERLOCATION OBJECT
         private void setUserLocation(){
             if(mUserLocation == null)
@@ -280,6 +384,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                 mUserLocation.setTimestamp(time);
 
                                 saveUserLocation();
+                                startLocationService();
                             } else {
                                 Log.d(TAG, "FT : Current location is null. Using defaults.");
                                 Log.e(TAG, "Exception: %s", task.getException());
@@ -294,7 +399,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 Log.e("Exception: %s", e.getMessage(), e);
             }
         }
-
 
         //SAVE THE USER LOCATION INTO REALTIME DATABASE
         private void saveUserLocation()
@@ -318,17 +422,16 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 });
             }
         }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //END RETRIEVE USER LOCATION AND MOVE THE CAMERA - SAVE USER INFO TO FIRESTORE
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // [END maps_current_place_get_device_location]
-
-            ///////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////
-        // REQUEST GPS AND ACCESS PERMISSIONS
-        ////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    //START SERVICES AND PERMISSION REQUESTS
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //CHECK FOR ALL NEEDED SERVICES
-            private boolean checkMapServices(){
+        private boolean checkMapServices(){
                 mServicesIsGood = false;
                 Log.d(TAG, "FT : allIsGood NOT OK");
                 if(isServicesOK()){
@@ -341,7 +444,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 return false;
             }
 
-            //REQUEST FOR ENABLING GPS
+        //REQUEST FOR ENABLING GPS
         private void buildAlertMessageNoGps() {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
@@ -451,11 +554,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             }
 
         }
-        ///////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////
-        // END REQUEST GPS AND ACCESS PERMISSIONS
-        ////////////////////////////////////////////////////////////////
-        /////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////
+    // END SERVICES AND PERMISSION REQUESTS
+    ////////////////////////////////////////////////////////////////
+
 
         @Override
         public void onResume() {
@@ -491,6 +594,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         public void onDestroyView() {
             super.onDestroyView();
             mMapView.onDestroy();
+            stopLocationUpdates();
             Log.d(TAG, "FT : OnDestroyView");
 
             otherMarker.clear();
