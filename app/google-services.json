@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "539074519621-61oes51767fi6uoth7iet8971rpdfha0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mg.didavid.firsttry",
+            "certificate_hash": "081479867bed128ed1a0c610f3e8c9fb996918ae"
+          }
+        },
+        {
           "client_id": "539074519621-kmgi2u2etb5elopdi6tkml6m5o91e967.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
