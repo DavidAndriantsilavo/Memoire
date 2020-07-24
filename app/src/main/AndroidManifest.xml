@@ -5,11 +5,17 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+<<<<<<< HEAD
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+=======
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
 
     <application
+        android:name=".Models.UserSingleton"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -41,7 +47,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".Controllers.Activities.MainActivity" />
+        <activity android:name=".Controllers.Activities.MainActivity"
+            android:launchMode="singleInstance"/>
         <activity
             android:name=".Controllers.Activities.RegisterActivity"
             android:label="Register"
@@ -64,6 +71,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name=".Models.LocationService"
+            android:stopWithTask="true"></service>
     </application>
 
 </manifest>

@@ -12,12 +12,17 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
+<<<<<<< HEAD
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import android.text.TextUtils;
 import android.util.Log;
+=======
+import android.os.Bundle;
+
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,7 +35,10 @@ import android.widget.Toast;
 
 
 import com.google.android.gms.tasks.OnCompleteListener;
+<<<<<<< HEAD
 import com.google.android.gms.tasks.OnFailureListener;
+=======
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,8 +47,12 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
+=======
+import java.util.concurrent.TimeUnit;
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
 
 import mg.didavid.firsttry.R;
 
@@ -177,6 +189,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 }
 
+<<<<<<< HEAD
                  */ //input phone number controle
 
                 //control password
@@ -257,6 +270,33 @@ public class RegisterActivity extends AppCompatActivity {
                             String Uid = mCurrentUser.getUid();
                             addUser(Uid);
                             goToWelcomePage();
+=======
+            @Override
+            public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                super.onCodeSent(s, forceResendingToken);
+                Intent intent = new Intent(RegisterActivity.this, VerificationPhoneNoActivity.class);
+                intent.putExtra("AuthCredential", s);
+                //addUser();
+                startActivity(intent);
+
+                finish();
+            }
+        };
+    }
+
+    private void singinWithAuthCredential(PhoneAuthCredential phoneAuthCredential) {
+        mAuth.signInWithCredential(phoneAuthCredential)
+                .addOnCompleteListener(RegisterActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        if(task.isSuccessful()){
+                            sendUserHome();
+                        }else{
+                            if(task.getException() instanceof FirebaseAuthInvalidCredentialsException){
+                                Toast.makeText(getApplicationContext(), "Erreur de verification de l'otp !", Toast.LENGTH_LONG).show();
+                            }
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
                         }
                         loginProgress.dismiss();
                     }
@@ -270,14 +310,20 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+<<<<<<< HEAD
     private void goToWelcomePage() {
         Intent intent = new Intent(RegisterActivity.this, WelcomeActivity.class);
+=======
+    private void sendUserHome() {
+        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
 
+<<<<<<< HEAD
     private void addUser(String Uid) {
         String uName = nom_r.getText().toString();
         String uLastname = prenom_r.getText().toString();
@@ -348,6 +394,42 @@ public class RegisterActivity extends AppCompatActivity {
     private void erreurName() {
         nom_ctrl.setVisibility(View.VISIBLE);
     }
+=======
+//    private void addUser() {
+//        String lastname = nom_r.getText().toString();
+//        String firstname = prenom_r.getText().toString();
+//        String phone = "+261" + phoneNo_r.getText().toString();
+//        String password = motDePasse_r.getText().toString();
+//
+//        if(!TextUtils.isEmpty(lastname)  || !TextUtils.isEmpty(firstname)  || !TextUtils.isEmpty(password)){
+//            Map<String, Object> profile = new HashMap<>();
+//            profile.put("name", lastname);
+//            profile.put("last name", firstname);
+//            profile.put("phone number", phone);
+//            profile.put("password", password);
+//
+//            documentReference.set(profile)
+//                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                        @Override
+//                        public void onSuccess(Void aVoid) {
+//                            loginProgress.setVisibility(View.INVISIBLE);
+//                            Toast.makeText(RegisterActivity.this, "Profile créé", Toast.LENGTH_SHORT).show();
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Toast.makeText(RegisterActivity.this, "Echèc !", Toast.LENGTH_SHORT).show();
+//
+//                            loginProgress.setVisibility(View.INVISIBLE);
+//                        }
+//                    });
+//
+//        }else {
+//            Toast.makeText(this,"veillez completer tous les champs!", Toast.LENGTH_LONG).show();
+//        }
+//    }
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
 
     @Override
     protected void onStart() {
@@ -355,10 +437,16 @@ public class RegisterActivity extends AppCompatActivity {
         checkConnexion();
     }
 
+<<<<<<< HEAD
     @Override
     protected void onResume() {
         super.onResume();
         checkConnexion();
+=======
+        if(mCurrentUser != null){
+            sendUserHome();
+        }
+>>>>>>> ce7986c5455a4e13fd217b53d53617a19034cef1
     }
 
     // CHECK IF INTERNET CONNEXION IS AVAILABLE
