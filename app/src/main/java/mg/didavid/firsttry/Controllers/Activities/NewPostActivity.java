@@ -175,7 +175,7 @@ public class NewPostActivity extends AppCompatActivity {
 
     //posting
     private void uploadPost(final String title, final String description, String uri) {
-        progressDialog_uploadPost.setTitle("Publication de votre post ...");
+        progressDialog_uploadPost.setMessage("Publication de votre post ...");
         progressDialog_uploadPost.show();
 
         final String timestamp = String.valueOf(System.currentTimeMillis());

@@ -227,7 +227,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         textView_displayLastname.setText(lastName);
         textView_email.setText(pseudo);
         try {
-            Picasso.get().load(photoDeProfile).into(imageView_photoDeProfile);
+            Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_photoDeProfile);
         }catch (Exception e){
             Picasso.get().load(R.drawable.ic_image_profile_icon_dark).into(imageView_photoDeProfile);
             Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_LONG).show();

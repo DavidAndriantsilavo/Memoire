@@ -126,7 +126,7 @@ public class ActuFragment extends Fragment {
 
     }
 
-    private void searchPost(final String query) {
+    public void searchPost(final String query) {
         //path of all post
         CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
         //get all data from this reference
@@ -156,7 +156,7 @@ public class ActuFragment extends Fragment {
         });
     }
 
-    private void loadPosts() {
+    public void loadPosts() {
         //path of all post
         CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
         //get all data from this reference
