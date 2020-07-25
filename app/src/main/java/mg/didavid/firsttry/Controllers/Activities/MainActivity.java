@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity{
                     switch (item.getItemId()){
 
                         //page GMap
-                        case R.id.map_navv:
+                        case R.id.map_nav:
                             itemGMap();
                             return true;
 
@@ -311,8 +311,8 @@ public class MainActivity extends AppCompatActivity{
         } else {
             super.onBackPressed(); // This will pop the Activity from the stack.
         }
-        private void configureUser ()
-        {
+    }
+        private void configureUser (){
             DocumentReference documentReference = userCollectionReference.document(user_id);
 
             //CHECK IF THE USER IS ALREADY STORED IN THE DATABASE OR NOT
@@ -375,5 +375,4 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
         }
-    }
 }
