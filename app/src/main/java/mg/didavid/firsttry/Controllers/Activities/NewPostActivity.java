@@ -134,7 +134,7 @@ public class NewPostActivity extends AppCompatActivity {
                         return;
                     }
                     //post without image
-                    uploadPost(title, description, "sansImage");
+                    uploadPost(title, description, "noImage");
                 }else {
                     if (TextUtils.isEmpty(title)) {
                         Toast.makeText(NewPostActivity.this, "Veillez entrer un titre à votre publication", Toast.LENGTH_SHORT).show();
@@ -156,9 +156,9 @@ public class NewPostActivity extends AppCompatActivity {
                     docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                            nomEtPrenonm = value.getString("nom") + " " + value.getString("prenom");
+                            nomEtPrenonm = value.getString("name");
                             pseudo = value.getString("pseudo");
-                            photoDeProfile = value.getString("photo de profile");
+                            photoDeProfile = value.getString("profile_image");
                         }
                     });
                 }
@@ -175,14 +175,14 @@ public class NewPostActivity extends AppCompatActivity {
 
     //posting
     private void uploadPost(final String title, final String description, String uri) {
-        progressDialog_uploadPost.setTitle("Publication de votre post ...");
+        progressDialog_uploadPost.setMessage("Publication de votre post ...");
         progressDialog_uploadPost.show();
 
         final String timestamp = String.valueOf(System.currentTimeMillis());
         String filePathName = "Pubblication/" + "publication_" + timestamp;
 
         //post with image
-        if (!uri.equals("sansImage")) {
+        if (!uri.equals("noImage")) {
             StorageReference storageReference1 = storageReference.child(filePathName);
             storageReference1.putFile(Uri.parse(uri))
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -200,15 +200,15 @@ public class NewPostActivity extends AppCompatActivity {
                             if (uriTask.isSuccessful()) {
                                 //store into Firestore
                                 Map<String, Object> result = new HashMap<>();
-                                result.put("Uid", uid);
-                                result.put("nomEtPrenom", nomEtPrenonm);
+                                result.put("user_id", uid);
+                                result.put("name", nomEtPrenonm);
                                 result.put("pseudo", pseudo);
-                                result.put("photoDeProfile", photoDeProfile);
-                                result.put("pId", timestamp);
-                                result.put("pTitre", title);
-                                result.put("pDescription", description);
-                                result.put("pImage", downloadUri);
-                                result.put("pTemps", timestamp);
+                                result.put("profile_image", photoDeProfile);
+                                result.put("post_id", timestamp);
+                                result.put("post_title", title);
+                                result.put("post_description", description);
+                                result.put("post_image", downloadUri);
+                                result.put("post_time", timestamp);
 
                                 //store data on Firestore
                                 CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
@@ -250,15 +250,15 @@ public class NewPostActivity extends AppCompatActivity {
             });
         }else{//post without image
             Map<String, Object> result = new HashMap<>();
-            result.put("Uid", uid);
-            result.put("nomEtPrenom", nomEtPrenonm);
+            result.put("user_id", uid);
+            result.put("name", nomEtPrenonm);
             result.put("pseudo", pseudo);
-            result.put("photoDeProfile", photoDeProfile);
-            result.put("pId", timestamp);
-            result.put("pTitre", title);
-            result.put("pDescription", description);
-            result.put("pImage", "sans Image");
-            result.put("pTemps", timestamp);
+            result.put("profile_image", photoDeProfile);
+            result.put("post_id", timestamp);
+            result.put("post_title", title);
+            result.put("post_description", description);
+            result.put("post_image", "sans Image");
+            result.put("post_time", timestamp);
 
             //store data on Firestore
             CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");

@@ -87,8 +87,6 @@ public class MainActivity extends AppCompatActivity{
 
 
         //init progressDialog
-        progressDialog_del_account = new ProgressDialog(this);
-        progressDialog_del_account.setMessage("Supression de votre compte...");
         progressDialog_logout = new ProgressDialog(this);
         progressDialog_logout.setMessage("Déconnexion...");
 
@@ -231,75 +229,6 @@ public class MainActivity extends AppCompatActivity{
             alert.dismiss();
         }
         return isConnected;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        //3 - Handle actions on menu items
-        switch (item.getItemId()) {
-            case R.id.menu_logout_profil:
-                avertissement();
-                return true;
-            case R.id.menu_activity_main_profile:
-                startActivity(new Intent(getApplicationContext(), ProfileUserActivity.class));
-                return true;
-            case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getApplicationContext(), NewPostActivity.class));
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void avertissement() {
-        if(user!=null)
-        {
-            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setMessage("Vous voulez vous déconnecter?");
-            builder.setCancelable(true);
-
-            builder.setPositiveButton(
-                    "OUI",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            progressDialog_logout.show();
-                            logOut();
-                        }
-                    });
-
-            builder.setNegativeButton(
-                    "NON",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-
-            progressDialog_logout.dismiss();
-
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-    }
-
-    private void logOut() {
-        progressDialog_logout.show();
-        FirebaseAuth.getInstance().signOut();
-        GoogleSignIn.getClient(
-                this,
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-        ).signOut();
-
-        Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
-        startActivity(logOut);
-
-        this.finish();
     }
 
 

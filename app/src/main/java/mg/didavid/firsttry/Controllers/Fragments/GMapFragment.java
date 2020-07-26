@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Controllers.Fragments;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,12 +20,17 @@ import androidx.fragment.app.Fragment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -44,6 +50,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -63,7 +70,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.MainActivity;
+import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
+import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserLocation;
@@ -101,6 +111,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
     User user = new User();
 
+    ProgressDialog progressDialog_logout;
+
     public static GMapFragment newInstance() {
         return (new GMapFragment());
     }
@@ -120,7 +132,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) { super.onCreate(savedInstanceState);
+        public void onCreate(Bundle savedInstanceState) {
+            setHasOptionsMenu(true);
+            super.onCreate(savedInstanceState);
         }
 
         @Override
@@ -129,6 +143,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             View v = inflater.inflate(R.layout.fragment_map, container, false);
 
             Log.d(TAG, "FT : OnCreateView!!");
+
+            //init progressDialog
+            progressDialog_logout = new ProgressDialog(getContext());
+            progressDialog_logout.setMessage("Déconnexion...");
 
             if (savedInstanceState != null) {
                 lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -618,6 +636,77 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             super.onLowMemory();
             mMapView.onLowMemory();
         }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_activity_main, menu);
+        menu.findItem(R.id.menu_search_button).setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        //3 - Handle actions on menu items
+        switch (item.getItemId()) {
+            case R.id.menu_logout_profil:
+                avertissement();
+                return true;
+            case R.id.menu_activity_main_profile:
+                startActivity(new Intent(getContext(), ProfileUserActivity.class));
+                return true;
+            case R.id.menu_activity_main_addNewPost:
+                startActivity(new Intent(getContext(), NewPostActivity.class));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void avertissement() {
+        if(user!=null)
+        {
+            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setMessage("Vous voulez vous déconnecter?");
+            builder.setCancelable(true);
+
+            builder.setPositiveButton(
+                    "OUI",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            progressDialog_logout.show();
+                            logOut();
+                        }
+                    });
+
+            builder.setNegativeButton(
+                    "NON",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            progressDialog_logout.dismiss();
+
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
+    private void logOut() {
+        progressDialog_logout.show();
+        FirebaseAuth.getInstance().signOut();
+        GoogleSignIn.getClient(
+                getContext(),
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+        ).signOut();
+
+        Intent logOut =  new Intent(getContext(), LoginActivity.class);
+        startActivity(logOut);
+
+        getActivity().finish();
+    }
 }
 
 

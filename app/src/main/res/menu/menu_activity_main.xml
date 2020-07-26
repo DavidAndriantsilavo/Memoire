@@ -6,7 +6,8 @@
         android:id="@+id/menu_search_button"
         android:icon="@drawable/ic_search_white_24dp"
         app:showAsAction="always"
-        android:title="Recherche"/>
+        android:title="Recherche"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"/>
 
     <item
         android:id="@+id/menu_activity_main_profile"

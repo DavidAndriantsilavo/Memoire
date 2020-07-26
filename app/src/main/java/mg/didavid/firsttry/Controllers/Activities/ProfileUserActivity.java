@@ -43,7 +43,6 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthEmailException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -51,7 +50,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.inappmessaging.MessagesProto;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -197,12 +195,12 @@ public class ProfileUserActivity extends AppCompatActivity {
                     docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                            String lastName = value.getString("nom");
+                            String lastName = value.getString("name");
                             String pseudo = value.getString("pseudo");
-                            String photoDeProfile = value.getString("photo de profile");
+                            String photoDeProfile = value.getString("profile_image");
 
-                            //retrieving data from Firestore
-                            retrieveData(lastName, pseudo, photoDeProfile);
+                            //setting data from Firestore
+                            setData(lastName, pseudo, photoDeProfile);
                         }
                     });
                 }
@@ -222,12 +220,12 @@ public class ProfileUserActivity extends AppCompatActivity {
         });
     }
 
-    //retrieve user's data from Firestore
-    private void retrieveData(String lastName, String pseudo, String photoDeProfile) {
+    //setting user's data from Firestore
+    private void setData(String lastName, String pseudo, String photoDeProfile) {
         textView_displayLastname.setText(lastName);
         textView_email.setText(pseudo);
         try {
-            Picasso.get().load(photoDeProfile).into(imageView_photoDeProfile);
+            Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_photoDeProfile);
         }catch (Exception e){
             Picasso.get().load(R.drawable.ic_image_profile_icon_dark).into(imageView_photoDeProfile);
             Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
@@ -333,7 +331,7 @@ public class ProfileUserActivity extends AppCompatActivity {
 
     private void uploadProfileImage(Uri uri) {
         progressDialog_editProfile.show();
-        String filePathAndName = storagePdPPath + "photo de profile" + "_" + user.getUid(); //nom de l'image
+        String filePathAndName = storagePdPPath + "profile_image" + "_" + user.getUid(); //nom de l'image
 
         StorageReference storageReference1 = storageReference.child(filePathAndName);
         storageReference1.putFile(uri)
@@ -352,7 +350,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                         if (uriTask.isSuccessful()){
                             //update profile image
                             Map<String, Object> result = new HashMap<>();
-                            result.put("photo de profile", downloadUri);
+                            result.put("profile_image", downloadUri);
                             docRefProfileUser.update(result)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
@@ -385,7 +383,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     }
 
     private void showDialogEditProfile() {
-        String[] options = {"Modifier la photo de profile", "Modifier votre nom", "Modifier votre pseudo"};
+        String[] options = {"Changer la photo de profile", "Modifier votre nom", "Modifier votre pseudo"};
         //constructin de l'alert dialogue
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Option de modification");
@@ -425,6 +423,12 @@ public class ProfileUserActivity extends AppCompatActivity {
         editText.setHint("Entrer votre nouveau " + key);
         linearLayout.addView(editText);
 
+        final String key1;
+        if (key == "nom"){
+            key1 = "name";
+        }else {
+            key1 = key;
+        }
         builder.setView(linearLayout);
 
         //add button in dialog
@@ -436,7 +440,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(value)){
                     progressDialog_editProfile.show();
                     Map<String, Object> result = new HashMap<>();
-                    result.put(key, value);
+                    result.put(key1, value);
 
                     docRefProfileUser = collectionUsers.document(user.getUid());
                     docRefProfileUser.update(result)

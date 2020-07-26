@@ -2,7 +2,6 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.content.Context;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import mg.didavid.firsttry.Controllers.Modeles.ModelePost;
+import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
+import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
 public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
@@ -45,37 +45,43 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     @Override
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
         //get data
-        String uid = postList.get(position).getUid();
-        String nomEtPrenom = postList.get(position).getNomEtPrenom();
+        String user_id = postList.get(position).getUser_id();
+        String name = postList.get(position).getName();
         String pseudo = postList.get(position).getPseudo();
-        String photoDeProfile = postList.get(position).getPhotoDeProfile();
-        String pId = postList.get(position).getpId();
-        String pTitre = postList.get(position).getpTitre();
-        String pDescription = postList.get(position).getpDescription();
-        String pImage = postList.get(position).getpImage();
-        String pTimeStamp = postList.get(position).getpTemps();
+        String profile_image = postList.get(position).getProfile_image();
+        String post_id = postList.get(position).getPost_id();
+        String post_title = postList.get(position).getPost_title();
+        String post_description = postList.get(position).getPost_description();
+        String post_image = postList.get(position).getPost_image();
+        String post_timeStamp = postList.get(position).getPost_time();
 
         //convert timeStamp to dd/mm/yyyy hh:mm am/pm
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
-        calendar.setTimeInMillis(Long.parseLong(pTimeStamp));
+        try {
+            calendar.setTimeInMillis(Long.parseLong(post_timeStamp));
+        }catch (Exception e){
+        }
         String pTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
-        //set data
-        holder.uNameTv.setText(nomEtPrenom);
-        holder.pseudo.setText(pseudo);
-        holder.pTimeTv.setText(pTemps);
-        holder.pTitleTv.setText(pTitre);
-        holder.pDescriptionTv.setText(pDescription);
+        try {
+            //set data
+            holder.uNameTv.setText(name);
+            holder.pseudo.setText(pseudo);
+            holder.pTimeTv.setText(pTemps);
+            holder.pTitleTv.setText(post_title);
+            holder.pDescriptionTv.setText(post_description);
+        }catch (Exception e){
+        }
         //set user profile image
         try{
-            Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.uPictureIv);
+            Picasso.get().load(profile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.uPictureIv);
         }catch (Exception e){
 
         }
         //set post image
-        if (!pImage.equals("sansImage")) {
+        if (!post_image.equals("noImage")) {
             try {
-                Picasso.get().load(pImage).into(holder.pImageIv);
+                Picasso.get().load(post_image).into(holder.pImageIv);
             } catch (Exception e) {
 
             }
