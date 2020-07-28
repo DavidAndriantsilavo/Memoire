@@ -49,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView erreurLoginTv, erreurPhoneNumber;
 
     private static final int RC_SIGN_IN = 1234;
-    private static final String TAG = "RegisterActivity";
+    private static final String TAG = "LoginActivity";
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     ProgressDialog progressDialog;
@@ -235,7 +235,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d(TAG, "signInWithCredential:success");
                                 //FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
-                                Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
+                                Intent intent =  new Intent(getApplicationContext(), WelcomeActivity.class);
                                 startActivity(intent);
 
                                 finish();

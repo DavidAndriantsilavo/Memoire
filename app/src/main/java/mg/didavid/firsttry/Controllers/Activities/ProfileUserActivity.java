@@ -58,6 +58,7 @@ import com.squareup.picasso.Picasso;
 import java.util.HashMap;
 import java.util.Map;
 
+import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
 
 public class ProfileUserActivity extends AppCompatActivity {
@@ -629,6 +630,8 @@ public class ProfileUserActivity extends AppCompatActivity {
 
         Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(logOut);
+
+        stopService(new Intent(ProfileUserActivity.this, LocationService.class));
 
         this.finish();
     }
