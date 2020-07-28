@@ -6,6 +6,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -50,14 +52,21 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
 public class ProfileUserActivity extends AppCompatActivity {
@@ -86,6 +95,11 @@ public class ProfileUserActivity extends AppCompatActivity {
     String [] storagePermission;
     Uri image_uri = null;
 
+    List<ModelePost> modelePosts_profile;
+    AdapteursPost adapteursPost_profile;
+    RecyclerView profile_recyclerView;
+    String user_id = Objects.requireNonNull(user).getUid();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +111,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         imageView_photoDeProfile = findViewById(R.id.imageView_photoDeProfile_profile);
         floatingActionButton_editProfile = findViewById(R.id.floating_btn_editProfil);
         btnAddProfileImage = findViewById(R.id.add_profile_photo_profile);
+        profile_recyclerView = findViewById(R.id.recyclerView_post);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
@@ -112,6 +127,15 @@ public class ProfileUserActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
+
+        //linear layout for recyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(ProfileUserActivity.this);
+        //show newest post first (the newest post is in the last of the post list store on th database)
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setReverseLayout(true);
+        //set this layout to recyclerView
+        profile_recyclerView.setLayoutManager(layoutManager);
+        modelePosts_profile = new ArrayList<>();
 
         //init array of permissions
         cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -137,6 +161,38 @@ public class ProfileUserActivity extends AppCompatActivity {
         });
 
         checkingUserInfo();
+        loadMyPost();
+    }
+
+    private void loadMyPost() {
+        CollectionReference reference_post = FirebaseFirestore.getInstance().collection("Publications");
+        reference_post.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                modelePosts_profile.clear();
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                        modelePosts_profile.add(modelePost.get(i));
+                                    }
+                                }
+                                //adapter
+                                adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
+                                //set adapter to recyclerView
+                                profile_recyclerView.setAdapter(adapteursPost_profile);
+                            }
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ProfileUserActivity.this, ""+ e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -186,8 +242,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     //check if user has already informations
     private void checkingUserInfo() {
         progressDialog_loadingProfile.show();
-        String Uid = user.getUid();
-        docRefProfileUser = collectionUsers.document(Uid);
+        docRefProfileUser = collectionUsers.document(user_id);
         docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {

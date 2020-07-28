@@ -2,21 +2,9 @@ package mg.didavid.firsttry.Models;
 
 public class ModelePost {
     //spécifications du posteur
-    String user_id, name, pseudo, profile_image, post_id, post_title, post_description, post_image, post_time;
+    String user_id, name, pseudo, post_kiff, profile_image, post_id, post_title, post_description, post_image, post_time;
 
     public ModelePost(){ }
-
-    public ModelePost(String user_id, String name, String pseudo, String profile_image, String post_id, String post_title, String post_description, String post_image, String post_time) {
-        this.user_id = user_id;
-        this.name = name;
-        this.pseudo = pseudo;
-        this.profile_image = profile_image;
-        this.post_id = post_id;
-        this.post_title = post_title;
-        this.post_description = post_description;
-        this.post_image = post_image;
-        this.post_time = post_time;
-    }
 
     public String getUser_id() {
         return user_id;
@@ -40,6 +28,14 @@ public class ModelePost {
 
     public void setPseudo(String pseudo) {
         this.pseudo = pseudo;
+    }
+
+    public String getPost_kiff() {
+        return post_kiff;
+    }
+
+    public void setPost_kiff(String post_kiff) {
+        this.post_kiff = post_kiff;
     }
 
     public String getProfile_image() {
@@ -88,6 +84,22 @@ public class ModelePost {
 
     public void setPost_time(String post_time) {
         this.post_time = post_time;
+    }
+
+    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String profile_image, String post_id, String post_title, String post_description, String post_image, String post_time) {
+        this.user_id = user_id;
+        this.name = name;
+        this.pseudo = pseudo;
+        this.post_kiff = post_kiff;
+        this.profile_image = profile_image;
+        this.post_id = post_id;
+        this.post_title = post_title;
+        this.post_description = post_description;
+        this.post_image = post_image;
+        this.post_time = post_time;
+
+
+
     }
 }
 

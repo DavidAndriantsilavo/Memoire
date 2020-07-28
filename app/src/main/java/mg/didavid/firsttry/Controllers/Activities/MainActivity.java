@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity{
 
         //IF USER IS AUTH TO FIREBASE AND NO SINGLETON SET
             if(firebaseUser != null && ((UserSingleton)(getApplicationContext())).getUser() == null){
-                configureUser();
+                //configureUser();
             }
     }
 
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity{
             super.onBackPressed(); // This will pop the Activity from the stack.
         }
     }
-        private void configureUser (){
+       /* private void configureUser (){
             DocumentReference documentReference = userCollectionReference.document(user_id);
 
             //CHECK IF THE USER IS ALREADY STORED IN THE DATABASE OR NOT
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                 }
             });
-        }
+        }*/
         //CREATE NEW USER IN FIRESTORE AND STORE DATAS
         private void storeUserData(final User user){
             DocumentReference documentReference = userCollectionReference.document(user_id);

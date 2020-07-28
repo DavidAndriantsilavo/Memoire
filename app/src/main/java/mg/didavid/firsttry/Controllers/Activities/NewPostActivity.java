@@ -83,6 +83,7 @@ public class NewPostActivity extends AppCompatActivity {
     Uri image_uri = null;
 
     String nomEtPrenonm, pseudo, uid, photoDeProfile;
+    String editTitle_post, editDescription_post, editImage_post;
 
     @SuppressLint({"ResourceType", "WrongViewCast"})
     @Override
@@ -108,6 +109,18 @@ public class NewPostActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
+
+        //get data through intent from previous activity's adapter
+        Intent intent = getIntent();
+        String isUpdatekey = "" + intent.getStringExtra("key");
+        String editPostId = "" + intent.getStringExtra("post_id");
+        //validate if we came here to update post
+        if (isUpdatekey.equals("editPost")){
+            publishBtn.setText("Confirmer");
+            loadPostData(editPostId);
+        }else {
+
+        }
 
         //get image from camera/gallery on click
         getImage.setOnClickListener(new View.OnClickListener() {
@@ -169,6 +182,10 @@ public class NewPostActivity extends AppCompatActivity {
                 Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
             }
         });
+
+    }
+
+    private void loadPostData(String editPostId) {
 
     }
 
@@ -257,7 +274,7 @@ public class NewPostActivity extends AppCompatActivity {
             result.put("post_id", timestamp);
             result.put("post_title", title);
             result.put("post_description", description);
-            result.put("post_image", "sans Image");
+            result.put("post_image", "noImage");
             result.put("post_time", timestamp);
 
             //store data on Firestore

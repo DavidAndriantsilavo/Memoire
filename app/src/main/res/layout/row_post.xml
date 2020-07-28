@@ -16,6 +16,7 @@
         android:paddingHorizontal="10dp">
 
         <LinearLayout
+            android:id="@+id/linearLayout_profile_post"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
@@ -119,7 +120,7 @@
             android:id="@+id/texteView_kiffs_actu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1.2 Kiffs"
+            android:text="1.2k Kiffs"
             android:textColor="@color/colorPrimaryDark"/>
         
         <View

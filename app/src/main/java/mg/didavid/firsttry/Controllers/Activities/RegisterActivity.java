@@ -242,7 +242,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void goToWelcomePage() {
-        Intent intent = new Intent(RegisterActivity.this, WelcomeActivity.class);
+        startActivity(new Intent(RegisterActivity.this, WelcomeActivity.class));
     }
 
     private void sendUserHome() {

@@ -8,8 +8,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".Models.UserSingleton"
@@ -19,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".Controllers.Activities.OtherUsersProfileActivity"></activity>
         <activity
             android:name=".Controllers.Activities.NewPostActivity"
             android:label="Nouvelle publication"
@@ -27,7 +28,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.MainActivity" />
-
         </activity>
         <activity android:name=".Controllers.Activities.WelcomeActivity" />
         <activity
@@ -44,8 +44,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".Controllers.Activities.MainActivity"
-            android:launchMode="singleInstance"/>
+        <activity
+            android:name=".Controllers.Activities.MainActivity"
+            android:launchMode="singleInstance" />
         <activity
             android:name=".Controllers.Activities.RegisterActivity"
             android:label="Register"
@@ -69,8 +70,9 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".Models.LocationService"
-            android:stopWithTask="true"></service>
+        <service
+            android:name=".Models.LocationService"
+            android:stopWithTask="true" />
     </application>
 
 </manifest>

@@ -132,7 +132,7 @@ public class ActuFragment extends Fragment {
 
     private void searchPost(final String query) {
         //path of all post
-        CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
+        final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
         //get all data from this reference
         collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -140,13 +140,13 @@ public class ActuFragment extends Fragment {
                 for (DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()){
                     modelePostList.clear(); //for deleting auto redundancy
                     List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
-
-                    //à reviser quand toutes les données sont en ordre
-                    if (modelePost.get(5).getPost_title().toLowerCase().contains(query.toLowerCase()) ||
-                        modelePost.get(6).getPost_description().toLowerCase().contains(query.toLowerCase())) {
-                        modelePostList.addAll(modelePost);
+                    int size = modelePost.size();
+                    for (int i = 0; i < size; i++) {
+                        if (modelePost.get(i).getPost_title().toLowerCase().contains(query.toLowerCase()) ||
+                                modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase())) {
+                            modelePostList.add(modelePost.get(i));
+                        }
                     }
-
                     //adapter
                     adapteursPost = new AdapteursPost(getContext(), modelePostList);
                     //set adapter to recyclerView
@@ -179,8 +179,6 @@ public class ActuFragment extends Fragment {
                         //set adapter to recyclerView
                         recyclerView.setAdapter(adapteursPost);
                     }
-                }else{
-                    //Toast.makeText(getActivity(), "Le document est vide ou il est il y a erreurs", Toast.LENGTH_SHORT).show();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {
