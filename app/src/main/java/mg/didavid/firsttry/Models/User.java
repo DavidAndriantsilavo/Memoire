@@ -10,23 +10,37 @@ import android.os.Parcelable;
         private String name;
         private String phone;
         private String password;
+        private String sexe;
+        private String pseudo;
 
-        public User(String email, String user_id, String name, String phone, String password) {
+        public User(String user_id, String name, String pseudo, String sexe, String email, String phone, String password) {
             this.email = email;
             this.user_id = user_id;
             this.name = name;
             this.phone =  phone;
             this.password = password;
+            this.sexe = sexe;
+            this.pseudo = pseudo;
         }
 
         public User() {
 
         }
 
-        protected User(Parcel in) {
-            email = in.readString();
-            user_id = in.readString();
-            name = in.readString();
+        public String getPseudo() {
+            return pseudo;
+        }
+
+        public void setPseudo(String pseudo) {
+            this.pseudo = pseudo;
+        }
+
+        public String getSexe() {
+            return sexe;
+        }
+
+        public void setSexe(String sexe) {
+            this.sexe = sexe;
         }
 
         public String getPassword() {
@@ -35,22 +49,6 @@ import android.os.Parcelable;
 
         public void setPassword(String password) {
             this.password = password;
-        }
-
-        public static final Parcelable.Creator<User> CREATOR = new Creator<User>() {
-            @Override
-            public User createFromParcel(Parcel in) {
-                return new User(in);
-            }
-
-            @Override
-            public User[] newArray(int size) {
-                return new User[size];
-            }
-        };
-
-        public static Creator<User> getCREATOR() {
-            return CREATOR;
         }
 
         public String getEmail() {
@@ -85,14 +83,27 @@ import android.os.Parcelable;
             this.phone = phone;
         }
 
-        @Override
-        public String toString() {
-            return "User{" +
-                    "email='" + email + '\'' +
-                    ", user_id='" + user_id + '\'' +
-                    ", name='" + name + '\'' +
-                    ", phone='" + phone +'\'' +
-                    '}';
+
+        protected User(Parcel in) {
+            email = in.readString();
+            user_id = in.readString();
+            name = in.readString();
+        }
+
+        public static final Parcelable.Creator<User> CREATOR = new Creator<User>() {
+            @Override
+            public User createFromParcel(Parcel in) {
+                return new User(in);
+            }
+
+            @Override
+            public User[] newArray(int size) {
+                return new User[size];
+            }
+        };
+
+        public static Creator<User> getCREATOR() {
+            return CREATOR;
         }
 
         @Override

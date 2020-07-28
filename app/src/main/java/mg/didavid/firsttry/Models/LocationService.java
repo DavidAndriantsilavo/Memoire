@@ -169,10 +169,5 @@ public class LocationService extends Service {
             Log.e(TAG, "saveUserLocation: NullPointerException: "  + e.getMessage() );
             stopSelf();
         }
-
     }
-
-
-
-
 }

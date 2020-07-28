@@ -31,6 +31,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
@@ -265,9 +266,10 @@ public class ProfileActivity extends AppCompatActivity {
         ((UserSingleton)getApplicationContext()).setUser(null);
         FirebaseAuth.getInstance().signOut();
 
-
         Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
         startActivity(logOut);
+
+        stopService(new Intent(ProfileActivity.this, LocationService.class));
 
         MainActivity.stopActivity.finish();
         this.finish();

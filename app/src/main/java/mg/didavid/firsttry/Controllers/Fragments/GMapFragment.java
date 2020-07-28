@@ -189,18 +189,17 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
         //START THE SERVICE TO SEND THE CURRENT LOCATION TO REALTIME DATABASE
         private void startLocationService(){
-        if(!isLocationServiceRunning()){
-            Intent serviceIntent = new Intent(getActivity(), LocationService.class);
-//        this.startService(serviceIntent);
+            if(!isLocationServiceRunning()){
+                Intent serviceIntent = new Intent(getActivity(), LocationService.class);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
 
-                getActivity().startForegroundService(serviceIntent);
-            }else{
-                getActivity().startService(serviceIntent);
+                    getActivity().startForegroundService(serviceIntent);
+                }else{
+                    getActivity().startService(serviceIntent);
+                }
             }
         }
-    }
 
         //CHECK IF THE REALTIME SERVICE IS RUNNING
         private boolean isLocationServiceRunning() {
@@ -214,7 +213,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         Log.d(TAG, "isLocationServiceRunning: location service is not running.");
         return false;
     }
-
 
         //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
         private void startUserLocationsRunnable(){
@@ -231,7 +229,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         //STOP THE SERVICE
         private void stopLocationUpdates(){
         mHandler.removeCallbacks(mRunnable);
-    }
+        }
 
         //CHECK THE SWITCH CHANGE STATE
         // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
@@ -290,7 +288,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                             otherMarker.clear();
                             Log.d(TAG, " test : Clear the position list");
                         }
-
                     }
                 }
             });

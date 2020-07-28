@@ -76,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent register = new Intent(LoginActivity.this, RegisterActivity.class);
+                Intent register = new Intent(LoginActivity.this, WelcomeActivity.class);
                 startActivity(register);
             }
         });
@@ -160,7 +160,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d(TAG, "signInWithCredential:success");
                                 //FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
-                                Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
+                                Intent intent =  new Intent(getApplicationContext(), WelcomeActivity.class);
                                 startActivity(intent);
 
                                 finish();
