@@ -119,7 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
                 //control Name
                 if(TextUtils.isEmpty(uName)){
                     control_nom = false;
-                   erreurName();
+                    erreurName();
                 }else {
                     control_nom = true;
                     nom_ctrl.setVisibility(View.INVISIBLE);
@@ -238,7 +238,7 @@ public class RegisterActivity extends AppCompatActivity {
                             goToWelcomePage();
                         }
                     }
-        });
+                });
     }
 
     private void goToWelcomePage() {
