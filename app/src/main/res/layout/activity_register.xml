@@ -6,55 +6,87 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Controllers.Activities.RegisterActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CREER UN COMPTE"
-        android:gravity="center"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="30dp"/>
 
-    <TextView
-        android:id="@+id/textView_lastname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nom"
-        android:paddingLeft="30dp"
-        android:textSize="15sp"
-        android:layout_marginTop="30dp"
-        android:labelFor="@+id/editText_lastname"
-        />
-
-    <EditText
-        android:id="@+id/editText_lastname"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
-        android:lines="1"
-        />
+        android:layout_marginTop="15dp">
+        <EditText
+            android:id="@+id/editText_nom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:inputType="textPersonName"
+            android:lines="1"
+            android:hint="Nom"
+            />
 
+    </com.google.android.material.textfield.TextInputLayout>
     <TextView
-        android:id="@+id/textView_firstname"
+        android:id="@+id/controle_nom_rg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Prenom"
-        android:paddingLeft="30dp"
-        android:textSize="15sp"
-        android:layout_marginTop="5dp"
-        android:labelFor="@+id/editText_firstname"
+        android:text="Veillez entrer votre nom"
+        android:layout_marginLeft="40dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
         />
 
-    <EditText
-        android:id="@+id/editText_firstname"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:lines="1"
+        android:layout_marginRight="30dp">
+        <EditText
+            android:id="@+id/editText_prenom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:inputType="textPersonName"
+            android:lines="1"
+            android:hint="Prenom"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/controle_prenom_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Veillez entrer votre prenom"
+        android:layout_marginLeft="40dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
+        />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp">
+        <EditText
+            android:id="@+id/editText_pseudo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:inputType="textPersonName"
+            android:lines="1"
+            android:hint="Pseudo"
+            />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/controle_pseudo_rg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exemple : Nasolo@JackSmv"
+        android:layout_marginLeft="40dp"
+        android:visibility="visible"
         />
 
     <TextView
@@ -95,65 +127,63 @@
             android:layout_marginLeft="20dp"/>
     </RadioGroup>
 
-    <TextView
-        android:id="@+id/textView_pseudo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pseudo"
-        android:paddingLeft="30dp"
-        android:textSize="15sp"
-        android:layout_marginTop="25dp"
-        android:labelFor="@+id/editText_pseudo"
-        />
 
-    <EditText
-        android:id="@+id/editText_pseudo"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
-        android:lines="1"
-        />
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        app:passwordToggleEnabled="true">
+        <EditText
+            android:id="@+id/editText_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:lines="1"
+            android:inputType="textPassword"
+            android:hint="Mot de passe"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
-        android:id="@+id/textView_password"
+        android:id="@+id/controle_pwd_rg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mot de passe"
-        android:paddingLeft="30dp"
-        android:textSize="15sp"
-        android:layout_marginTop="5dp"
-        android:labelFor="@+id/editText_password"
+        android:text="Le mot de passe "
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
         />
 
-    <EditText
-        android:id="@+id/editText_password"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
-        android:lines="1"
-        android:inputType="textPassword"/>
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        app:passwordToggleEnabled="true">
+        <EditText
+            android:id="@+id/editText_confirm_password"
+            android:textSize="20dp"
+            android:lines="1"
+            android:inputType="textPassword"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:hint="Confirmer mot de passe"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <TextView
-        android:id="@+id/textView_confirmPassword"
+        android:id="@+id/controle_confirmePwd_rg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Confirmer le mot de passe"
-        android:paddingLeft="30dp"
-        android:textSize="15sp"
-        android:layout_marginTop="5dp"
-        android:labelFor="@+id/editText_confirm_password"
+        android:text="Le mot de passe ne correspond pas"
+        android:layout_marginLeft="20dp"
+        android:textColor="@color/red"
+        android:visibility="invisible"
         />
-
-    <EditText
-        android:id="@+id/editText_confirm_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
-        android:lines="1"
-        android:inputType="textPassword"/>
 
     <Button
         android:id="@+id/button_send"
@@ -161,7 +191,6 @@
         android:layout_height="wrap_content"
         android:text="envoyer"
         android:layout_gravity="center"
-        android:layout_marginTop="20dp"
         android:background="@drawable/rounded_primary_button"
         android:textColor="@android:color/white"
         android:textSize="15sp"/>

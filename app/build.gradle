@@ -30,14 +30,29 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.material:material:1.1.0'
+
+    //maps
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
-    implementation 'com.google.firebase:firebase-analytics:17.2.2'
-    implementation 'com.google.firebase:firebase-firestore:21.4.3'
-    implementation 'com.google.firebase:firebase-inappmessaging:19.0.7'
-    implementation 'com.google.firebase:firebase-inappmessaging-display:19.0.7'
+
+    //firestore
+    implementation 'com.google.firebase:firebase-analytics:17.4.4'
+    implementation 'com.google.firebase:firebase-core:17.4.4'
+    //firestore database
+    implementation 'com.google.firebase:firebase-firestore:21.5.0'
+    implementation 'com.firebaseui:firebase-ui-database:2.2.0'
+    //realtime database
     implementation 'com.google.firebase:firebase-database:19.3.1'
-    implementation 'com.google.firebase:firebase-auth:19.3.1'
-    implementation 'com.google.android.gms:play-services-auth:18.0.0'
+    //firebase storage
+    implementation 'com.google.firebase:firebase-storage:19.1.1'
+    //cloud messaging
+    implementation 'com.google.firebase:firebase-inappmessaging:19.1.0'
+    implementation 'com.google.firebase:firebase-inappmessaging-display:19.1.0'
+    //authentication
+    implementation 'com.google.firebase:firebase-auth:19.3.2'
+    implementation 'com.google.android.gms:play-services-auth:18.1.0'
+
+    //loading image
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
 }

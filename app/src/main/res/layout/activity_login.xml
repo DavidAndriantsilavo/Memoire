@@ -6,38 +6,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Controllers.Activities.LoginActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center">
 
+    <!--message de bienvenue-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="BIENVENUE"
         android:textSize="@android:dimen/app_icon_size"
         android:gravity="center"
-        android:layout_marginTop="80dp"
         android:textStyle="bold" />
 
-    <EditText
-        android:layout_width="250dp"
+    <!--phone number input-->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="60dp"
-        android:gravity="left"
-        android:hint="Pseudo"
-        android:lines="1"
-        android:textSize="22sp" />
+        android:layout_marginTop="60dp">
+        <EditText
+            android:id="@+id/editText_num_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="left"
+            android:hint="Pseudo"
+            android:inputType="textEmailAddress"
+            android:lines="1"
+            android:textSize="22sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:layout_width="250dp"
+    <!--pour afficher les erreurs sur la saisie du numéro de téléphone-->
+    <TextView
+        android:id="@+id/textView_erreurPhoneNumber_login"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/red"
+        android:visibility="invisible"/>
+
+    <!--password input-->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
-        android:gravity="left"
-        android:hint="Mot de passe"
-        android:inputType="textPassword"
-        android:lines="1"
-        android:textSize="22sp" />
+        app:passwordToggleEnabled="true">
+        <EditText
+            android:id="@+id/editText_password_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="left"
+            android:hint="Mot de passe"
+            android:inputType="textPassword"
+            android:lines="1"
+            android:textSize="22sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
+    <!--pour afficher les erreurs lors de l'execution des task-->
+    <TextView
+        android:id="@+id/textView_erreur_login"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textColor="@color/red"
+        android:visibility="invisible"/>
+
+    <!--bouton de connexion-->
     <Button
         android:id="@+id/button_connexion"
         android:layout_width="150dp"
@@ -47,6 +83,7 @@
         android:background="@drawable/rounded_primary_button"
         android:gravity="center"
         android:text="Connexion"
+        android:textAllCaps="false"
         android:textColor="@android:color/white" />
 
     <TextView
@@ -66,6 +103,7 @@
         android:layout_gravity="center"
         android:gravity="center">
 
+        <!--bouton pour la creatin d'un compte-->
         <Button
             android:id="@+id/button_register"
             android:layout_width="150dp"
@@ -73,8 +111,10 @@
             android:background="@drawable/rounded_white_button"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text="Créer un compte" />
+            android:text="Créer un compte"
+            android:textAllCaps="false"/>
 
+        <!--Bouton pour se connecter via compte Google-->
         <ImageButton
             android:layout_height="60dp"
             android:layout_width="60dp"
@@ -85,6 +125,7 @@
             android:layout_marginRight="20dp"
             android:layout_marginLeft="20dp"/>
 
+        <!--Bouton pour se connecter via compte FaceBook-->
         <ImageButton
             android:layout_height="50dp"
             android:layout_width="50dp"

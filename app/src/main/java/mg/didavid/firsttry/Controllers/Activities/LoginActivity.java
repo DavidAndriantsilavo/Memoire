@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -26,7 +29,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,63 +40,138 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import mg.didavid.firsttry.R;
 
+import static com.google.common.base.Ascii.toLowerCase;
+
 public class LoginActivity extends AppCompatActivity {
 
     private Button button_register, button_connexion;
     private ImageButton button_google, button_facebook;
 
+    private EditText mPseudo_lg, mMotDePasse_lg;
+    private TextView erreurLoginTv, erreurPhoneNumber;
+
     private static final int RC_SIGN_IN = 1234;
-    private static final String TAG = "RegisterActivity";
+    private static final String TAG = "LoginActivity";
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+    ProgressDialog progressDialog, progressDialog_register;
+
+    String pseudo, password;
 
     @Override
     protected void onStart() {
         super.onStart();
 
+        //verifier a connexion internet dès le démarrage de l'application
+        checkConnexion();
+
+        //getting current user who has authenticated
         FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
+        //id user still login, redirect to MainActivity
         if(user != null)
         {
             Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
-
             finish();
         }
     }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        checkConnexion();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //reuperation des vues
+        mPseudo_lg = findViewById(R.id.editText_num_login);
+        mMotDePasse_lg = findViewById(R.id.editText_password_login);
         button_register = findViewById(R.id.button_register);
         button_connexion = findViewById(R.id.button_connexion);
         button_google = findViewById(R.id.button_google);
         button_facebook = findViewById(R.id.button_facebook);
+        erreurLoginTv = findViewById(R.id.textView_erreur_login);
+        erreurPhoneNumber = findViewById(R.id.textView_erreurPhoneNumber_login);
 
         createRequest();
 
         mAuth= FirebaseAuth.getInstance();
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Chargement ...");
+        progressDialog_register = new ProgressDialog(this);
+        progressDialog_register.setMessage("Creation de votre compte...");
+
+
+
+        //redirect to register if user hasn't account
+
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent register = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(register);
+                createAccountWithPseudoAndPassword();
             }
         });
 
+
+        //connexion with pseudo and password
         button_connexion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(checkConnexion()) {
-                    Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(connexion);
+                    String pseudo = mPseudo_lg.getText().toString();
+                    String motDePasse = mMotDePasse_lg.getText().toString();
+                    String uCompletPseudo = toLowerCase(pseudo) + ".mg";
 
-                    finish();
+                    if (pseudo.isEmpty() && motDePasse.isEmpty()){
+                        erreurLoginTv.setText("Veillez completer tous les champs !");
+                        erreurLoginTv.setVisibility(View.VISIBLE);
+                    }else {
+                        progressDialog.show();
+
+                        mAuth.signInWithEmailAndPassword(uCompletPseudo, motDePasse)
+                                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (task.isSuccessful()) {
+                                            //redirection vers la page d'accueil
+                                            Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
+                                            startActivity(connexion);
+                                            finish();
+                                        } else {
+                                            // If sign in fails, display a message to the user.
+                                            Log.w(TAG, "signInWithEmail:failure", task.getException());
+                                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                                    Toast.LENGTH_SHORT).show();
+                                            progressDialog.dismiss();
+                                        }
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                erreurLoginTv.setText(e.getMessage());
+                                erreurLoginTv.setVisibility(View.VISIBLE);
+
+                            }
+                        });
+                    }
                 }
             }
         });
+
+        button_google = findViewById(R.id.button_google);
+        button_facebook = findViewById(R.id.button_facebook);
+
+
+        mAuth = FirebaseAuth.getInstance(); //get the instance of authentication
+
+        createRequest();
+
 
         button_google.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,6 +181,141 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void createAccountWithPseudoAndPassword() {
+        //custom dialog
+        final Dialog dialog = new Dialog(LoginActivity.this);
+        dialog.setContentView(R.layout.register_dialog);
+        dialog.setTitle("Création de compte");
+
+        //set the custom dialog components
+        final EditText editText_pseudo = dialog.findViewById(R.id.pseudo_et);
+        final EditText password_editText = dialog.findViewById(R.id.pwd_et);
+        final EditText confirmPassword_editText = dialog.findViewById(R.id.confirmePwd_et);
+        Button button_annler = dialog.findViewById(R.id.btn_annuler);
+        Button button_creer = dialog.findViewById(R.id.btn_creer);
+
+        button_annler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        button_creer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //get the input text
+                pseudo = editText_pseudo.getText().toString();
+                password = password_editText.getText().toString();
+                boolean control_pseudo = false;
+                boolean control_minuscule = false;
+                boolean control_majuscule = false;
+                boolean control_chiffre = false;
+                boolean control_comparePwd = false;
+                boolean checked = false;
+                String completPseudo = null;
+
+                //control pseudo... il faut qu'il y ait le caractère @ à l'interieur
+                char[] charPseudo = pseudo.toCharArray();
+                if (pseudo.isEmpty()){
+                    editText_pseudo.setError("Veillez entrer votre pseudo");
+                }else{
+                    for (int i=0; i<pseudo.length(); i++){
+                        if(!control_pseudo){
+                            if ((charPseudo[i] != 0x40) && !checked && ((i + 1) == pseudo.length())) { // 0x40 == ascii code of "@"
+                                editText_pseudo.setError("Le pseudo doit contenir \"@\"");
+                            } else if ((charPseudo[i] == 0x40) && ((i + 1) == pseudo.length())) {
+                                checked = true;
+                                editText_pseudo.setError("Veillez suivre l'exemple !");
+                            } else if (charPseudo[i] == 0x40){
+                                checked = true;
+                                completPseudo = "" + pseudo + ".mg";
+                                control_pseudo = true;
+                            }
+                        }
+                    }
+                }
+
+                //control password
+                int j;
+                int pwdLength = password.length();
+                if (pwdLength < 6){
+                    password_editText.setError("Doit contenir au moins 6 caractères");
+                }else {
+                    for (j = 0; j < pwdLength; j++) {
+                        char[] ascciiCode_motDePasse = password.toCharArray();
+                        //verification de presence d'une minuscule
+                        if ((ascciiCode_motDePasse[j] > 0x40) && (ascciiCode_motDePasse[j] < 0x5B)) {
+                            if (!control_minuscule) {
+                                control_minuscule = true;
+                            }
+                        }
+                        //verification de presence d'une majuscule
+                        else if ((ascciiCode_motDePasse[j] > 0x60) && (ascciiCode_motDePasse[j] < 0x7B)){
+                            if (!control_majuscule) {
+                                control_majuscule = true;
+                            }
+                        }
+                        //verification de presence d'un chiffre
+                        else if ((ascciiCode_motDePasse[j] > 0x29) && (ascciiCode_motDePasse[j] < 0x3A)){
+                            if (!control_chiffre) {
+                                control_chiffre = true;
+                            }
+                        }
+                    }
+                    //verification presence de lettre dans le mot de passe
+                    if (!control_minuscule && !control_majuscule){
+                        password_editText.setError("Doit contenir au moins une lettre");
+                    }
+                    //verification presence de chiffre dans le mot de passe
+                    else if (!control_chiffre){
+                        password_editText.setError("Doit contenir au moins un Chiffre");
+                    }
+
+                    //comparaison de mot de passe
+                    if ((control_minuscule || control_majuscule) && control_chiffre) {
+                        if (!password.equals(confirmPassword_editText.getText().toString())) {
+                            confirmPassword_editText.setError("Le mot de passe ne correspond pas");
+                        }else {
+                            control_comparePwd = true;
+                        }
+                    }
+                }
+                if(control_comparePwd && control_pseudo){
+                    //dialog.dismiss();
+                    progressDialog_register.show();
+                    //authentication with Email and password
+                    mAuth.createUserWithEmailAndPassword(completPseudo, password)
+                            .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        // Sign in success
+                                        Intent intent = new Intent(LoginActivity.this, WelcomeActivity.class);
+                                        intent.putExtra("key","Pseudo and Password");
+                                        intent.putExtra("pseudo", pseudo);
+                                        intent.putExtra("password", password);
+                                        progressDialog_register.dismiss();
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressDialog_register.dismiss();
+                            Toast.makeText(LoginActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }else {
+                    Toast.makeText(LoginActivity.this, "il y a une erreur de contrôle", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        dialog.show();
     }
 
     ///////////////////////////////////////////////////
@@ -158,9 +373,9 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d(TAG, "signInWithCredential:success");
-                                FirebaseUser user = mAuth.getInstance().getCurrentUser();
+                                //FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
-                                Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
+                                Intent intent =  new Intent(getApplicationContext(), WelcomeActivity.class);
                                 startActivity(intent);
 
                                 finish();
@@ -206,21 +421,24 @@ public class LoginActivity extends AppCompatActivity {
         boolean isConnected = activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
 
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Veuillez vous connecter à internet!");
+        builder.setCancelable(false);
+
+        builder.setPositiveButton(
+                "retour",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+
         if(!isConnected)
         {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Veuillez vous connecter à internet!");
-            builder.setCancelable(false);
-
-            builder.setPositiveButton(
-                    "retour",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-            AlertDialog alert = builder.create();
             alert.show();
+        }else {
+            alert.dismiss();
         }
         return isConnected;
     }
