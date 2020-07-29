@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    app:cardCornerRadius="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Création de compte"
+        android:textAllCaps="false"
+        android:textSize="20dp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:id="@+id/pseudo_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pseudo" />
+    <EditText
+        android:id="@+id/pseudo_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textCapSentences"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exemple : Nasolo@JackSmv"
+        android:layout_marginStart="10dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pwd_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:passwordToggleEnabled="true"
+        android:layout_marginTop="20dp">
+        <EditText
+            android:id="@+id/pwd_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mot de passe"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/confirmePwd_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:passwordToggleEnabled="true"
+        android:layout_marginTop="20dp">
+        <EditText
+            android:id="@+id/confirmePwd_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Confirmer mot de passe"
+            android:inputType="textPassword"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="15dp"
+        android:paddingBottom="15dp">
+        <Button
+            android:id="@+id/btn_annuler"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_grey_button"
+            android:text="Annuler"
+            android:textAllCaps="false"
+            android:layout_marginRight="40dp"/>
+        <Button
+            android:id="@+id/btn_creer"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_primary_button"
+            android:text="Créer"
+            android:textAllCaps="false"
+            android:textColor="@color/white"/>
+
+
+    </LinearLayout>
+</LinearLayout>
+
+</androidx.cardview.widget.CardView>

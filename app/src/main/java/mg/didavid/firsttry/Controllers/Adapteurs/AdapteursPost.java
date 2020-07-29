@@ -88,7 +88,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         String post_description = postList.get(position).getPost_description();
         final String post_image = postList.get(position).getPost_image();
         String post_timeStamp = postList.get(position).getPost_time();
-        final String post_kiffs = postList.get(position).getPost_kiff(); // contains total number of kiffs for a post
+        String post_kiffs = postList.get(position).getPost_kiff(); // contains total number of kiffs for a post
 
         //convert timeStamp to dd/mm/yyyy hh:mm am/pm
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -209,7 +209,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         if (user_id.equals(mCurrentUserId)){
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
-            popupMenu.getMenu().add(Menu.NONE, 0, 0, "Modifier la publication");
+            popupMenu.getMenu().add(Menu.NONE, 1, 0, "Modifier la publication");
         }
         //item click listener
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
