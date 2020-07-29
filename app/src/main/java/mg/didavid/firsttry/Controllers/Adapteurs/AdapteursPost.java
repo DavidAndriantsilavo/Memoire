@@ -32,9 +32,11 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -140,24 +142,26 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 mPressKiff = true;
                 //get id of the post clicked
                 final String postId = postList.get(position).getPost_id();
-                collectionReference_kiffs.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                collectionReference_kiffs.document(postId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (mPressKiff){
-                            assert value != null;
-                            if (value.getDocuments().get(position).get(mCurrentUserId) != null){
+                            if (value.get(mCurrentUserId) != null) {
                                 //already kiffed, so remove kiff
-                                Map<String, Integer> kiffNumber = new HashMap<>();
-                                kiffNumber.put("post_kiffs", postKiff - 1);
-                                collectionReference_post.document(postId).set(kiffNumber);
-                                collectionReference_kiffs.document(postId).delete();
+                                Map<String, Object> kiffCounted = new HashMap<>();
+                                String kiffs = String.valueOf(postKiff - 1);
+                                kiffCounted.put("post_kiff", kiffs);
+                                collectionReference_post.document(postId).update(kiffCounted);
+                                collectionReference_kiffs.document(postId).update(mCurrentUserId, FieldValue.delete());
                                 mPressKiff = false;
-                            }else {
+                            } else {
                                 //not kiff, kiff it
-                                Map<String, Integer> kiffNumber = new HashMap<>();
-                                kiffNumber.put("post_kiffs", postKiff + 1);
-                                collectionReference_post.document(postId).set(kiffNumber);
-                                collectionReference_kiffs.document(postId).set("kiff");
+                                Map<String, Object> kiffNumber = new HashMap<>();
+                                kiffNumber.put("post_kiff", String.valueOf(postKiff + 1));
+                                Map<String, Object> userWhoKiffs = new HashMap<>();
+                                userWhoKiffs.put(mCurrentUserId, "je kiff");
+                                collectionReference_post.document(postId).update(kiffNumber);
+                                collectionReference_kiffs.document(postId).set(userWhoKiffs, SetOptions.merge());
                                 mPressKiff = false;
                             }
                         }

@@ -30,9 +30,7 @@ public class ModelePost {
         this.pseudo = pseudo;
     }
 
-    public String getPost_kiff() {
-        return post_kiff;
-    }
+    public String getPost_kiff() { return post_kiff; }
 
     public void setPost_kiff(String post_kiff) {
         this.post_kiff = post_kiff;

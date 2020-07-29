@@ -226,7 +226,7 @@ public class NewPostActivity extends AppCompatActivity {
                                 result.put("post_description", description);
                                 result.put("post_image", downloadUri);
                                 result.put("post_time", timestamp);
-                                result.put("post_kiffs", "0");
+                                result.put("post_kiff", "0");
 
                                 //store data on Firestore
                                 CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
@@ -277,7 +277,7 @@ public class NewPostActivity extends AppCompatActivity {
             result.put("post_description", description);
             result.put("post_image", "noImage");
             result.put("post_time", timestamp);
-            result.put("post_kiffs", "0");
+            result.put("post_kiff", "0");
 
             //store data on Firestore
             CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");

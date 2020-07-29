@@ -19,7 +19,6 @@
                 android:layout_height="180dp">
                 <ImageView
                     android:id="@+id/imageView_photoDeCouverture_profile"
-                    android:src="@drawable/electronique"
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:background="@color/colorPrimaryDark"/>
