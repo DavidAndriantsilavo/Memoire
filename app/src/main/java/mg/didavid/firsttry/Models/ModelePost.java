@@ -2,7 +2,7 @@ package mg.didavid.firsttry.Models;
 
 public class ModelePost {
     //spécifications du posteur
-    String user_id, name, pseudo, post_kiff, profile_image, post_id, post_title, post_description, post_image, post_time;
+    String user_id, name, pseudo, post_kiff, profile_image, post_id, post_description, post_image, post_time;
 
     public ModelePost(){ }
 
@@ -52,13 +52,6 @@ public class ModelePost {
         this.post_id = post_id;
     }
 
-    public String getPost_title() {
-        return post_title;
-    }
-
-    public void setPost_title(String post_title) {
-        this.post_title = post_title;
-    }
 
     public String getPost_description() {
         return post_description;
@@ -84,14 +77,13 @@ public class ModelePost {
         this.post_time = post_time;
     }
 
-    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String profile_image, String post_id, String post_title, String post_description, String post_image, String post_time) {
+    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String profile_image, String post_id, String post_description, String post_image, String post_time) {
         this.user_id = user_id;
         this.name = name;
         this.pseudo = pseudo;
         this.post_kiff = post_kiff;
         this.profile_image = profile_image;
         this.post_id = post_id;
-        this.post_title = post_title;
         this.post_description = post_description;
         this.post_image = post_image;
         this.post_time = post_time;

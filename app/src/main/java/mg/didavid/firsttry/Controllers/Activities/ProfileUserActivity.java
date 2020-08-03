@@ -4,8 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,7 +39,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -52,13 +53,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.iceteck.silicompressorr.FileUtils;
+import com.iceteck.silicompressorr.SiliCompressor;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,10 +80,10 @@ public class ProfileUserActivity extends AppCompatActivity {
 
     ImageView imageView_photoDeProfile;
     FloatingActionButton floatingActionButton_editProfile;
-    Button btnAddProfileImage;
+    Button btnAddProfileImage, btnNewPost;
 
     FirebaseFirestore firestore;
-    CollectionReference collectionUsers; // Firestore's collection reference : root/reference
+    CollectionReference collectionUsers, collectioonPost; // Firestore's collection reference : root/reference
     DocumentReference docRefProfileUser; // reference of the document in Firestoer : root/reference/document
     StorageReference storageReference; // reference of the Firebase storage
     String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
@@ -113,6 +117,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         floatingActionButton_editProfile = findViewById(R.id.floating_btn_editProfil);
         btnAddProfileImage = findViewById(R.id.add_profile_photo_profile);
         profile_recyclerView = findViewById(R.id.recyclerView_post);
+        btnNewPost = findViewById(R.id.button_newPost_profile);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
@@ -128,6 +133,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
+        collectioonPost = FirebaseFirestore.getInstance().collection("Publications");
 
         //linear layout for recyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(ProfileUserActivity.this);
@@ -142,9 +148,6 @@ public class ProfileUserActivity extends AppCompatActivity {
         cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        //DISPLAY THE USER INFORMATIONS IN THE TEXTVIEW
-        displayInformations();
-
         floatingActionButton_editProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -158,6 +161,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                 //modifier photo de profile
                 progressDialog_editProfile.setMessage("Importation de la photo de profile");
                 showImagePicDialog();
+            }
+        });
+
+        btnNewPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
+                finish();
             }
         });
 
@@ -375,20 +386,35 @@ public class ProfileUserActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
+            Uri imageCompressed_uri = null;
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
                 image_uri = data.getData();
-                uploadProfileImage(image_uri);
+                imageCompressed_uri = compressedAndSetImage();
+                uploadProfileImage(imageCompressed_uri);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
-                uploadProfileImage(image_uri);
+                uploadProfileImage(imageCompressed_uri);
             }
         }
     }
 
+    //compression de l'image
+    private Uri compressedAndSetImage() {
+        Uri compressedImage = null;
+        if (image_uri != null){
+            File file = new File(SiliCompressor.with(this)
+                    .compress(FileUtils.getPath(this, image_uri), new File(this.getCacheDir(), "temp")));
+            compressedImage = Uri.fromFile(file);
+        }
+        return compressedImage;
+    }
+
     private void uploadProfileImage(Uri uri) {
         progressDialog_editProfile.show();
-        String filePathAndName = storagePdPPath + "profile_image" + "_" + user.getUid(); //nom de l'image
+        final String timestamp = String.valueOf(System.currentTimeMillis());
+        String filePathAndName = storagePdPPath + timestamp + "_profile_image" + "_" + user.getUid(); //nom de l'image
 
+        //storing imagge to Firabase Storage
         StorageReference storageReference1 = storageReference.child(filePathAndName);
         storageReference1.putFile(uri)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -405,7 +431,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                         //verifier si l'image est téléversée ou pas et que l'url est bien reçu
                         if (uriTask.isSuccessful()){
                             //update profile image
-                            Map<String, Object> result = new HashMap<>();
+                            final Map<String, Object> result = new HashMap<>();
                             result.put("profile_image", downloadUri);
                             docRefProfileUser.update(result)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -420,6 +446,32 @@ public class ProfileUserActivity extends AppCompatActivity {
                                             progressDialog_editProfile.dismiss();
                                             Log.d("message important", "******************************" +e.getMessage());
                                             Toast.makeText(ProfileUserActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+
+                            //update profile image of all user's posts
+                            collectioonPost.get()
+                                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                            if (!queryDocumentSnapshots.isEmpty()){
+                                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                                    List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                                    int size = modelePost.size();
+                                                    for (int i = 0; i < size; i++) {
+                                                        if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                                            String post_id = modelePost.get(i).getPost_id();
+                                                            collectioonPost.document(post_id).set(result, SetOptions.mergeFields("profile_image"));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                                         }
                                     });
                         }else {
@@ -439,7 +491,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     }
 
     private void showDialogEditProfile() {
-        String[] options = {"Changer la photo de profile", "Modifier votre nom", "Modifier votre pseudo"};
+        String[] options = {"Changer la photo de profile", "Modifier votre nom"};
         //constructin de l'alert dialogue
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Option de modification");
@@ -454,19 +506,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                 if (which == 1){
                     //modifier le nom de l'user
                     progressDialog_editProfile.setMessage("Edition de votre nom");
-                    showNamePseudoUpdateDialog("nom");
-                }
-                if (which == 2){
-                    //modifier le pseudo de l'user
-                    progressDialog_editProfile.setMessage("Edition de votre pseudo");
-                    showNamePseudoUpdateDialog("pseudo");
+                    showNameUpdateDialog("nom");
                 }
             }
         });
         builder.create().show();
     }
 
-    private void showNamePseudoUpdateDialog(final String key) {
+    private void showNameUpdateDialog(final String key) {
         //custom dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Modifier votre " + key);
@@ -479,15 +526,14 @@ public class ProfileUserActivity extends AppCompatActivity {
         editText.setHint("Entrer votre nouveau " + key);
         linearLayout.addView(editText);
 
-        final String key1;
+        String key1 = "";
         if (key == "nom"){
             key1 = "name";
-        }else {
-            key1 = key;
         }
         builder.setView(linearLayout);
 
         //add button in dialog
+        final String finalKey = key1;
         builder.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -496,7 +542,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 if (!TextUtils.isEmpty(value)){
                     progressDialog_editProfile.show();
                     Map<String, Object> result = new HashMap<>();
-                    result.put(key1, value);
+                    result.put(finalKey, value);
 
                     docRefProfileUser = collectionUsers.document(user.getUid());
                     docRefProfileUser.update(result)
@@ -559,26 +605,75 @@ public class ProfileUserActivity extends AppCompatActivity {
         builder.create().show();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_logout_et_deleteprofile_profile, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
-    //recuperation des information de l'utilisateur
-    private void displayInformations() {
-        GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(this);
-        if(signInAccount != null)
-        {
-            textView_displayLastname.setText(signInAccount.getDisplayName());
-            textView_email.setText(signInAccount.getEmail());
-        }
-        else
-        {
-            textView_displayLastname.setText("NULL");
-            textView_email.setText("NULL");
-        }
+        //hide others menu
+        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
+        menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
+        menu.findItem(R.id.menu_logout_profil).setVisible(false);
+
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchPost(query);
+                }else {
+                    loadMyPost();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //called as and when user press any lettre
+                if (!TextUtils.isEmpty(newText)){
+                    searchPost(newText);
+                }else {
+                    loadMyPost();
+                }
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_logout_et_deleteprofile_profile, menu);
-        return super.onCreateOptionsMenu(menu);
+    private void searchPost(final String query) {
+        //path of all post
+        final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
+        //get all data from this reference
+        collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for (DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()){
+                    modelePosts_profile.clear(); //for deleting auto redundancy
+                    List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                    int size = modelePost.size();
+                    for (int i = 0; i < size; i++) {
+                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase())) {
+                            modelePosts_profile.add(modelePost.get(i));
+                        }
+                    }
+                    //adapter
+                    adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
+                    //set adapter to recyclerView
+                    profile_recyclerView.setAdapter(adapteursPost_profile);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ProfileUserActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

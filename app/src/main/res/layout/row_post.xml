@@ -81,21 +81,12 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/textView_titrePost_actu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:textStyle="bold"
-            android:text="Titre"
-            android:autoLink="all"
-            android:layout_marginTop="5dp"/>
-
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#F5F0F0"
-            android:layout_marginBottom="5dp"/>
+            android:layout_height="1.5dp"
+            android:background="@color/browser_actions_divider_color"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="10dp"/>
 
         <TextView
             android:id="@+id/textView_descriptionPost_actu"
@@ -108,25 +99,25 @@
 
         <ImageView
             android:id="@+id/imageView_imagePost_actu"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:maxWidth="400dp"
-            android:maxHeight="400dp"
+            android:maxHeight="500dp"
+            android:adjustViewBounds="true"
             android:background="@color/white"/>
 
         <TextView
             android:id="@+id/texteView_kiffs_actu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="1.2k Kiffs"
-            android:textColor="@color/colorPrimaryDark"/>
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_marginTop="10dp"/>
         
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#F5F0F0"/>
+            android:layout_height="1.5dp"
+            android:background="@color/browser_actions_divider_color"/>
 
         <LinearLayout
             android:layout_width="match_parent"

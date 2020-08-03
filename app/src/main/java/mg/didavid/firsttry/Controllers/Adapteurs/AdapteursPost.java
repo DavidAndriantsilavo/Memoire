@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.Source;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -46,8 +48,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
+import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
+import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
@@ -86,11 +91,10 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         String pseudo = postList.get(position).getPseudo();
         String profile_image = postList.get(position).getProfile_image();
         final String post_id = postList.get(position).getPost_id();
-        String post_title = postList.get(position).getPost_title();
         String post_description = postList.get(position).getPost_description();
         final String post_image = postList.get(position).getPost_image();
         String post_timeStamp = postList.get(position).getPost_time();
-        String post_kiffs = postList.get(position).getPost_kiff(); // contains total number of kiffs for a post
+        final String nbrPostKiffs = postList.get(position).getPost_kiff();
 
         //convert timeStamp to dd/mm/yyyy hh:mm am/pm
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -105,9 +109,19 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             holder.uNameTv.setText(name);
             holder.pseudo.setText(pseudo);
             holder.pTimeTv.setText(pTemps);
-            holder.pTitleTv.setText(post_title);
             holder.pDescriptionTv.setText(post_description);
-            holder.pKiffTv.setText(post_kiffs + " Kiffs");
+
+        //manage kiff text view
+        if (nbrPostKiffs.equals("0")) {
+            holder.pKiffTv.setVisibility(View.GONE);
+        } else if (nbrPostKiffs.equals("1")) {
+            holder.pKiffTv.setVisibility(View.VISIBLE);
+            holder.pKiffTv.setText(nbrPostKiffs + " Kiff");
+        } else {
+            holder.pKiffTv.setVisibility(View.VISIBLE);
+            holder.pKiffTv.setText(nbrPostKiffs + " Kiffs");
+        }
+
             //set kiff for its post
             setKiffs(holder, post_id);
         }catch (Exception e){
@@ -119,7 +133,10 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
         }
         //set post image
-        if (!post_image.equals("noImage")) {
+        if (post_image.equals("noImage")) {
+            holder.pImageIv.setVisibility(View.GONE);
+        }else {
+            holder.pImageIv.setVisibility(View.VISIBLE);
             try {
                 Picasso.get().load(post_image).into(holder.pImageIv);
             } catch (Exception e) {
@@ -137,36 +154,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.kiffBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //get total number of kiffs for the post
-                final int postKiff = Integer.parseInt(postList.get(position).getPost_kiff());
-                mPressKiff = true;
-                //get id of the post clicked
-                final String postId = postList.get(position).getPost_id();
-                collectionReference_kiffs.document(postId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if (mPressKiff){
-                            if (value.get(mCurrentUserId) != null) {
-                                //already kiffed, so remove kiff
-                                Map<String, Object> kiffCounted = new HashMap<>();
-                                String kiffs = String.valueOf(postKiff - 1);
-                                kiffCounted.put("post_kiff", kiffs);
-                                collectionReference_post.document(postId).update(kiffCounted);
-                                collectionReference_kiffs.document(postId).update(mCurrentUserId, FieldValue.delete());
-                                mPressKiff = false;
-                            } else {
-                                //not kiff, kiff it
-                                Map<String, Object> kiffNumber = new HashMap<>();
-                                kiffNumber.put("post_kiff", String.valueOf(postKiff + 1));
-                                Map<String, Object> userWhoKiffs = new HashMap<>();
-                                userWhoKiffs.put(mCurrentUserId, "je kiff");
-                                collectionReference_post.document(postId).update(kiffNumber);
-                                collectionReference_kiffs.document(postId).set(userWhoKiffs, SetOptions.merge());
-                                mPressKiff = false;
-                            }
-                        }
-                    }
-                });
+                kiffsGestion(nbrPostKiffs, post_id);
             }
         });
         holder.commenterBtn.setOnClickListener(new View.OnClickListener() {
@@ -184,13 +172,61 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.profile_linearlayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (user_id.equals(mCurrentUserId)) {
+                    if (!context.getClass().equals(ProfileUserActivity.class)) {
+                        Intent intent = new Intent(context, ProfileUserActivity.class);
+                        context.startActivity(intent);
+                    }
+                }else {
+                    if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
+                        Intent intent = new Intent(context, OtherUsersProfileActivity.class);
+                        intent.putExtra("user_id", user_id);
+                        context.startActivity(intent);
+                    }
+                }
             }
         });
     }
 
-    private void setKiffs(final MyHolder holder, String post_id) {
+    private void kiffsGestion(final String kiffNumber, final String post_id) {
+        //get total number of kiffs for the post
+        final int postKiff = Integer.parseInt(kiffNumber);
+        mPressKiff = true;
+        //get id of the post clicked
+        final String postId = post_id;
+        collectionReference_kiffs.document(postId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @SuppressLint("SetTextI18n")
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (mPressKiff){
+                    String kiffs;
+                    if (value.get(mCurrentUserId) != null) {
+                        //already kiffed, so remove kiff
+                        Map<String, Object> kiffCounted = new HashMap<>();
+                        kiffs = String.valueOf(postKiff - 1);
+                        kiffCounted.put("post_kiff", kiffs);
+                        collectionReference_post.document(postId).update(kiffCounted);
+                        collectionReference_kiffs.document(postId).update(mCurrentUserId, FieldValue.delete());
+                        mPressKiff = false;
+                    } else {
+                        //not kiff, kiff it
+                        Map<String, Object> kiffNbr = new HashMap<>();
+                        kiffs = String.valueOf(postKiff + 1);
+                        kiffNbr.put("post_kiff", kiffs);
+                        Map<String, Object> userWhoKiffs = new HashMap<>();
+                        userWhoKiffs.put(mCurrentUserId, "je kiff");
+                        collectionReference_post.document(postId).update(kiffNbr);
+                        collectionReference_kiffs.document(postId).set(userWhoKiffs, SetOptions.merge());
+                        mPressKiff = false;
+                    }
+                }
+            }
+        });
+    }
+
+    private void setKiffs(final MyHolder holder, final String post_id) {
         collectionReference_kiffs.document(post_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 assert value != null;
@@ -343,7 +379,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
         //views from row_post.xml
         ImageView uPictureIv, pImageIv;
-        TextView uNameTv, pTimeTv, pTitleTv, pDescriptionTv, pKiffTv, pseudo;
+        TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pseudo;
         ImageButton moreBtn;
         Button kiffBtn, commenterBtn, partagerBtn;
         LinearLayout profile_linearlayout;
@@ -357,7 +393,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             uNameTv = itemView.findViewById(R.id.textView_nomUser_actu);
             pTimeTv = itemView.findViewById(R.id.textView_temps_actu);
             pseudo = itemView.findViewById(R.id.texteView_pseudo);
-            pTitleTv = itemView.findViewById(R.id.textView_titrePost_actu);
             pDescriptionTv = itemView.findViewById(R.id.textView_descriptionPost_actu);
             pKiffTv = itemView.findViewById(R.id.texteView_kiffs_actu);
             moreBtn = itemView.findViewById(R.id.button_moreAction_actu);

@@ -31,6 +31,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -49,7 +51,10 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.iceteck.silicompressorr.FileUtils;
+import com.iceteck.silicompressorr.SiliCompressor;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,11 +64,14 @@ public class NewPostActivity extends AppCompatActivity {
 
     FirebaseAuth mCurrentUser;
 
-    EditText postTitle, postDescription;
+    EditText postDescription;
+    TextView textView_addImage_post;
     ImageView imagePost;
-    Button publishBtn, getImage;
+    Button publishBtn;
 
     ProgressDialog progressDialog_uploadPost;
+
+    LinearLayout linearLayout_addImagePost;
 
 
     FirebaseFirestore firestore;
@@ -98,11 +106,12 @@ public class NewPostActivity extends AppCompatActivity {
         mCurrentUser = FirebaseAuth.getInstance();
         checkUserStatus();
 
-        postTitle = findViewById(R.id.editText_inputTitlePost_newPost);
         postDescription = findViewById(R.id.editText_inputPostDescription_newPost);
         imagePost = findViewById(R.id.imageView_inputImage_newPost);
         publishBtn = findViewById(R.id.button_publish_post);
-        getImage = findViewById(R.id.button_addImage_post);
+        linearLayout_addImagePost = findViewById(R.id.linearLayout_addImage_newPost);
+        textView_addImage_post = findViewById(R.id.textView_nearAddImage_newPost);
+        textView_addImage_post.setVisibility(View.VISIBLE);
 
         progressDialog_uploadPost = new ProgressDialog(this);
 
@@ -123,7 +132,7 @@ public class NewPostActivity extends AppCompatActivity {
         }
 
         //get image from camera/gallery on click
-        getImage.setOnClickListener(new View.OnClickListener() {
+        linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkImagePickDialog();
@@ -134,27 +143,20 @@ public class NewPostActivity extends AppCompatActivity {
         publishBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String title = postTitle.getText().toString();
                 String description = postDescription.getText().toString();
 
-                if (image_uri == null) {
-                    if (TextUtils.isEmpty(title)) {
-                        Toast.makeText(NewPostActivity.this, "Veillez entrer un titre à votre publication", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+                Uri comressedImage_uir = compressedAndSetImage();
+
+                if (comressedImage_uir == null) {
                     if (TextUtils.isEmpty(description)) {
                         Toast.makeText(NewPostActivity.this, "Veillez entrer une description à votre publication", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     //post without image
-                    uploadPost(title, description, "noImage");
+                    uploadPost(description, "noImage");
                 }else {
-                    if (TextUtils.isEmpty(title)) {
-                        Toast.makeText(NewPostActivity.this, "Veillez entrer un titre à votre publication", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
                     //post with image
-                    uploadPost(title, description, String.valueOf(image_uri));
+                    uploadPost(description, String.valueOf(comressedImage_uir));
                 }
             }
         });
@@ -185,13 +187,23 @@ public class NewPostActivity extends AppCompatActivity {
 
     }
 
+    //compression de l'image
+    private Uri compressedAndSetImage() {
+        Uri compressedImage = null;
+        if (image_uri != null){
+            File file = new File(SiliCompressor.with(this)
+                    .compress(FileUtils.getPath(this, image_uri), new File(this.getCacheDir(), "temp")));
+            compressedImage = Uri.fromFile(file);
+        }
+        return compressedImage;
+    }
+
     private void loadPostData(String editPostId) {
 
     }
 
-
     //posting
-    private void uploadPost(final String title, final String description, String uri) {
+    private void uploadPost(final String description, String uri) {
         progressDialog_uploadPost.setMessage("Publication de votre post ...");
         progressDialog_uploadPost.show();
 
@@ -222,7 +234,6 @@ public class NewPostActivity extends AppCompatActivity {
                                 result.put("pseudo", pseudo);
                                 result.put("profile_image", photoDeProfile);
                                 result.put("post_id", timestamp);
-                                result.put("post_title", title);
                                 result.put("post_description", description);
                                 result.put("post_image", downloadUri);
                                 result.put("post_time", timestamp);
@@ -237,7 +248,6 @@ public class NewPostActivity extends AppCompatActivity {
                                                 progressDialog_uploadPost.dismiss();
                                                 Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
                                                 //reset views after posting
-                                                postTitle.setText("");
                                                 postDescription.setText("");
                                                 imagePost.setImageURI(null);
                                                 imagePost.setMinimumHeight(0);
@@ -273,7 +283,6 @@ public class NewPostActivity extends AppCompatActivity {
             result.put("pseudo", pseudo);
             result.put("profile_image", photoDeProfile);
             result.put("post_id", timestamp);
-            result.put("post_title", title);
             result.put("post_description", description);
             result.put("post_image", "noImage");
             result.put("post_time", timestamp);
@@ -289,7 +298,6 @@ public class NewPostActivity extends AppCompatActivity {
                             Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
 
                             //reset views after posting
-                            postTitle.setText("");
                             postDescription.setText("");
                             imagePost.setImageURI(null);
 
@@ -427,6 +435,7 @@ public class NewPostActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
+            imagePost.setVisibility(View.VISIBLE);
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
                 image_uri = data.getData();
                 imagePost.setImageURI(image_uri);
@@ -462,7 +471,7 @@ public class NewPostActivity extends AppCompatActivity {
         // pour que le bouton pour importer une image soit cliquable
         // durant toute la vie de l'activité NewPostActivity
         // on le met dans le onResume
-        getImage.setOnClickListener(new View.OnClickListener() {
+        linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 checkImagePickDialog();

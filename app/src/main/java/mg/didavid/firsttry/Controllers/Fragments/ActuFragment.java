@@ -2,18 +2,23 @@ package mg.didavid.firsttry.Controllers.Fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,13 +36,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
+import mg.didavid.firsttry.Controllers.Activities.MainActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
@@ -46,17 +54,20 @@ import mg.didavid.firsttry.R;
 
 public class ActuFragment extends Fragment {
 
+    private static final long LOADING_DELAY = 3000;
     RecyclerView recyclerView;
     List<ModelePost> modelePostList;
     AdapteursPost adapteursPost;
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     ProgressDialog progressDialog_logout;
+    boolean btnSearchClicked = false;
 
     public static ActuFragment newInstance() {
         return (new ActuFragment());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -77,11 +88,8 @@ public class ActuFragment extends Fragment {
 
         //set Layout to recyclerView
         recyclerView.setLayoutManager(linearLayoutManager);
-
         //init post list
         modelePostList = new ArrayList<>();
-
-        loadPosts();
 
         return view;
     }
@@ -94,19 +102,19 @@ public class ActuFragment extends Fragment {
 
     //inflate option menu
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-
         //inflate menu
         inflater.inflate(R.menu.menu_activity_main, menu);
 
-        //searchView to seach post by title or description
-        MenuItem item =  menu.findItem(R.id.menu_search_button);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                btnSearchClicked = true;
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
@@ -127,7 +135,6 @@ public class ActuFragment extends Fragment {
                 return false;
             }
         });
-
     }
 
     private void searchPost(final String query) {
@@ -142,8 +149,7 @@ public class ActuFragment extends Fragment {
                     List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                     int size = modelePost.size();
                     for (int i = 0; i < size; i++) {
-                        if (modelePost.get(i).getPost_title().toLowerCase().contains(query.toLowerCase()) ||
-                                modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase())) {
+                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase())) {
                             modelePostList.add(modelePost.get(i));
                         }
                     }
@@ -163,9 +169,9 @@ public class ActuFragment extends Fragment {
 
     private void loadPosts() {
         //path of all post
-        CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
+        final CollectionReference collectionPosts = FirebaseFirestore.getInstance().collection("Publications");
         //get all data from this reference
-        collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        collectionPosts.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -191,7 +197,7 @@ public class ActuFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
-        setHasOptionsMenu(true); // to show menu option in fragment
+            setHasOptionsMenu(true); // to show menu option in fragment
         super.onCreate(savedInstanceState);
     }
 
@@ -202,7 +208,7 @@ public class ActuFragment extends Fragment {
             case R.id.menu_logout_profil:
                 avertissement();
                 return true;
-            case R.id.menu_activity_main_profile:
+           case R.id.menu_activity_main_profile:
                 startActivity(new Intent(getContext(), ProfileUserActivity.class));
                 return true;
             case R.id.menu_activity_main_addNewPost:
