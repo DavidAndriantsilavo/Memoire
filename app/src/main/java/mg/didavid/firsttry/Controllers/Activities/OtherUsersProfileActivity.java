@@ -20,8 +20,10 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -201,13 +203,21 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                             lastName = value.getString("name");
                             pseudo = value.getString("pseudo");
-                            String photoDeProfile = value.getString("profile_image");
+                            final String photoDeProfile = value.getString("profile_image");
 
                             //configure toolbar
                             configureToolbar(lastName, pseudo);
 
                             //setting data from Firestore
                             setData(lastName, pseudo, photoDeProfile);
+
+                            //profile image clicked
+                            imageView_photoDeProfile.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    goToShowImage(photoDeProfile);
+                                }
+                            });
                         }
                     });
                 }
@@ -236,6 +246,13 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
             Picasso.get().load(R.drawable.ic_image_profile_icon_dark).into(imageView_photoDeProfile);
             Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void goToShowImage(String imageUri) {
+        Intent intent = new Intent(OtherUsersProfileActivity.this, ShowImageActivity.class);
+        intent.putExtra("showImage", imageUri);
+        Log.d("valeur de image uri", " :" + imageUri);
+        startActivity(intent);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

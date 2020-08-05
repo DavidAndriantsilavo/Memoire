@@ -2,12 +2,13 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,9 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,9 +37,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.firestore.Source;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -48,11 +47,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
-import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
+import mg.didavid.firsttry.Controllers.Activities.ShowImageActivity;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
@@ -91,7 +89,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         String pseudo = postList.get(position).getPseudo();
         String profile_image = postList.get(position).getProfile_image();
         final String post_id = postList.get(position).getPost_id();
-        String post_description = postList.get(position).getPost_description();
+        final String post_description = postList.get(position).getPost_description();
         final String post_image = postList.get(position).getPost_image();
         String post_timeStamp = postList.get(position).getPost_time();
         final String nbrPostKiffs = postList.get(position).getPost_kiff();
@@ -144,11 +142,21 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             }
         }
 
+        //image post clicked
+        holder.pImageIv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, ShowImageActivity.class);
+                intent.putExtra("showImage", post_image);
+                context.startActivity(intent);
+            }
+        });
+
         //handle click
         holder.moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image);
+                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image, post_description);
             }
         });
         holder.kiffBtn.setOnClickListener(new View.OnClickListener() {
@@ -169,7 +177,28 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 Toast.makeText(context, "Partager...\nwill implement later", Toast.LENGTH_SHORT).show();
             }
         });
-        holder.profile_linearlayout.setOnClickListener(new View.OnClickListener() {
+
+        //user name clicked
+        holder.uNameTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (user_id.equals(mCurrentUserId)) {
+                    if (!context.getClass().equals(ProfileUserActivity.class)) {
+                        Intent intent = new Intent(context, ProfileUserActivity.class);
+                        context.startActivity(intent);
+                    }
+                }else {
+                    if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
+                        Intent intent = new Intent(context, OtherUsersProfileActivity.class);
+                        intent.putExtra("user_id", user_id);
+                        context.startActivity(intent);
+                    }
+                }
+            }
+        });
+
+        //image profile clicked
+        holder.uPictureIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (user_id.equals(mCurrentUserId)) {
@@ -242,7 +271,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
     }
 
-    private void showMoreOptions(ImageButton moreBtn, String user_id, String mCurrentUserId, final String post_id, final String post_image) {
+    private void showMoreOptions(ImageButton moreBtn, String user_id, String mCurrentUserId, final String post_id, final String post_image, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
@@ -261,17 +290,54 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     avertissement(post_id, post_image);
                 }else if (item_id == 1) {
                     //option edit is checked
-                    //start NewPostActivity with key "edit post" and the id of the post clicked
-                    Intent intent = new Intent(context, NewPostActivity.class);
-                    intent.putExtra("key", "editPost");
-                    intent.putExtra("post_id", post_id);
-                    context.startActivity(intent);
+                    editPostDescription(post_id, post_description);
                 }
                 return false;
             }
         });
         //show menu
         popupMenu.show();
+    }
+
+    private void editPostDescription(final String post_id, final String post_description) {
+        //custom dialog
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.edit_post_description);
+        //set the custom dialog components
+        final EditText editText_description = dialog.findViewById(R.id.et_postDescription);
+        editText_description.setText(post_description);
+        TextView annuler = dialog.findViewById(R.id.tv_annuler);
+        TextView valider = dialog.findViewById(R.id.tv_valider);
+
+        //annuler clicked
+        annuler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        //valider clicked
+        valider.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //get input text
+                final String value = editText_description.getText().toString();
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("post_description", value);
+                    //updata the value in database
+                    DocumentReference documentReferencePost = FirebaseFirestore.getInstance().collection("Publications").document(post_id);
+                    documentReferencePost.update(result)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(context, "Statut mis à jout", Toast.LENGTH_LONG).show();
+                                    dialog.dismiss();
+                                }
+                            });
+            }
+        });
+        dialog.show();
     }
 
     private void avertissement(final String post_id, final String post_image) {
@@ -382,7 +448,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pseudo;
         ImageButton moreBtn;
         Button kiffBtn, commenterBtn, partagerBtn;
-        LinearLayout profile_linearlayout;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -399,7 +464,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             kiffBtn = itemView.findViewById(R.id.button_kiff_actu);
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
             partagerBtn = itemView.findViewById(R.id.button_partager_actu);
-            profile_linearlayout = itemView.findViewById(R.id.linearLayout_profile_post);
         }
     }
 }

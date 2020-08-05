@@ -54,7 +54,6 @@ import mg.didavid.firsttry.R;
 
 public class ActuFragment extends Fragment {
 
-    private static final long LOADING_DELAY = 3000;
     RecyclerView recyclerView;
     List<ModelePost> modelePostList;
     AdapteursPost adapteursPost;
@@ -181,6 +180,7 @@ public class ActuFragment extends Fragment {
                         modelePostList.addAll(modelePost);
 
                         //adapter
+                        Context context;
                         adapteursPost = new AdapteursPost(getContext(), modelePostList);
                         //set adapter to recyclerView
                         recyclerView.setAdapter(adapteursPost);

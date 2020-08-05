@@ -176,6 +176,13 @@ public class ProfileUserActivity extends AppCompatActivity {
         loadMyPost();
     }
 
+    private void goToShowImage(String imageUri) {
+        Intent intent = new Intent(ProfileUserActivity.this, ShowImageActivity.class);
+        intent.putExtra("showImage", imageUri);
+        Log.d("valeur de image uri", " :" + imageUri);
+        startActivity(intent);
+    }
+
     private void loadMyPost() {
         CollectionReference reference_post = FirebaseFirestore.getInstance().collection("Publications");
         reference_post.get()
@@ -264,10 +271,18 @@ public class ProfileUserActivity extends AppCompatActivity {
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                             String lastName = value.getString("name");
                             String pseudo = value.getString("pseudo");
-                            String photoDeProfile = value.getString("profile_image");
+                            final String photoDeProfile = value.getString("profile_image");
 
                             //setting data from Firestore
                             setData(lastName, pseudo, photoDeProfile);
+
+                            //profile image clicked
+                            imageView_photoDeProfile.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    goToShowImage(photoDeProfile);
+                                }
+                            });
                         }
                     });
                 }

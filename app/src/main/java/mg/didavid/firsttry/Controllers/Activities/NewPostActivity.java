@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -53,6 +54,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.iceteck.silicompressorr.FileUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.HashMap;
@@ -81,17 +83,17 @@ public class NewPostActivity extends AppCompatActivity {
 
     final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    private static final int CAMERA_REQUEST_CODE = 100;
-    private static final int STORAGE_REQUEST_CODE = 200;
-    private static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 300;
-    private static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 400;
+    private static final int CAMERA_REQUEST_CODE = 110;
+    private static final int STORAGE_REQUEST_CODE = 220;
+    private static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 330;
+    private static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 440;
 
     String [] cameraPermission;
     String [] storagePermission;
     Uri image_uri = null;
 
     String nomEtPrenonm, pseudo, uid, photoDeProfile;
-    String editTitle_post, editDescription_post, editImage_post;
+    String editDescription_post, editImage_post;
 
     @SuppressLint({"ResourceType", "WrongViewCast"})
     @Override
@@ -119,17 +121,6 @@ public class NewPostActivity extends AppCompatActivity {
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        //get data through intent from previous activity's adapter
-        Intent intent = getIntent();
-        String isUpdatekey = "" + intent.getStringExtra("key");
-        String editPostId = "" + intent.getStringExtra("post_id");
-        //validate if we came here to update post
-        if (isUpdatekey.equals("editPost")){
-            publishBtn.setText("Confirmer");
-            loadPostData(editPostId);
-        }else {
-
-        }
 
         //get image from camera/gallery on click
         linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
@@ -146,18 +137,17 @@ public class NewPostActivity extends AppCompatActivity {
                 String description = postDescription.getText().toString();
 
                 Uri comressedImage_uir = compressedAndSetImage();
-
-                if (comressedImage_uir == null) {
-                    if (TextUtils.isEmpty(description)) {
-                        Toast.makeText(NewPostActivity.this, "Veillez entrer une description à votre publication", Toast.LENGTH_SHORT).show();
-                        return;
+                    if (comressedImage_uir == null) {
+                        if (TextUtils.isEmpty(description)) {
+                            Toast.makeText(NewPostActivity.this, "Veillez entrer une description à votre publication", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        //post without image
+                        uploadPost(description, "noImage");
+                    } else {
+                        //post with image
+                        uploadPost(description, String.valueOf(comressedImage_uir));
                     }
-                    //post without image
-                    uploadPost(description, "noImage");
-                }else {
-                    //post with image
-                    uploadPost(description, String.valueOf(comressedImage_uir));
-                }
             }
         });
 
@@ -198,9 +188,6 @@ public class NewPostActivity extends AppCompatActivity {
         return compressedImage;
     }
 
-    private void loadPostData(String editPostId) {
-
-    }
 
     //posting
     private void uploadPost(final String description, String uri) {
@@ -316,40 +303,10 @@ public class NewPostActivity extends AppCompatActivity {
         }
     }
 
-    private void checkImagePickDialog() {
-        String[] options = {"Prendre une photo", "Importer depuis la gallerie"};
-        //constructin de l'alert dialogue
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Source de l'image");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.M)
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0){
-                    //Camera clicked
-                    if (!checkCameraPermission()){
-                        requestCameraPermission();
-                    }else {
-                        pickFromCamera();
-                    }
-                }
-                if (which == 1){
-                    //Gallery ckicked
-                    if (!checkStoragePermission()){
-                        requestStoragePermission();
-                    }else {
-                        pickFromGallery();
-                    }
-                }
-            }
-        });
-        builder.create().show();
-    }
-
     //check Camera permission
     private boolean checkCameraPermission(){
         //verifier si on est autorisé ou pas
-        //retourne true si on est permis et false si non
+        //retourne true si on l'est et false si on ne l'est pas
         boolean result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
                 == (PackageManager.PERMISSION_GRANTED);
         boolean result1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -367,12 +324,11 @@ public class NewPostActivity extends AppCompatActivity {
     private boolean checkStoragePermission(){
         //verifier si on est autorisé ou pas
         //retourne true si on est permis et false si non
-        boolean result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        return ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == (PackageManager.PERMISSION_GRANTED);
-        return result;
     }
 
-    //check request camera permission
+    //check request storage permission
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestStoragePermission(){
         ActivityCompat.requestPermissions(this, storagePermission, STORAGE_REQUEST_CODE);
@@ -444,6 +400,36 @@ public class NewPostActivity extends AppCompatActivity {
                 imagePost.setImageURI(image_uri);
             }
         }
+    }
+
+    private void checkImagePickDialog() {
+        String[] options = {"Prendre une photo", "Importer depuis la gallerie"};
+        //constructin de l'alert dialogue
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Source de l'image");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0){
+                    //Camera clicked
+                    if (!checkCameraPermission()){
+                        requestCameraPermission();
+                    }else {
+                        pickFromCamera();
+                    }
+                }
+                if (which == 1){
+                    //Gallery ckicked
+                    if (!checkStoragePermission()){
+                        requestStoragePermission();
+                    }else {
+                        pickFromGallery();
+                    }
+                }
+            }
+        });
+        builder.create().show();
     }
 
     private void checkUserStatus() {

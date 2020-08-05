@@ -37,6 +37,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
+                        android:clickable="true"
                         android:src="@drawable/ic_image_profile_icon_dark"/>
                 </androidx.cardview.widget.CardView>
             </androidx.cardview.widget.CardView>
@@ -54,6 +55,7 @@
                     android:layout_height="wrap_content"
                     android:text="Nom"
                     android:textSize="18dp"
+                    android:clickable="true"
                     android:textColor="@color/black"/>
 
                 <TextView
