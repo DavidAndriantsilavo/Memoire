@@ -30,7 +30,9 @@ public class ShowImageActivity extends AppCompatActivity {
 
         if (!imageUri.equals("noImage")){
             try {
+                //load image to the view
                 Picasso.get().load(imageUri).into(showImage);
+                //zomm in/out image
                 PhotoViewAttacher photoViewAttacher = new PhotoViewAttacher(showImage);
                 photoViewAttacher.update();
             }catch (Exception e){

@@ -1,16 +1,27 @@
 package mg.didavid.firsttry.Controllers.Activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -18,11 +29,15 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,7 +45,21 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.iceteck.silicompressorr.FileUtils;
+import com.iceteck.silicompressorr.SiliCompressor;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
@@ -50,6 +79,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
+    private String profileImage_Uri = "NULL";
     private final String TAG= "MainActivity";
 
     private String[] separated_name;
@@ -58,6 +88,22 @@ public class WelcomeActivity extends AppCompatActivity {
     private RadioGroup radioGroup_sexe;
     private RadioButton radioButton_male, radioButton_female, radioButton_selected;
     private Button button_send;
+    private LinearLayout addProfileImage;
+    private ImageView profileImage_imageView;
+
+    StorageReference storageReference; // reference of the Firebase storage
+    String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
+
+
+    private static final int CAMERA_REQUEST_CODE = 100;
+    private static final int STORAGE_REQUEST_CODE = 200;
+    private static final int IMAGE_PICK_GALLERY_REQUEST_CODE = 300;
+    private static final int IMAGE_PICK_CAMERA_REQUEST_CODE = 400;
+
+    String [] cameraPermission;
+    String [] storagePermission;
+    Uri image_uri = null;
+    Uri imageCompressed_uri = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,16 +112,24 @@ public class WelcomeActivity extends AppCompatActivity {
 
         editText_nom = findViewById(R.id.editText_nom);
         editText_prenom = findViewById(R.id.editText_prenom);
-        editText_pseudo = findViewById(R.id.editText_pseudo);
+        editText_pseudo = findViewById(R.id.editText_pseudo_welcome);
         editText_phone = findViewById(R.id.editText_phone);
         editText_email = findViewById(R.id.editText_email);
         radioGroup_sexe = findViewById(R.id.radioGroup_sexe);
         radioButton_male = findViewById(R.id.radioButton_male);
         radioButton_female = findViewById(R.id.radioButton_female);
         button_send = findViewById(R.id.button_send);
+        addProfileImage = findViewById(R.id.linearLayout_add_profileImage_welcome);
+        profileImage_imageView = findViewById(R.id.imageView_profileImage_welcome);
+
+        storageReference = FirebaseStorage.getInstance().getReference();
 
         //always check if we are connected into the internet
         checkConnexion();
+
+        //init array of permissions
+        cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         Intent intent = getIntent();
         String singinPseudo = "" + intent.getStringExtra("key");
@@ -110,8 +164,9 @@ public class WelcomeActivity extends AppCompatActivity {
                     sexe = radioButton_selected.getText().toString();
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
+                    profileImage_Uri = imageCompressed_uri.toString();
 
-                    final User user = new User(user_id, display_name, pseudo, sexe, email, phone, finalPassword);
+                    final User user = new User(email, user_id, display_name, phone, finalPassword, sexe, pseudo, profileImage_Uri);
                     storeUserData(user);
                 }
             }
@@ -125,10 +180,17 @@ public class WelcomeActivity extends AppCompatActivity {
         }else {
                 configureUser();
         }
+
+        //Layout (ImageView, TextView : "Ajouter une photo de profil") clicked
+        addProfileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showImagePicDialog();
+            }
+        });
     }
 
-    private void configureUser()
-    {
+    private void configureUser() {
         DocumentReference documentReference = userCollectionReference.document(firebaseUser.getUid());
 
         //CHECK IF THE USER IS ALREADY STORED IN THE DATABASE OR NOT
@@ -185,35 +247,196 @@ public class WelcomeActivity extends AppCompatActivity {
     }
     //CREATE NEW USER IN FIRESTORE AND STORE DATAS
     private void storeUserData(final User user){
-        DocumentReference documentReference = userCollectionReference.document(user_id);
 
-        //Writing data and using call-back functions
-        documentReference.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(WelcomeActivity.this);
-                    builder.setMessage("Votre compte a été créé avec succes");
-                    builder.setCancelable(false);
+        final String timestamp = String.valueOf(System.currentTimeMillis());
+        String filePathAndName = storagePdPPath + timestamp + "_profile_image" + "_" + firebaseUser.getUid(); //nom de l'image
 
-                    builder.setPositiveButton(
-                            "Continuer",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
-                                    startActivity(intent);
+        //storing imagge to Firabase Storage
+        StorageReference storageReference1 = storageReference.child(filePathAndName);
+        storageReference1.putFile(imageCompressed_uri)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @SuppressLint("LongLogTag")
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        DocumentReference documentReference = userCollectionReference.document(user_id);
 
-                                    finish();
+                        //Writing data and using call-back functions
+                        documentReference.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(WelcomeActivity.this);
+                                    builder.setMessage("Votre compte a été créé avec succes");
+                                    builder.setCancelable(false);
+
+                                    builder.setPositiveButton(
+                                            "Continuer",
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
+                                                    startActivity(intent);
+
+                                                    finish();
+                                                }
+                                            });
+                                    AlertDialog alert = builder.create();
+                                    alert.show();
+                                }else{
+                                    //Something went wrong
+                                    Log.e(TAG, "onComplete: Error: " + task.getException().getLocalizedMessage() );
                                 }
-                            });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                }else{
-                    //Something went wrong
-                    Log.e(TAG, "onComplete: Error: " + task.getException().getLocalizedMessage() );
+                            }
+                        });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d("message important", "******************************" +e.getMessage());
+                Toast.makeText(WelcomeActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**********************************************************************************************************************************************************
+     *                                              FOR UPLOADING PROFILE IMAGE
+     * ********************************************************************************************************************************************************
+     */
+    private boolean checkCameraPermission(){
+        //verifier si on est autorisé ou pas
+        //retourne true si on est permis et false si non
+        boolean result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
+                == (PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == (PackageManager.PERMISSION_GRANTED);
+        return result && result1;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void requestCameraPermission(){
+        ActivityCompat.requestPermissions(this,cameraPermission, CAMERA_REQUEST_CODE);
+    }
+
+
+    private boolean checkStoragePermission(){
+        //verifier si on est autorisé ou pas
+        //retourne true si on est permis et false si non
+        boolean result = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == (PackageManager.PERMISSION_GRANTED);
+        return result;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void requestStoragePermission(){
+        ActivityCompat.requestPermissions(this, storagePermission, STORAGE_REQUEST_CODE);
+    }
+
+    //resultat : si on a accès ou pas à la camera et/ou au stockage de l'appareil
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case CAMERA_REQUEST_CODE: { //source camera selectionnée
+                if (grantResults.length > 0){
+                    boolean cameraAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    boolean writeStorageAccepted = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                    if (cameraAccepted && writeStorageAccepted){
+                        pickFromCamera();
+                    }else {
+                        Toast.makeText(this, "veillez activer la permission à acceder à la camera et au stockage", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+            break;
+
+            case STORAGE_REQUEST_CODE: { //source Gallerie selectionnée
+                if (grantResults.length > 0){
+                    boolean writeStorageAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                    if (writeStorageAccepted){
+                        pickFromGallery();
+                    }else {
+                        Toast.makeText(this, "veillez activer la permission à accederau stockage", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    private void pickFromCamera() {
+        //intent of picking image from device camera
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "Temp Pic");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Temp Description");
+        //put image uri
+        image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+        //intent to start camera
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, image_uri);
+        startActivityForResult(cameraIntent, IMAGE_PICK_CAMERA_REQUEST_CODE);
+    }
+
+    private void pickFromGallery() {
+        //pick from gallery
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
+        galleryIntent.setType("image/*");
+        startActivityForResult(galleryIntent, IMAGE_PICK_GALLERY_REQUEST_CODE);
+    }
+
+    //méthode appelée après avoir prise une image dans la gallerie ou via la camera
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK){
+            if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
+                image_uri = data.getData();
+                imageCompressed_uri = compressedAndSetImage();
+                profileImage_imageView.setImageURI(imageCompressed_uri);
+            }
+            if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
+                profileImage_imageView.setImageURI(imageCompressed_uri);
+            }
+        }
+    }
+
+    //compression de l'image
+    private Uri compressedAndSetImage() {
+        Uri compressedImage = null;
+        if (image_uri != null){
+            File file = new File(SiliCompressor.with(this)
+                    .compress(FileUtils.getPath(this, image_uri), new File(this.getCacheDir(), "temp")));
+            compressedImage = Uri.fromFile(file);
+        }
+        return compressedImage;
+    }
+
+    private void showImagePicDialog() {
+        String[] options = {"Prendre une photo", "Importer depuis la gallerie"};
+        //constructin de l'alert dialogue
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Source de l'image");
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0){
+                    //Camera clicked
+                    if (!checkCameraPermission()){
+                        requestCameraPermission();
+                    }else {
+                        pickFromCamera();
+                    }
+                }
+                if (which == 1){
+                    //Gallery ckicked
+                    if (!checkStoragePermission()){
+                        requestStoragePermission();
+                    }else {
+                        pickFromGallery();
+                    }
                 }
             }
         });
+        builder.create().show();
     }
 
     //THE FOLLOWING METHOD IS USED TO DETACH EDIT_TEXT FOCUS WHEN WE CLICK OUTSIDE OF IT

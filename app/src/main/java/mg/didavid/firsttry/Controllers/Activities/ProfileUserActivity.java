@@ -54,7 +54,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -70,6 +69,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
@@ -77,13 +77,16 @@ import mg.didavid.firsttry.R;
 public class ProfileUserActivity extends AppCompatActivity {
 
     TextView textView_displayLastname, textView_email;
+    String user_name, value_name;
+    final Map<String, Object> profileImageChanged_result = new HashMap<>();
+    final Map<String, Object> nameChanged_result = new HashMap<>();
 
     ImageView imageView_photoDeProfile;
     FloatingActionButton floatingActionButton_editProfile;
     Button btnAddProfileImage, btnNewPost;
 
     FirebaseFirestore firestore;
-    CollectionReference collectionUsers, collectioonPost; // Firestore's collection reference : root/reference
+    CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
     DocumentReference docRefProfileUser; // reference of the document in Firestoer : root/reference/document
     StorageReference storageReference; // reference of the Firebase storage
     String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
@@ -99,6 +102,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     String [] cameraPermission;
     String [] storagePermission;
     Uri image_uri = null;
+    Uri imageCompressed_uri = null;
 
     List<ModelePost> modelePosts_profile;
     AdapteursPost adapteursPost_profile;
@@ -134,6 +138,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
         collectioonPost = FirebaseFirestore.getInstance().collection("Publications");
+        collectionComment = FirebaseFirestore.getInstance().collection("Comments");
 
         //linear layout for recyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(ProfileUserActivity.this);
@@ -174,6 +179,74 @@ public class ProfileUserActivity extends AppCompatActivity {
 
         checkingUserInfo();
         loadMyPost();
+
+        snapshootUserInfo();
+    }
+
+    private void snapshootUserInfo() {
+        docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (value != null) {
+                    String imagegProfile = value.getString("profile_image");
+                    if (imagegProfile != null || !imagegProfile.isEmpty()){
+                        uploadProfileImageEverywhere(profileImageChanged_result);
+                    }
+                    String name = value.getString("name");
+                    if (name != null || !name.isEmpty()){
+                        uploadUserNameEverywhere(nameChanged_result);
+                    }
+
+                }
+            }
+        });
+    }
+
+    private void uploadUserNameEverywhere(final Map<String, Object> nameChanged_result) {
+        //update also current user name in all his publications
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                        String post_id = modelePost.get(i).getPost_id();
+                                        collectioonPost.document(post_id).update(nameChanged_result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also current user name on all comments whom he has commented
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().contains(user_id)) {
+                                        String comment_id = modelComments.get(i).getComment_time();
+                                        collectionComment.document(comment_id).update(nameChanged_result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
     }
 
     private void goToShowImage(String imageUri) {
@@ -269,12 +342,12 @@ public class ProfileUserActivity extends AppCompatActivity {
                     docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                            String lastName = value.getString("name");
+                            user_name = value.getString("name");
                             String pseudo = value.getString("pseudo");
                             final String photoDeProfile = value.getString("profile_image");
 
                             //setting data from Firestore
-                            setData(lastName, pseudo, photoDeProfile);
+                            setData(user_name, pseudo, photoDeProfile);
 
                             //profile image clicked
                             imageView_photoDeProfile.setOnClickListener(new View.OnClickListener() {
@@ -401,7 +474,6 @@ public class ProfileUserActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
-            Uri imageCompressed_uri = null;
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
                 image_uri = data.getData();
                 imageCompressed_uri = compressedAndSetImage();
@@ -446,12 +518,12 @@ public class ProfileUserActivity extends AppCompatActivity {
                         //verifier si l'image est téléversée ou pas et que l'url est bien reçu
                         if (uriTask.isSuccessful()){
                             //update profile image
-                            final Map<String, Object> result = new HashMap<>();
-                            result.put("profile_image", downloadUri);
-                            docRefProfileUser.update(result)
+                            profileImageChanged_result.put("profile_image", downloadUri);
+                            docRefProfileUser.update(profileImageChanged_result)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
+                                            uploadProfileImageEverywhere(profileImageChanged_result);
                                             progressDialog_editProfile.dismiss();
                                             Toast.makeText(ProfileUserActivity.this, "Photo de profile mise à jour", Toast.LENGTH_SHORT).show();
                                         }
@@ -461,32 +533,6 @@ public class ProfileUserActivity extends AppCompatActivity {
                                             progressDialog_editProfile.dismiss();
                                             Log.d("message important", "******************************" +e.getMessage());
                                             Toast.makeText(ProfileUserActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-
-                            //update profile image of all user's posts
-                            collectioonPost.get()
-                                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                        @Override
-                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                            if (!queryDocumentSnapshots.isEmpty()){
-                                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                                    List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
-                                                    int size = modelePost.size();
-                                                    for (int i = 0; i < size; i++) {
-                                                        if (modelePost.get(i).getUser_id().contains(user_id)) {
-                                                            String post_id = modelePost.get(i).getPost_id();
-                                                            collectioonPost.document(post_id).set(result, SetOptions.mergeFields("profile_image"));
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                                         }
                                     });
                         }else {
@@ -505,6 +551,53 @@ public class ProfileUserActivity extends AppCompatActivity {
         });
     }
 
+    private void uploadProfileImageEverywhere(final Map<String, Object> result) {
+        //update profile image of all user's posts
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                        String post_id = modelePost.get(i).getPost_id();
+                                        collectioonPost.document(post_id).update(result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also profile image of all user's comment on post
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().contains(user_id)) {
+                                        String comment_id = modelComments.get(i).getComment_time(); //comment_time is the id of the comment
+                                        collectionComment.document(comment_id).update(result);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+    }
+
     private void showDialogEditProfile() {
         String[] options = {"Changer la photo de profile", "Modifier votre nom"};
         //constructin de l'alert dialogue
@@ -521,7 +614,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 if (which == 1){
                     //modifier le nom de l'user
                     progressDialog_editProfile.setMessage("Edition de votre nom");
-                    showNameUpdateDialog("nom");
+                    showNameUpdateDialog("name");
                 }
             }
         });
@@ -538,42 +631,19 @@ public class ProfileUserActivity extends AppCompatActivity {
         linearLayout.setPadding(10,10,10,10);
         //add EditText
         final EditText editText = new EditText(this);
-        editText.setHint("Entrer votre nouveau " + key);
+        editText.setText(user_name);
         linearLayout.addView(editText);
 
-        String key1 = "";
-        if (key == "nom"){
-            key1 = "name";
-        }
         builder.setView(linearLayout);
 
         //add button in dialog
-        final String finalKey = key1;
         builder.setPositiveButton("Valider", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //get the input text
-                String value = editText.getText().toString();
-                if (!TextUtils.isEmpty(value)){
-                    progressDialog_editProfile.show();
-                    Map<String, Object> result = new HashMap<>();
-                    result.put(finalKey, value);
-
-                    docRefProfileUser = collectionUsers.document(user.getUid());
-                    docRefProfileUser.update(result)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    progressDialog_editProfile.dismiss();
-                                    Toast.makeText(ProfileUserActivity.this, key + " mis à jour", Toast.LENGTH_SHORT).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    progressDialog_editProfile.dismiss();
-                                    Toast.makeText(ProfileUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                value_name = editText.getText().toString();
+                if (!TextUtils.isEmpty(value_name)){
+                    uploadUserName(value_name, key);
                 }else {
                     Toast.makeText(ProfileUserActivity.this, "Veillez entre votre nouveau " + key, Toast.LENGTH_SHORT).show();
                 }
@@ -588,6 +658,27 @@ public class ProfileUserActivity extends AppCompatActivity {
         //create and show dialog
         builder.create().show();
 
+    }
+
+    private void uploadUserName(String value, String key) {
+        progressDialog_editProfile.show();
+        nameChanged_result.put(key, value);
+
+        docRefProfileUser = collectionUsers.document(user.getUid());
+        docRefProfileUser.update(nameChanged_result)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        progressDialog_editProfile.dismiss();
+                        Toast.makeText(ProfileUserActivity.this, "Nom mis à jour", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressDialog_editProfile.dismiss();
+                Toast.makeText(ProfileUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showImagePicDialog() {
@@ -751,7 +842,6 @@ public class ProfileUserActivity extends AppCompatActivity {
             alert.show();
         }
     }
-
 
     private void avertissement() {
         if(user!=null)

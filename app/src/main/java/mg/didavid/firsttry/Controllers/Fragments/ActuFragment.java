@@ -17,15 +17,18 @@ import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -35,6 +38,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,9 +62,15 @@ public class ActuFragment extends Fragment {
     List<ModelePost> modelePostList;
     AdapteursPost adapteursPost;
 
+    List<ModelePost> modelePost;
+
+    ProgressDialog progressDialog_loadPost;
+
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     ProgressDialog progressDialog_logout;
     boolean btnSearchClicked = false;
+    //path of all post
+    final CollectionReference collectionPosts = FirebaseFirestore.getInstance().collection("Publications");
 
     public static ActuFragment newInstance() {
         return (new ActuFragment());
@@ -76,6 +86,8 @@ public class ActuFragment extends Fragment {
         //init progressDialog
         progressDialog_logout = new ProgressDialog(getContext());
         progressDialog_logout.setMessage("Déconnexion...");
+        progressDialog_loadPost = new ProgressDialog(getContext());
+        progressDialog_loadPost.setMessage("Chargement...");
 
         //recycler view and its proprieties
         recyclerView = view.findViewById(R.id.postRecyclerview);
@@ -90,13 +102,48 @@ public class ActuFragment extends Fragment {
         //init post list
         modelePostList = new ArrayList<>();
 
+        loadPosts();
+
+        listenDocumentChanges();
+
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadPosts();
+    private void listenDocumentChanges() {
+        //listen if there some data added or deleted, then reload post
+        collectionPosts.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        @Override
+        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+            if (!queryDocumentSnapshots.isEmpty()) {
+                for (final DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                    List<ModelePost> modelePosts2 = queryDocumentSnapshots.toObjects(ModelePost.class);
+                    int size = modelePosts2.size();
+                    for (int i = 0; i < size; i++) {
+                        String user_name = modelePosts2.get(i).getName();
+                        collectionPosts.whereEqualTo("name", user_name)
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                        for (DocumentChange documentChange : value.getDocumentChanges()) {
+                                            switch (documentChange.getType()) {
+                                                case REMOVED:
+                                                case ADDED:
+                                                    loadPosts();
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                });
+                    }
+                }
+            }
+        }
+    }).addOnFailureListener(new OnFailureListener() {
+        @Override
+        public void onFailure(@NonNull Exception e) {
+            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    });
     }
 
     //inflate option menu
@@ -167,8 +214,7 @@ public class ActuFragment extends Fragment {
     }
 
     private void loadPosts() {
-        //path of all post
-        final CollectionReference collectionPosts = FirebaseFirestore.getInstance().collection("Publications");
+        progressDialog_loadPost.show();
         //get all data from this reference
         collectionPosts.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -176,11 +222,10 @@ public class ActuFragment extends Fragment {
                 if (!queryDocumentSnapshots.isEmpty()) {
                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                         modelePostList.clear();
-                        List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                        modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                         modelePostList.addAll(modelePost);
 
                         //adapter
-                        Context context;
                         adapteursPost = new AdapteursPost(getContext(), modelePostList);
                         //set adapter to recyclerView
                         recyclerView.setAdapter(adapteursPost);
@@ -193,6 +238,7 @@ public class ActuFragment extends Fragment {
                 Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+        progressDialog_loadPost.dismiss();
     }
 
     @Override

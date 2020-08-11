@@ -4,9 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="@drawable/round_widget_white">
 
     <TextView
+        android:id="@+id/editText_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Modification de la description"
@@ -24,6 +26,7 @@
         android:minHeight="80dp"
         android:maxHeight="300dp"
         android:gravity="start"
+        android:layout_marginHorizontal="7dp"
         android:paddingHorizontal="10dp"
         android:text="Edition de la description"
         android:inputType="textCapSentences|textMultiLine"

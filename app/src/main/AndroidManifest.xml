@@ -20,13 +20,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Controllers.Activities.ShowImageActivity"></activity>
-        <activity
-            android:name=".Controllers.Activities.OtherUsersProfileActivity"
-            android:parentActivityName=".Controllers.Activities.MainActivity">
+        <activity android:name=".Controllers.Activities.PostDetailsActivity"
+            android:parentActivityName=".Controllers.Activities.MainActivity"
+            android:theme="@style/WithActionBarTheme"
+            android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.MainActivity" />
+        </activity>
+        <activity android:name=".Controllers.Activities.ShowImageActivity" />
+        <activity
+            android:name=".Controllers.Activities.OtherUsersProfileActivity">
         </activity>
         <activity
             android:name=".Controllers.Activities.NewPostActivity"
@@ -37,7 +41,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.MainActivity" />
         </activity>
-        <activity android:name=".Controllers.Activities.WelcomeActivity" />
+        <activity
+            android:name=".Controllers.Activities.WelcomeActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
         <activity
             android:name=".Controllers.Activities.ProfileUserActivity"
             android:label="Profile"

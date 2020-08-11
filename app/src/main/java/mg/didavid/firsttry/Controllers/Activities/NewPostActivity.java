@@ -93,7 +93,6 @@ public class NewPostActivity extends AppCompatActivity {
     Uri image_uri = null;
 
     String nomEtPrenonm, pseudo, uid, photoDeProfile;
-    String editDescription_post, editImage_post;
 
     @SuppressLint({"ResourceType", "WrongViewCast"})
     @Override
@@ -121,6 +120,9 @@ public class NewPostActivity extends AppCompatActivity {
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
 
+        //init array of permissions
+        cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+        storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         //get image from camera/gallery on click
         linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
@@ -225,6 +227,7 @@ public class NewPostActivity extends AppCompatActivity {
                                 result.put("post_image", downloadUri);
                                 result.put("post_time", timestamp);
                                 result.put("post_kiff", "0");
+                                result.put("comment_count", "0");
 
                                 //store data on Firestore
                                 CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
@@ -232,7 +235,6 @@ public class NewPostActivity extends AppCompatActivity {
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                progressDialog_uploadPost.dismiss();
                                                 Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
                                                 //reset views after posting
                                                 postDescription.setText("");
@@ -240,8 +242,7 @@ public class NewPostActivity extends AppCompatActivity {
                                                 imagePost.setMinimumHeight(0);
 
                                                 //go to main activity when finish
-                                                startActivity(new Intent(NewPostActivity.this, MainActivity.class));
-                                                finish();
+                                                sendToMainActivity();
                                             }
                                         }).addOnFailureListener(new OnFailureListener() {
                                     @Override
@@ -274,6 +275,7 @@ public class NewPostActivity extends AppCompatActivity {
             result.put("post_image", "noImage");
             result.put("post_time", timestamp);
             result.put("post_kiff", "0");
+            result.put("comment_count", "0");
 
             //store data on Firestore
             CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
@@ -281,7 +283,6 @@ public class NewPostActivity extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            progressDialog_uploadPost.dismiss();
                             Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
 
                             //reset views after posting
@@ -289,8 +290,7 @@ public class NewPostActivity extends AppCompatActivity {
                             imagePost.setImageURI(null);
 
                             //go to main activity when finish
-                            startActivity(new Intent(NewPostActivity.this, MainActivity.class));
-                            finish();
+                            sendToMainActivity();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -301,6 +301,13 @@ public class NewPostActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void sendToMainActivity() {
+        Intent intent = new Intent(NewPostActivity.this, MainActivity.class);
+        startActivity(intent);
+        progressDialog_uploadPost.dismiss();
+        finish();
     }
 
     //check Camera permission
