@@ -352,7 +352,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                     if (writeStorageAccepted){
                         pickFromGallery();
                     }else {
-                        Toast.makeText(this, "veillez activer la permission à accederau stockage", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "veillez activer la permission à acceder au stockage", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -709,7 +709,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
-                                                Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec succès ...\nOn éspère vous revoire bientôt !", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec succès ...\nOn éspère vous revoir bientôt !", Toast.LENGTH_LONG).show();
 
                                                 logOut();
                                                 progressDialog_del_account.dismiss();

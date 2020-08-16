@@ -50,6 +50,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
+    private String profile_image ="NULL";
     private final String TAG= "MainActivity";
 
     private String[] separated_name;
@@ -111,7 +112,7 @@ public class WelcomeActivity extends AppCompatActivity {
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
 
-                    final User user = new User(user_id, display_name, pseudo, sexe, email, phone, finalPassword);
+                    final User user = new User(user_id, display_name, pseudo, sexe, email, phone, finalPassword, profile_image);
                     storeUserData(user);
                 }
             }

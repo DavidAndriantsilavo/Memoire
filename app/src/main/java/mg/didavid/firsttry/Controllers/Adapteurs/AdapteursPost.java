@@ -133,16 +133,19 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
         }
         //set post image
-        if (post_image.equals("noImage")) {
-            holder.pImageIv.setVisibility(View.GONE);
-        }else {
-            holder.pImageIv.setVisibility(View.VISIBLE);
-            try {
-                Picasso.get().load(post_image).into(holder.pImageIv);
-            } catch (Exception e) {
+        if(post_image != null){
+            if (post_image.equals("noImage")) {
+                holder.pImageIv.setVisibility(View.GONE);
+            }else {
+                holder.pImageIv.setVisibility(View.VISIBLE);
+                try {
+                    Picasso.get().load(post_image).into(holder.pImageIv);
+                } catch (Exception e) {
 
+                }
             }
         }
+
 
         //handle click
         holder.moreBtn.setOnClickListener(new View.OnClickListener() {

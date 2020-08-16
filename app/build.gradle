@@ -58,4 +58,10 @@ dependencies {
     //loading image
     implementation 'com.squareup.picasso:picasso:2.71828'
 
+    implementation 'jp.wasabeef:picasso-transformations:2.2.1'
+
+    //Google direction api
+//    implementation 'com.google.maps:google-maps-services:0.14.0'
+//    implementation 'org.slf4j:slf4j-simple:1.7.25'
 }
+
