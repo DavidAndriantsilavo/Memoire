@@ -86,8 +86,13 @@ public class ActuFragment extends Fragment {
         //init progressDialog
         progressDialog_logout = new ProgressDialog(getContext());
         progressDialog_logout.setMessage("Déconnexion...");
+        progressDialog_logout.setCancelable(false);
+        progressDialog_logout.setCanceledOnTouchOutside(false);
         progressDialog_loadPost = new ProgressDialog(getContext());
         progressDialog_loadPost.setMessage("Chargement...");
+        progressDialog_loadPost.setCancelable(false);
+        progressDialog_loadPost.setCanceledOnTouchOutside(false);
+        progressDialog_loadPost.show();
 
         //recycler view and its proprieties
         recyclerView = view.findViewById(R.id.postRecyclerview);
@@ -164,8 +169,6 @@ public class ActuFragment extends Fragment {
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
-                }else {
-                    loadPosts();
                 }
                 return false;
             }
@@ -175,8 +178,6 @@ public class ActuFragment extends Fragment {
                 //called as and when user press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
-                }else {
-                    loadPosts();
                 }
                 return false;
             }
@@ -229,6 +230,8 @@ public class ActuFragment extends Fragment {
                         adapteursPost = new AdapteursPost(getContext(), modelePostList);
                         //set adapter to recyclerView
                         recyclerView.setAdapter(adapteursPost);
+
+                        progressDialog_loadPost.dismiss();
                     }
                 }
             }
@@ -238,7 +241,6 @@ public class ActuFragment extends Fragment {
                 Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-        progressDialog_loadPost.dismiss();
     }
 
     @Override

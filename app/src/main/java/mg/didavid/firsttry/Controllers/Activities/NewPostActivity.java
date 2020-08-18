@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -31,8 +30,11 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,19 +49,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.iceteck.silicompressorr.FileUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
+import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
 public class NewPostActivity extends AppCompatActivity {
@@ -68,11 +68,16 @@ public class NewPostActivity extends AppCompatActivity {
 
     EditText postDescription;
     TextView textView_addImage_post;
-    ImageView imagePost;
+    ImageButton imageButton_addImage;
     Button publishBtn;
+    int countImage = 0;
+    final int NUMBER_MAX_OF_IMAGES = 3;
+    boolean imagePicked = false;
+    String[] uriString = new String[NUMBER_MAX_OF_IMAGES];
 
     ProgressDialog progressDialog_uploadPost;
 
+    LinearLayout linearLayout_ImagePostAddedDynamically;
     LinearLayout linearLayout_addImagePost;
 
 
@@ -94,13 +99,14 @@ public class NewPostActivity extends AppCompatActivity {
 
     String nomEtPrenonm, pseudo, uid, photoDeProfile;
 
+    List<Uri> getAllUri = new ArrayList<>();
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint({"ResourceType", "WrongViewCast"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
-
-
 
         checkConnexion();
 
@@ -108,11 +114,12 @@ public class NewPostActivity extends AppCompatActivity {
         checkUserStatus();
 
         postDescription = findViewById(R.id.editText_inputPostDescription_newPost);
-        imagePost = findViewById(R.id.imageView_inputImage_newPost);
         publishBtn = findViewById(R.id.button_publish_post);
         linearLayout_addImagePost = findViewById(R.id.linearLayout_addImage_newPost);
+        linearLayout_ImagePostAddedDynamically = findViewById(R.id.linearLayout_forImageAddedDynamically);
         textView_addImage_post = findViewById(R.id.textView_nearAddImage_newPost);
         textView_addImage_post.setVisibility(View.VISIBLE);
+        imageButton_addImage = findViewById(R.id.imageButton_addImage_post);
 
         progressDialog_uploadPost = new ProgressDialog(this);
 
@@ -125,10 +132,15 @@ public class NewPostActivity extends AppCompatActivity {
         storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         //get image from camera/gallery on click
+        //handle if there is 3 images added, change view for not clickable
         linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                checkImagePickDialog();
+                if (countImage < 3) {
+                    checkImagePickDialog();
+                }else {
+                    Toast.makeText(NewPostActivity.this, "Vous n'avez droit qu'à 3 photos", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -136,20 +148,64 @@ public class NewPostActivity extends AppCompatActivity {
         publishBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String description = postDescription.getText().toString();
+                progressDialog_uploadPost.setMessage("Publication de votre post ...");
+                progressDialog_uploadPost.show();
+                progressDialog_uploadPost.setCancelable(false);
+                progressDialog_uploadPost.setCanceledOnTouchOutside(false);
+                final String description = postDescription.getText().toString();
 
-                Uri comressedImage_uir = compressedAndSetImage();
-                    if (comressedImage_uir == null) {
+                    if (!(getAllUri != null) || getAllUri.isEmpty()) {
                         if (TextUtils.isEmpty(description)) {
                             Toast.makeText(NewPostActivity.this, "Veillez entrer une description à votre publication", Toast.LENGTH_SHORT).show();
-                            return;
+                        } else {
+                            //post without image
+                            uploadPost(description);
                         }
-                        //post without image
-                        uploadPost(description, "noImage");
-                    } else {
+                    } else if (getAllUri != null){
                         //post with image
-                        uploadPost(description, String.valueOf(comressedImage_uir));
+                        final String[] downloadUri = new String[countImage];
+                        final String timestamp = String.valueOf(System.currentTimeMillis());
+                        for (int i = 0; i < countImage; i++) {
+                            List<Uri> uriLisOfImagesCompressed = compressedAndSetImage();
+                            String filePathName = "Pubblication/" + "publication_" + timestamp + "_" + i;
+                            StorageReference storageReference1 = storageReference.child(filePathName);
+                            final int finalI = i;
+                            storageReference1.putFile(uriLisOfImagesCompressed.get(i))
+                                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                        @SuppressLint("LongLogTag")
+                                        @Override
+                                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                            Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                                            while (!uriTask.isSuccessful()) {
+                                                Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
+                                                Toast.makeText(NewPostActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
+                                            }
+
+                                            //verifier si l'image est téléversée ou pas et que l'url est bien reçu
+                                            uriTask.isSuccessful();
+                                            downloadUri [finalI] = uriTask.getResult().toString();
+                                            Log.d("image uri", downloadUri[finalI]);
+                                            int imageNumber = finalI;
+                                            getUri(downloadUri, imageNumber, description);
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Log.d("message important", "******************************" + e.getMessage());
+                                    Toast.makeText(NewPostActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    progressDialog_uploadPost.dismiss();
+                                }
+                            });
+                        }
                     }
+            }
+
+            private void getUri(String[] downloadUri, int finalI, String description) {
+                uriString [finalI] = downloadUri [finalI];
+                Log.d("Image sended", uriString[finalI]);
+                if (finalI == countImage - 1) {
+                    uploadPost(description);
+                }
             }
         });
 
@@ -176,131 +232,63 @@ public class NewPostActivity extends AppCompatActivity {
                 Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
+    private void uploadPost(final String description) {
+        String [] images = new String[NUMBER_MAX_OF_IMAGES];
+        final String timestamp = String.valueOf(System.currentTimeMillis());
+        for (int i = 0; i < NUMBER_MAX_OF_IMAGES; i++) {
+            if (uriString [i] != null && !uriString [i].isEmpty()) {
+                images [i] = uriString [i];
+            }else {
+                images [i] = "noImage";
+            }
+            Log.d("image = " + i, images[i]);
+        }
+
+        //post with image
+        //store into Firestore
+        ModelePost modelePost = new ModelePost(uid, nomEtPrenonm, pseudo, "0", "0", photoDeProfile, timestamp, description, images[0], images[1], images[2],timestamp);
+
+        //store data on Firestore
+        CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
+        reference.document(timestamp).set(modelePost)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
+                        //reset views after posting
+                        postDescription.setText("");
+                        //imagePost.setImageURI(null);
+                        //imagePost.setMinimumHeight(0);
+
+                        //go to main activity when finish
+                        sendToMainActivity();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressDialog_uploadPost.dismiss();
+                Log.d("message important", "******************************" + e.getMessage());
+                Toast.makeText(NewPostActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     //compression de l'image
-    private Uri compressedAndSetImage() {
-        Uri compressedImage = null;
-        if (image_uri != null){
-            File file = new File(SiliCompressor.with(this)
-                    .compress(FileUtils.getPath(this, image_uri), new File(this.getCacheDir(), "temp")));
-            compressedImage = Uri.fromFile(file);
+    private List<Uri> compressedAndSetImage() {
+        List<Uri> listUriCompressed = new ArrayList<>();
+        listUriCompressed.clear();
+
+        for (int i = 0; i < countImage; i++) {
+            if (getAllUri.get(i) != null) {
+                File file = new File(SiliCompressor.with(this)
+                        .compress(FileUtils.getPath(this, getAllUri.get(i)), new File(this.getCacheDir(), "temp_" + i)));
+                listUriCompressed.add(i, Uri.fromFile(file));
+                Log.d("valeur de i = " + i, String.valueOf(listUriCompressed.get(i)));
+            }
         }
-        return compressedImage;
-    }
-
-
-    //posting
-    private void uploadPost(final String description, String uri) {
-        progressDialog_uploadPost.setMessage("Publication de votre post ...");
-        progressDialog_uploadPost.show();
-
-        final String timestamp = String.valueOf(System.currentTimeMillis());
-        String filePathName = "Pubblication/" + "publication_" + timestamp;
-
-        //post with image
-        if (!uri.equals("noImage")) {
-            StorageReference storageReference1 = storageReference.child(filePathName);
-            storageReference1.putFile(Uri.parse(uri))
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @SuppressLint("LongLogTag")
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
-                            while (!uriTask.isSuccessful()) {
-                                Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
-                                Toast.makeText(NewPostActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
-                            }
-                            String downloadUri = uriTask.getResult().toString();
-
-                            //verifier si l'image est téléversée ou pas et que l'url est bien reçu
-                            if (uriTask.isSuccessful()) {
-                                //store into Firestore
-                                Map<String, Object> result = new HashMap<>();
-                                result.put("user_id", uid);
-                                result.put("name", nomEtPrenonm);
-                                result.put("pseudo", pseudo);
-                                result.put("profile_image", photoDeProfile);
-                                result.put("post_id", timestamp);
-                                result.put("post_description", description);
-                                result.put("post_image", downloadUri);
-                                result.put("post_time", timestamp);
-                                result.put("post_kiff", "0");
-                                result.put("comment_count", "0");
-
-                                //store data on Firestore
-                                CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
-                                reference.document(timestamp).set(result)
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
-                                                //reset views after posting
-                                                postDescription.setText("");
-                                                imagePost.setImageURI(null);
-                                                imagePost.setMinimumHeight(0);
-
-                                                //go to main activity when finish
-                                                sendToMainActivity();
-                                            }
-                                        }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        progressDialog_uploadPost.dismiss();
-                                        Log.d("message important", "******************************" + e.getMessage());
-                                        Toast.makeText(NewPostActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            } else {
-                                Toast.makeText(NewPostActivity.this, "Une erreur est survenue!", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d("message important", "******************************" + e.getMessage());
-                    Toast.makeText(NewPostActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    progressDialog_uploadPost.dismiss();
-                }
-            });
-        }else{//post without image
-            Map<String, Object> result = new HashMap<>();
-            result.put("user_id", uid);
-            result.put("name", nomEtPrenonm);
-            result.put("pseudo", pseudo);
-            result.put("profile_image", photoDeProfile);
-            result.put("post_id", timestamp);
-            result.put("post_description", description);
-            result.put("post_image", "noImage");
-            result.put("post_time", timestamp);
-            result.put("post_kiff", "0");
-            result.put("comment_count", "0");
-
-            //store data on Firestore
-            CollectionReference reference = FirebaseFirestore.getInstance().collection("Publications");
-            reference.document(timestamp).set(result)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(NewPostActivity.this, "Status mise à jour", Toast.LENGTH_SHORT).show();
-
-                            //reset views after posting
-                            postDescription.setText("");
-                            imagePost.setImageURI(null);
-
-                            //go to main activity when finish
-                            sendToMainActivity();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    progressDialog_uploadPost.dismiss();
-                    Log.d("message important", "******************************" + e.getMessage());
-                    Toast.makeText(NewPostActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
+        return listUriCompressed;
     }
 
     private void sendToMainActivity() {
@@ -398,16 +386,103 @@ public class NewPostActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK){
-            imagePost.setVisibility(View.VISIBLE);
-            if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
+            imagePicked = true;
+            if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE && data != null){
                 image_uri = data.getData();
-                imagePost.setImageURI(image_uri);
+                addImageToTheView();
             }
-            if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
-                imagePost.setImageURI(image_uri);
+            if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE) {
+                addImageToTheView();
             }
         }
     }
+
+    //create view dynamically
+    private void addImageToTheView() {
+        linearLayout_ImagePostAddedDynamically.addView(tableLayout(), countImage);
+        countImage = linearLayout_ImagePostAddedDynamically.getChildCount();
+        Log.d("countImage", String.valueOf(countImage));
+        if (countImage == 3) {
+            imageButton_addImage.setVisibility(View.GONE);
+            textView_addImage_post.setText("Limite d'images atteinte");
+        }
+    }
+
+    //Create a table layout for containing views
+    private TableLayout tableLayout() {
+        TableLayout tableLayout = new TableLayout(this);
+        tableLayout.addView(createRowView());
+        return tableLayout;
+
+    }
+
+    //create table rows for containing our widgets, then add it to the table layout
+    private TableRow createRowView() {
+        TableRow tableRow = new TableRow(this);
+        tableRow.setPadding(0,0,10,0);
+
+        ImageView imageView = new ImageView(this);
+        TableRow.LayoutParams params = new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT);
+        imageView.setLayoutParams(params);
+        imageView.setMaxWidth(170);
+        imageView.setMinimumWidth(150);
+        imageView.setMaxHeight(260);
+        imageView.setMinimumHeight(200);
+        imageView.setAdjustViewBounds(true);
+        imageView.setImageURI(image_uri);
+
+        //get image uri
+        Uri uriTemp = image_uri;
+        if (uriTemp != null && imagePicked) {
+            getAllUri.add(countImage, uriTemp);
+            imagePicked = false;
+            Log.d("uriTemp", String.valueOf(uriTemp));
+        }
+
+        //add image to table row
+        tableRow.addView(imageView);
+
+        ImageButton imageButton = new ImageButton(this);
+        TableRow.LayoutParams params1 = new TableRow.LayoutParams(45,60);
+        imageButton.setLayoutParams(params1);
+        imageButton.setImageResource(R.drawable.btn_clear);
+        imageButton.setOnClickListener(buttonDeleteImageClicked);
+        imageButton.setId(countImage);
+        tableRow.addView(imageButton);
+
+        return tableRow;
+    }
+
+    //delete view and image set
+    private View.OnClickListener buttonDeleteImageClicked = new View.OnClickListener () {
+        @Override
+        public void onClick(View v) {
+            int view_id = v.getId();
+            Log.d("viewId", String.valueOf(view_id));
+            //delete the image uri o this view
+            for (int i = view_id; i < countImage; i++) {
+                if (i < (countImage - 1)) {
+                    getAllUri.set(i, getAllUri.get(i+1));
+                    Log.d("image getAllUri n°" + i, String.valueOf(getAllUri.get(i)));
+                    TableLayout tableLayout = (TableLayout) linearLayout_ImagePostAddedDynamically.getChildAt(i + 1);
+                    TableRow tableRow = (TableRow) tableLayout.getChildAt(0);
+                    ImageButton imageButton = (ImageButton) tableRow.getChildAt(1);
+                    imageButton.setId(i);
+                } else {
+                    getAllUri.remove(i);
+                }
+            }
+            //remove view
+            TableRow tableRow = (TableRow) v.getParent();
+            TableLayout tableLayout = (TableLayout) tableRow.getParent();
+            linearLayout_ImagePostAddedDynamically.removeView(tableLayout);
+
+            countImage --; //decrease image count
+            imageButton_addImage.setVisibility(View.VISIBLE);
+            textView_addImage_post.setText("Ajouter une image");
+        }
+    };
+
 
     private void checkImagePickDialog() {
         String[] options = {"Prendre une photo", "Importer depuis la gallerie"};
@@ -460,16 +535,6 @@ public class NewPostActivity extends AppCompatActivity {
         super.onResume();
         checkConnexion();
         checkUserStatus();
-
-        // pour que le bouton pour importer une image soit cliquable
-        // durant toute la vie de l'activité NewPostActivity
-        // on le met dans le onResume
-        linearLayout_addImagePost.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkImagePickDialog();
-            }
-        });
     }
 
     // CHECK IF INTERNET CONNEXION IS AVAILABLE

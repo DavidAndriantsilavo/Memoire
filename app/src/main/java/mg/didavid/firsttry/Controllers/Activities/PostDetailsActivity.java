@@ -24,7 +24,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.InputType;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Gravity;
@@ -36,10 +35,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -52,7 +51,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
@@ -63,7 +61,6 @@ import com.iceteck.silicompressorr.SiliCompressor;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.security.spec.PSSParameterSpec;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -80,13 +77,14 @@ public class PostDetailsActivity extends AppCompatActivity {
     //to get details of the post and user
     String myName, myPseudo, myUid = FirebaseAuth.getInstance().getUid()
             , myProfile_image, post_id, post_kiff, comment_count, hidName, hisProfile_image, hisPseudo,
-            postImage, postDescription, user_id;
+            postImage1, postImage2, postImage3, postDescription, user_id;
 
     //post details views
     TextView user_name, user_pseudo, post_time, post_description, textView_postKiff, textView_nbrPosComment;
     ImageButton imageButton_more;
-    ImageView user_profileImage, post_image, imageAddedIntoComment;
+    ImageView user_profileImage, post_image1, post_image2, post_image3, imageAddedIntoComment;
     Button kiff_button, share_button;
+    LinearLayout linearLayout_image23;
 
     //comment views
     RecyclerView recyclerView_comments;
@@ -140,10 +138,13 @@ public class PostDetailsActivity extends AppCompatActivity {
         textView_nbrPosComment = findViewById(R.id.texteView_commentsNbr_comment);
         imageButton_more = findViewById(R.id.button_moreAction_comment);
         user_profileImage = findViewById(R.id.imageView_photoDeProfile_postComment);
-        post_image = findViewById(R.id.imageView_imagePost_comment);
+        post_image1 = findViewById(R.id.imageView_imagePost1_comment);
+        post_image2 = findViewById(R.id.imageView_imagePost2_comment);
+        post_image3 = findViewById(R.id.imageView_imagePost3_comment);
         imageAddedIntoComment = findViewById(R.id.imageView_inputImage_EditComment_comment);
         kiff_button = findViewById(R.id.button_kiff_comment);
         share_button = findViewById(R.id.button_partager_comment);
+        linearLayout_image23 = findViewById(R.id.linearLayout_imagePost23_comment);
         //comment views
         recyclerView_comments = findViewById(R.id.recyclerView_comment);
         comment_userProfileImage = findViewById(R.id.imageView_photoDeProfile_comment);
@@ -243,7 +244,17 @@ public class PostDetailsActivity extends AppCompatActivity {
         imageButton_more.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreOptions(imageButton_more, user_id, myUid, post_id, postImage, postDescription);
+                showMoreOptions(imageButton_more, user_id, myUid, post_id, postImage1, postImage2, postImage3, postDescription);
+            }
+        });
+
+        //textView post kiff clicked, send to ShowWhokiffActivity
+        textView_postKiff.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PostDetailsActivity.this, ShowWhoKiffAvtivity.class);
+                intent.putExtra("key", post_id);
+                startActivity(intent);
             }
         });
     }
@@ -294,7 +305,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image, final String post_description) {
+    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(PostDetailsActivity.this, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
@@ -314,7 +325,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                 int item_id = item.getItemId();
                 if (item_id == 0){
                     //option delete is checked
-                    avertissement(post_id, post_image);
+                    avertissement(post_id, post_image1, post_image2, post_image3);
                 }else if (item_id == 1) {
                     //option edit is checked
                     editPostDescription(post_id, post_description);
@@ -389,7 +400,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void avertissement(final String post_id, final String post_image) {
+    private void avertissement(final String post_id, final String post_image1, final String post_image2, final String post_image3) {
         //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
         AlertDialog.Builder builder = new AlertDialog.Builder(PostDetailsActivity.this);
         builder.setMessage("Etes-vous sûr de vouloir supprimer cette publication ?");
@@ -399,7 +410,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                 "OUI",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        beginDelete(post_id, post_image);
+                        beginDelete(post_id, post_image1, post_image2, post_image3);
                     }
                 });
 
@@ -415,21 +426,19 @@ public class PostDetailsActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private void beginDelete(String post_id, String post_image) {
-        if (post_image.equals("noImage")){
-            //delete post without image
-            deletWithoutImage(post_id);
-        }else {
-            //delete with image
-            deleteWithImage(post_id, post_image);
-        }
+    private void beginDelete(String post_id, String post_image1, String post_image2, String post_image3) {
+        //delete post image
+        deletePostImage(post_image1);
+        deletePostImage(post_image2);
+        deletePostImage(post_image3);
+        //delete post
+        deletePost(post_id);
     }
 
-    private void deleteWithImage(final String post_id, String post_image) {
+    private void deletePostImage(final String post_image) {
         final ProgressDialog progressDialog_delete = new ProgressDialog(PostDetailsActivity.this);
         progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
         progressDialog_delete.show();
-
         //we must delete image stored in Firebase storage
         //after that deleting post from Firestore
         StorageReference storagePickReference = FirebaseStorage.getInstance().getReferenceFromUrl(post_image);
@@ -437,37 +446,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        //image deleted, now delete data on database
-                        DocumentReference documentReference = collectionReference_post.document(post_id);
-                        documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(PostDetailsActivity.this, "Publication supprimer avec succès", Toast.LENGTH_SHORT).show();
-                                //delete post's comment
-                                final CollectionReference documentReference1 = FirebaseFirestore.getInstance().collection("Comments");
-                                documentReference1.get()
-                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                            @Override
-                                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                                if (!queryDocumentSnapshots.isEmpty()){
-                                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                                        if (queryDocumentSnapshots.getDocuments().contains(myUid)){
-                                                            String comment_id = documentSnapshot.getString("comment_time");
-                                                            documentReference1.document(comment_id).delete();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        });
-                                sendToMain();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(PostDetailsActivity.this, "Impossible de supprimer la publication !", Toast.LENGTH_SHORT).show();
-                                progressDialog_delete.dismiss();
-                            }
-                        });
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -483,7 +462,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         finish();
     }
 
-    private void deletWithoutImage(final String post_id) {
+    private void deletePost(final String post_id) {
         final ProgressDialog progressDialog_delete = new ProgressDialog(PostDetailsActivity.this);
         progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
         progressDialog_delete.show();
@@ -495,8 +474,8 @@ public class PostDetailsActivity extends AppCompatActivity {
             public void onSuccess(Void aVoid) {
                 Toast.makeText(PostDetailsActivity.this, "Publication supprimer avec succès", Toast.LENGTH_SHORT).show();
                 //delete post's comment
-                final CollectionReference documentReference1 = FirebaseFirestore.getInstance().collection("Comments");
-                documentReference1.get()
+                final CollectionReference collectionReference_comment = FirebaseFirestore.getInstance().collection("Comments");
+                collectionReference_comment.get()
                         .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                             @Override
                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
@@ -504,12 +483,16 @@ public class PostDetailsActivity extends AppCompatActivity {
                                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                                         if (queryDocumentSnapshots.getDocuments().contains(myUid)){
                                             String comment_id = documentSnapshot.getString("comment_time");
-                                            documentReference1.document(comment_id).delete();
+                                            collectionReference_comment.document(comment_id).delete();
                                         }
                                     }
                                 }
                             }
                         });
+
+                //delete post kiffs
+                collectionReference_kiffs.document(post_id).delete();
+
                 sendToMain();
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -529,20 +512,12 @@ public class PostDetailsActivity extends AppCompatActivity {
         }else if (imageCompressed_uri == null){ //upload comment without image
             progressDialog_sendComment.show();
             String comment_time = String.valueOf(System.currentTimeMillis());
+            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName, myPseudo, myProfile_image, "noImage");
             //store data to database
             DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
-            Map<String, Object> commentDetails = new HashMap<>();
-            commentDetails.put("comment_time", comment_time);
-            commentDetails.put("post_comment", post_comment);
-            commentDetails.put("comment_image", "noImage");
-            commentDetails.put("post_id", post_id);
-            commentDetails.put("user_id", myUid);
-            commentDetails.put("name", myName);
-            commentDetails.put("pseudo", myPseudo);
-            commentDetails.put("profile_image", myProfile_image);
 
             //put data to database
-            documentReference_comment.set(commentDetails, SetOptions.merge())
+            documentReference_comment.set(modelComment, SetOptions.merge())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
@@ -582,20 +557,12 @@ public class PostDetailsActivity extends AppCompatActivity {
                             Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
                             while (!uriTask.isSuccessful()){} //loop until task is complete
                             String comment_image = uriTask.getResult().toString();
+                            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName, myPseudo, myProfile_image, comment_image);
                             //store data to database
                             DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
-                            Map<String, Object> commentDetails = new HashMap<>();
-                            commentDetails.put("comment_time", comment_time);
-                            commentDetails.put("post_comment", post_comment);
-                            commentDetails.put("comment_image",comment_image);
-                            commentDetails.put("post_id", post_id);
-                            commentDetails.put("user_id", myUid);
-                            commentDetails.put("name", myName);
-                            commentDetails.put("pseudo", myPseudo);
-                            commentDetails.put("profile_image", myProfile_image);
 
                             //put data to database
-                            documentReference_comment.set(commentDetails, SetOptions.merge())
+                            documentReference_comment.set(modelComment, SetOptions.merge())
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
@@ -860,7 +827,9 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         postDescription = "" + value.getString("post_description");
                                         post_kiff = "" + value.getString("post_kiff");
                                         String postTime = "" + value.getString("post_time");
-                                        postImage = "" + value.getString("post_image");
+                                        postImage1 = "" + value.getString("post_image1");
+                                        postImage2 = "" + value.getString("post_image2");
+                                        postImage3 = "" + value.getString("post_image3");
                                         hisProfile_image = "" + value.getString("profile_image");
                                         String user_id = "" + value.getString("user_id");
                                         hisPseudo = "" + value.getString("pseudo");
@@ -900,15 +869,37 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         post_time.setText(pTemps);
                                         user_name.setText(hidName);
                                         user_pseudo.setText(hisPseudo);
-                                        //set image
-                                        if (post_image.equals("noImage")) {
-                                            post_image.setVisibility(View.GONE);
+                                        //set image1
+                                        if (postImage1.equals("noImage")) {
+                                            post_image1.setVisibility(View.GONE);
                                         }else {
-                                            post_image.setVisibility(View.VISIBLE);
+                                            post_image1.setVisibility(View.VISIBLE);
                                             try {
-                                                Picasso.get().load(postImage).into(post_image);
+                                                Picasso.get().load(postImage1).into(post_image1);
                                             } catch (Exception e) { }
                                         }
+                                        //set image2
+                                        if (postImage2.equals("noImage")) {
+                                            post_image2.setVisibility(View.GONE);
+                                        }else {
+                                            post_image2.setVisibility(View.VISIBLE);
+                                            try {
+                                                Picasso.get().load(postImage2).into(post_image2);
+                                            } catch (Exception e) { }
+                                        }
+                                        //set image3
+                                        if (postImage3.equals("noImage")) {
+                                            post_image3.setVisibility(View.GONE);
+                                        }else {
+                                            post_image3.setVisibility(View.VISIBLE);
+                                            try {
+                                                Picasso.get().load(postImage3).into(post_image3);
+                                            } catch (Exception e) { }
+                                        }
+                                        if (postImage2.equals("noImage") && postImage3.equals("noImage")) {
+                                            linearLayout_image23.setVisibility(View.GONE);
+                                        }
+
                                         //set his profile image
                                         try{
                                             Picasso.get().load(hisProfile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(user_profileImage);
@@ -931,11 +922,27 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         });
 
                                         //post image clicked, go to ShowImageActivity
-                                        post_image.setOnClickListener(new View.OnClickListener() {
+                                        post_image1.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
                                                 Intent intent2 = new Intent(PostDetailsActivity.this, ShowImageActivity.class);
-                                                intent2.putExtra("showImage", postImage);
+                                                intent2.putExtra("showImage", postImage1);
+                                                startActivity(intent2);
+                                            }
+                                        });
+                                        post_image2.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                Intent intent2 = new Intent(PostDetailsActivity.this, ShowImageActivity.class);
+                                                intent2.putExtra("showImage", postImage2);
+                                                startActivity(intent2);
+                                            }
+                                        });
+                                        post_image3.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                Intent intent2 = new Intent(PostDetailsActivity.this, ShowImageActivity.class);
+                                                intent2.putExtra("showImage", postImage3);
                                                 startActivity(intent2);
                                             }
                                         });

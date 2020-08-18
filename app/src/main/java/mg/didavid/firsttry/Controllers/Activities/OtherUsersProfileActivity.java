@@ -256,15 +256,15 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void configureToolbar(String name, String pseudo){
+    private void configureToolbar(String name_resto, String phone_resto){
         // Get the toolbar view inside the activity layout
         Toolbar toolbar = findViewById(R.id.toolbar_otherUsersProfil);
         if (toolbar != null){
             //set toolbar title
             // Sets the Toolbar
             setSupportActionBar(toolbar);
-            this.setTitle(name);
-            toolbar.setSubtitle(pseudo);
+            this.setTitle(name_resto);
+            toolbar.setSubtitle(phone_resto);
             toolbar.setTitleTextAppearance(this, R.style.toolBarOtherUsers);
         }else {
             Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
@@ -340,5 +340,11 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                 Toast.makeText(OtherUsersProfileActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return super.onSupportNavigateUp();
     }
 }

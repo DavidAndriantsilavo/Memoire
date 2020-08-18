@@ -40,36 +40,41 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_margin="20dp">
-            <ImageView
-                android:id="@+id/imageView_inputImage_newPost"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:maxHeight="180dp"
-                android:adjustViewBounds="true"
-                android:visibility="gone"/>
+            android:orientation="horizontal"
+            android:layout_marginVertical="20dp"
+            android:layout_marginHorizontal="7dp">
             <LinearLayout
-                android:id="@+id/linearLayout_addImage_newPost"
+                android:id="@+id/linearLayout_forImageAddedDynamically"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="start"
-                android:layout_marginTop="10dp">
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_add_image_newpost_icon_dark"
-                    android:background="@color/white"/>
-                <TextView
-                    android:id="@+id/textView_nearAddImage_newPost"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ajouter une photo"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="2dp"/>
+                android:orientation="horizontal">
+
             </LinearLayout>
 
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linearLayout_addImage_newPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageButton
+                android:id="@+id/imageButton_addImage_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_add_image_newpost_icon_dark"
+                android:background="@color/white"/>
+            <TextView
+                android:id="@+id/textView_nearAddImage_newPost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter une photo"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="2dp"/>
         </LinearLayout>
 
         <Button

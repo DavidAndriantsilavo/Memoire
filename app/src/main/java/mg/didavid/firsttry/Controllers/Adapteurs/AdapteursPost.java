@@ -37,6 +37,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -48,10 +49,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import mg.didavid.firsttry.Controllers.Activities.MainActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.PostDetailsActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.ShowImageActivity;
+import mg.didavid.firsttry.Controllers.Activities.ShowWhoKiffAvtivity;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
@@ -93,7 +96,9 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         final String profile_image = postList.get(position).getProfile_image();
         final String post_id = postList.get(position).getPost_id();
         final String post_description = postList.get(position).getPost_description();
-        final String post_image = postList.get(position).getPost_image();
+        final String post_image1 = postList.get(position).getPost_image1();
+        final String post_image2 = postList.get(position).getPost_image2();
+        final String post_image3 = postList.get(position).getPost_image3();
         String post_timeStamp = postList.get(position).getPost_time();
         final String nbrPostKiffs = postList.get(position).getPost_kiff();
         final String nbrPostComments = postList.get(position).getComment_count();
@@ -115,27 +120,31 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                         post_description_ds = "",
                         post_time_ds = "",
                         post_kiff_ds = "",
-                        comment_count_ds = "";
+                        comment_count_ds = "",
+                        imagePost1 = "",
+                        imagePost2 = "",
+                        imagePost3 = "";
                 if (value != null) {
                     name_ds = value.getString("name");
                     profile_image_ds = value.getString("profile_image");
                     post_description_ds = value.getString("post_description");
                     post_kiff_ds = value.getString("post_kiff");
                     comment_count_ds = value.getString("comment_count");
+                    imagePost1 = value.getString("post_image1");
+                    imagePost2 = value.getString("post_image2");
+                    imagePost3 = value.getString("post_image3");
                 }
-                //convert timeStamp to dd/mm/yyyy hh:mm am/pm
-                Calendar calendar = Calendar.getInstance(Locale.getDefault());
-                try {
-                    calendar.setTimeInMillis(Long.parseLong(post_time_ds));
-                }catch (Exception e){
-                }
-                final String pTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
                 //set data
                 try {
                     holder.uNameTv.setText(name_ds);
-                    holder.pTimeTv.setText(pTemps);
                     holder.pDescriptionTv.setText(post_description_ds);
 
+                    //set user profile image
+                    try{
+                        Picasso.get().load(profile_image_ds).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.uPictureIv);
+                    }catch (Exception e){
+
+                    }
                     //manage kiff text view
                     if (post_kiff_ds.equals("0")) {
                         holder.pKiffTv.setVisibility(View.GONE);
@@ -160,12 +169,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
                 }catch (Exception e){
                 }
-                //set user profile image
-                try{
-                    Picasso.get().load(profile_image_ds).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.uPictureIv);
-                }catch (Exception e){
-
-                }
 
                 final String finalPost_kiff_ds = post_kiff_ds;
                 holder.kiffBtn.setOnClickListener(new View.OnClickListener() {
@@ -185,29 +188,79 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         try {
             holder.pseudo.setText(pseudo);
             holder.pTimeTv.setText(pTemps);
+            holder.uNameTv.setText(name);
+            holder.pDescriptionTv.setText(post_description);
 
         }catch (Exception e){
         }
+        //set user profile image
+        try{
+            Picasso.get().load(profile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.uPictureIv);
+        }catch (Exception e){
 
+        }
         //set post image
-        if (post_image.equals("noImage")) {
-            holder.pImageIv.setVisibility(View.GONE);
+        if (post_image1.equals("noImage")) {
+            holder.pImageIv1.setVisibility(View.GONE);
         }else {
-            holder.pImageIv.setVisibility(View.VISIBLE);
+            holder.pImageIv1.setVisibility(View.VISIBLE);
             try {
-                Picasso.get().load(post_image).into(holder.pImageIv);
+                Picasso.get().load(post_image1).into(holder.pImageIv1);
             } catch (Exception e) {
 
             }
         }
+        if (post_image2.equals("noImage")) {
+            holder.pImageIv2.setVisibility(View.GONE);
+        }else {
+            holder.pImageIv2.setVisibility(View.VISIBLE);
+            try {
+                Picasso.get().load(post_image2).into(holder.pImageIv2);
+            } catch (Exception e) {
+
+            }
+        }
+        if (post_image3.equals("noImage")) {
+            holder.pImageIv3.setVisibility(View.GONE);
+        }else {
+            holder.pImageIv3.setVisibility(View.VISIBLE);
+            try {
+                Picasso.get().load(post_image3).into(holder.pImageIv3);
+            } catch (Exception e) {
+
+            }
+        }
+        if (post_image2.equals("noImage") && post_image3.equals("noImage")) {
+            holder.pImageIv1.setAdjustViewBounds(true);
+        }
 
         //image post clicked
-        holder.pImageIv.setOnClickListener(new View.OnClickListener() {
+        holder.pImageIv1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!post_image.equals("noImage")) {
+                if (!post_image1.equals("noImage")) {
                     Intent intent = new Intent(context, ShowImageActivity.class);
-                    intent.putExtra("showImage", post_image);
+                    intent.putExtra("showImage", post_image1);
+                    context.startActivity(intent);
+                }
+            }
+        });
+        holder.pImageIv2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!post_image2.equals("noImage")) {
+                    Intent intent = new Intent(context, ShowImageActivity.class);
+                    intent.putExtra("showImage", post_image2);
+                    context.startActivity(intent);
+                }
+            }
+        });
+        holder.pImageIv3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!post_image3.equals("noImage")) {
+                    Intent intent = new Intent(context, ShowImageActivity.class);
+                    intent.putExtra("showImage", post_image3);
                     context.startActivity(intent);
                 }
             }
@@ -217,7 +270,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image, post_description);
+                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image1, post_image2, post_image3, post_description);
             }
         });
 
@@ -286,6 +339,16 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             }
         });
 
+        //click kiff count to show who kiffs the post
+        holder.pKiffTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, ShowWhoKiffAvtivity.class);
+                intent.putExtra("key", post_id);
+                context.startActivity(intent);
+            }
+        });
+
         //set kiff for its post
         setKiffs(holder, post_id);
     }
@@ -345,7 +408,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
     }
 
-    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image, final String post_description) {
+    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
@@ -365,7 +428,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 int item_id = item.getItemId();
                 if (item_id == 0){
                     //option delete is checked
-                    avertissement(post_id, post_image);
+                    avertissement(post_id, post_image1, post_image2, post_image3);
                 }else if (item_id == 1) {
                     //option edit is checked
                     editPostDescription(post_id, post_description);
@@ -440,17 +503,17 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         dialog.show();
     }
 
-    private void avertissement(final String post_id, final String post_image) {
+    private void avertissement(final String post_id, final String post_image1, final String post_image2, final String post_image3) {
         //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Etes-vous sûr de vouloir supprimer ce commentaire ?");
+        builder.setMessage("Etes-vous sûr de vouloir supprimer cette publication ?");
         builder.setCancelable(true);
 
         builder.setPositiveButton(
                 "OUI",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        beginDelete(post_id, post_image);
+                        beginDelete(post_id, post_image1, post_image2, post_image3);
                     }
                 });
 
@@ -466,65 +529,70 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         alert.show();
     }
 
-    private void beginDelete(String post_id, String post_image) {
-        if (post_image.equals("noImage")){
-            //delete post without image
-            deletWithoutImage(post_id);
-        }else {
-            //delete with image
-            deleteWithImage(post_id, post_image);
+    private void beginDelete(String post_id, String post_image1, String post_image2, String post_image3) {
+        //delete post image
+        deletePostImage(post_image1);
+        deletePostImage(post_image2);
+        deletePostImage(post_image3);
+        //delete post
+        deletePost(post_id);
+    }
+
+    private void deletePostImage(final String post_image) {
+        if (!post_image.equals("noImage")) {
+            final ProgressDialog progressDialog_delete = new ProgressDialog(context);
+            progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
+            progressDialog_delete.show();
+            //we must delete image stored in Firebase storage
+            //after that deleting post from Firestore
+            StorageReference storagePickReference = FirebaseStorage.getInstance().getReferenceFromUrl(post_image);
+            storagePickReference.delete()
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            progressDialog_delete.dismiss();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(context, "Impossible de supprimer la publication", Toast.LENGTH_SHORT).show();
+                    progressDialog_delete.dismiss();
+                }
+            });
         }
     }
 
-    private void deleteWithImage(final String post_id, String post_image) {
-        final ProgressDialog progressDialog_delete = new ProgressDialog(context);
-        progressDialog_delete.setMessage("Suppressoin de la publication en cours...");
-        progressDialog_delete.show();
-
-        //we must delete image stored in Firebase storage
-        //after that deleting post from Firestore
-        StorageReference storagePickReference = FirebaseStorage.getInstance().getReferenceFromUrl(post_image);
-        storagePickReference.delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        //image deleted, now delete data on database
-                        DocumentReference documentReference = collectionReference_post.document(post_id);
-                        documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(context, "Publication supprimer avec succès", Toast.LENGTH_SHORT).show();
-                                progressDialog_delete.dismiss();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(context, "Impossible de supprimer la publication !", Toast.LENGTH_SHORT).show();
-                                progressDialog_delete.dismiss();
-                            }
-                        });
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Impossible de supprimer la publication", Toast.LENGTH_SHORT).show();
-                progressDialog_delete.dismiss();
-            }
-        });
-    }
-
-    private void deletWithoutImage(final String post_id) {
+    private void deletePost(final String post_id) {
         final ProgressDialog progressDialog_delete = new ProgressDialog(context);
         progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
         progressDialog_delete.show();
-
         //delete data from Firestore
         DocumentReference documentReference = collectionReference_post.document(post_id);
         documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(context, "Publication supprimer avec succès", Toast.LENGTH_SHORT).show();
-                progressDialog_delete.dismiss();
+                //delete post's comment
+                final CollectionReference documentReference1 = FirebaseFirestore.getInstance().collection("Comments");
+                documentReference1.get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                if (!queryDocumentSnapshots.isEmpty()){
+                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        if (queryDocumentSnapshots.getDocuments().contains(mCurrentUserId)){
+                                            String comment_id = documentSnapshot.getString("comment_time");
+                                            documentReference1.document(comment_id).delete();
+                                            progressDialog_delete.dismiss();
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                //delete post kiffs
+                collectionReference_kiffs.document(post_id).delete();
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -544,18 +612,20 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     class MyHolder extends RecyclerView.ViewHolder{
 
         //views from row_post.xml
-        ImageView uPictureIv, pImageIv;
+        ImageView uPictureIv, pImageIv1, pImageIv2, pImageIv3;
         TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pComment, pseudo;
         ImageButton moreBtn;
         Button kiffBtn, commenterBtn, partagerBtn;
-        LinearLayout user_details;
+        LinearLayout user_details, linearLayout_image23;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
 
             //init views
             uPictureIv = itemView.findViewById(R.id.imageView_photoDeProfile_actu);
-            pImageIv = itemView.findViewById(R.id.imageView_imagePost_actu);
+            pImageIv1 = itemView.findViewById(R.id.imageView_imagePost1_actu);
+            pImageIv2 = itemView.findViewById(R.id.imageView_imagePost2_actu);
+            pImageIv3 = itemView.findViewById(R.id.imageView_imagePost3_actu);
             uNameTv = itemView.findViewById(R.id.textView_nomUser_actu);
             pTimeTv = itemView.findViewById(R.id.textView_temps_actu);
             pseudo = itemView.findViewById(R.id.texteView_pseudo);
@@ -567,6 +637,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
             partagerBtn = itemView.findViewById(R.id.button_partager_actu);
             user_details = itemView.findViewById(R.id.linearLayout_userDetails);
+            linearLayout_image23 = itemView.findViewById(R.id.linearLayout_imagePost23_actu);
         }
     }
 }

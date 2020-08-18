@@ -1,5 +1,6 @@
 package mg.didavid.firsttry.Controllers.Adapteurs;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -92,9 +94,24 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         String commentTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
         //set data
+        //add document snapshot on view for updating data snapshotly
+        // we just need to do this for the comment's content only because it can be changed
+        DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);
+        documentReference_comment
+                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (value != null){
+                            String comment_content = value.getString("post_comment");
+                            if (comment_content != null && !comment_content.isEmpty()) {
+                                holder.commentContent_comment.setText(comment_content);
+                            }
+                        }
+                    }
+                });
         holder.userName_comment.setText(name);
         holder.userPseudo_comment.setText(pseudo);
-        holder.commentContent_comment.setText(post_comment);
+        //holder.commentContent_comment.setText(post_comment);
         holder.commentTimeStamp_comment.setText(commentTemps);
         //set user image profile
         try {
@@ -307,6 +324,8 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
     }
 
     private void editComment(final String comment_id, String post_comment) {
+        final ProgressDialog progressDialog_editCommentContent = new ProgressDialog(context);
+        progressDialog_editCommentContent.setMessage("Chargement...");
         //custom dialog
         final Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.edit_post_description);
@@ -330,6 +349,11 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         valider.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressDialog_editCommentContent.show();
+                dialog.dismiss();
+                //to hide soft keyboard when comment sended
+                InputMethodManager inputMethodManager = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                 //get input text
                 final String value = editText_comment.getText().toString();
                 Map<String, Object> result = new HashMap<>();
@@ -341,7 +365,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Toast.makeText(context, "Commentaire mis à jour", Toast.LENGTH_LONG).show();
-                                dialog.dismiss();
+                                progressDialog_editCommentContent.dismiss();
                             }
                         });
             }

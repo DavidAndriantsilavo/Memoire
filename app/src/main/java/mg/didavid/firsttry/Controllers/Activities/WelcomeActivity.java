@@ -393,6 +393,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 profileImage_imageView.setImageURI(imageCompressed_uri);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
+                imageCompressed_uri = compressedAndSetImage();
                 profileImage_imageView.setImageURI(imageCompressed_uri);
             }
         }

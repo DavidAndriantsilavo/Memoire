@@ -480,6 +480,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 uploadProfileImage(imageCompressed_uri);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
+                imageCompressed_uri = compressedAndSetImage();
                 uploadProfileImage(imageCompressed_uri);
             }
         }

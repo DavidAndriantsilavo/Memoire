@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Controllers.Activities.RestoRegisterActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CREATION DE COMPTE RESTAURANT"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Veuillez renseigner les informations ci-après"
+            android:gravity="center"
+            android:textSize="15sp"
+            android:textStyle="italic"
+            android:layout_marginTop="7dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="20sp">
+            <LinearLayout
+                android:layout_width="108dp"
+                android:layout_height="108dp"
+                android:layout_gravity="left"
+                android:gravity="center"
+                android:background="@color/colorPrimaryDark">
+                <ImageView
+                    android:id="@+id/imageView_logoResto_registerResto"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_image_profile_icon_dark"
+                    android:background="@color/white"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout_addLogoResto_registerResto"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_gravity="bottom"
+                android:layout_marginTop="7dp"
+                android:clickable="true">
+                <ImageButton
+                    android:layout_width="30dp"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_add_image_newpost_icon_dark"
+                    android:scaleType="fitXY"
+                    android:background="@null"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Logo de vote restaurant"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:layout_gravity="bottom"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView_lastname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nom de votre restaurant"
+            android:paddingLeft="30dp"
+            android:textSize="15sp"
+            android:labelFor="@+id/editText_nom"
+            />
+
+        <EditText
+            android:id="@+id/editText_nomResto_registerResto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:inputType="textPersonName"
+            android:lines="1"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp">
+            <TextView
+                android:id="@+id/textView_localisationResto_registerResto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Localisation de votre restaurant"/>
+
+            <Button
+                android:id="@+id/button_localisationResto_registerResto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:paddingHorizontal="15dp"
+                android:text="Cliquez ici"
+                android:textAllCaps="false"
+                android:background="@drawable/rounded_grey_button"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView_prenom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mot de passe"
+            android:paddingLeft="30dp"
+            android:textSize="15sp"
+            android:layout_marginTop="5dp"
+            android:labelFor="@+id/editText_firstname"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            app:passwordToggleEnabled="true">
+            <EditText
+                android:id="@+id/editText_restoPassword_registerResto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:lines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textView_pseudo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confirmer mot de passe"
+            android:paddingLeft="30dp"
+            android:textSize="15sp"
+            android:layout_marginTop="5dp"
+            android:labelFor="@+id/editText_pseudo_welcome"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            app:passwordToggleEnabled="true">
+            <EditText
+                android:id="@+id/editText_confirmRestoPassword_registerResto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:lines="1" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/textView_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Contacts de cotre restaurant"
+            android:paddingLeft="30dp"
+            android:textSize="15sp"
+            android:layout_marginTop="15dp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:labelFor="@+id/editText_phone"
+                android:paddingLeft="20dp"
+                android:text="tel. :"
+                android:gravity="center"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/editText_phoneResto_registerResto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:layout_weight="1"
+                android:inputType="phone"
+                android:lines="1"
+                android:maxLength="10" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="email :"
+                android:textSize="17sp"
+                android:layout_weight="4"
+                android:paddingLeft="20dp"
+                android:labelFor="@+id/editText_email"/>
+
+            <EditText
+                android:id="@+id/editText_emailResto_registerResto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:layout_weight="1"
+                android:inputType="textEmailAddress"
+                android:lines="1" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/button_send_registerResto"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:text="envoyer"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/rounded_primary_button"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:layout_marginBottom="50dp"/>
+    </LinearLayout>
+
+
+</ScrollView>
