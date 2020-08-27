@@ -47,7 +47,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
+import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.ShowImageActivity;
 import mg.didavid.firsttry.Models.ModelComment;
@@ -144,12 +146,25 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         holder.userName_comment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (user_id.equals(mCurrentUserId)) {
+                //option show profile is checked
+                if (user_id.equals(mCurrentUserId)) { //set user to his profile
                     if (!context.getClass().equals(ProfileUserActivity.class)) {
                         Intent intent = new Intent(context, ProfileUserActivity.class);
                         context.startActivity(intent);
                     }
-                }else {
+                }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                    if (!context.getClass().equals(ProfileRestoActivity.class)) {
+                        Intent intent = new Intent(context, ProfileRestoActivity.class);
+                        intent.putExtra("user_id", user_id);
+                        context.startActivity(intent);
+                    }
+                }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                    if (!context.getClass().equals(OtherRestoProfileActivity.class)) {
+                        Intent intent = new Intent(context, OtherRestoProfileActivity.class);
+                        intent.putExtra("id_resto", user_id);
+                        context.startActivity(intent);
+                    }
+                }else { //send user to other user profile
                     if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
                         Intent intent = new Intent(context, OtherUsersProfileActivity.class);
                         intent.putExtra("user_id", user_id);
@@ -305,13 +320,13 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(context, "Publication supprimer avec succès", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Commentaire supprimer avec succès", Toast.LENGTH_SHORT).show();
                 progressDialog_delete.dismiss();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Impossible de supprimer la publication !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Impossible de supprimer le commentaire !", Toast.LENGTH_SHORT).show();
                 progressDialog_delete.dismiss();
             }
         });

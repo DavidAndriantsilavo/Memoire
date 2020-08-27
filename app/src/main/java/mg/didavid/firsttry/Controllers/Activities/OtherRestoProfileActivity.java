@@ -442,9 +442,9 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
-                    //searchPost(query);
+                    searchPost(query);
                 }else {
-                    //loadMyPost();
+                    loadRestoPost();
                 }
                 return false;
             }
@@ -453,15 +453,43 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 //called as and when user press any lettre
                 if (!TextUtils.isEmpty(newText)){
-                    //searchPost(newText);
+                    searchPost(newText);
                 }else {
-                    //loadMyPost();
+                    loadRestoPost();
                 }
                 return false;
             }
         });
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void searchPost(final String query) {
+        //path of all post
+        final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
+        //get all data from this reference
+        collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                    modelePosts_profile.clear(); //for deleting auto redundancy
+                    List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                    int size = modelePost.size();
+                    for (int i = 0; i < size; i++) {
+                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase()) && modelePost.get(i).getUser_id().equals(id_resto)) {
+                            modelePosts_profile.add(modelePost.get(i));
+                        }
+                    }
+                    //adapter
+                    adapteursPost_profile = new AdapteursPost(OtherRestoProfileActivity.this, modelePosts_profile);
+                    //set adapter to recyclerView
+                    restoProfile_recyclerView.setAdapter(adapteursPost_profile);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(OtherRestoProfileActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

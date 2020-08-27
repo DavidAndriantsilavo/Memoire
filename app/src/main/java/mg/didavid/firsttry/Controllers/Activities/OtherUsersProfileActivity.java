@@ -319,12 +319,11 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
         collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                for (DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()){
                     modelePosts_profile.clear(); //for deleting auto redundancy
                     List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                     int size = modelePost.size();
                     for (int i = 0; i < size; i++) {
-                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase())) {
+                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase()) && modelePost.get(i).getUser_id().equals(user_id)) {
                             modelePosts_profile.add(modelePost.get(i));
                         }
                     }
@@ -332,7 +331,6 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                     adapteursPost_profile = new AdapteursPost(OtherUsersProfileActivity.this, modelePosts_profile);
                     //set adapter to recyclerView
                     profile_recyclerView.setAdapter(adapteursPost_profile);
-                }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

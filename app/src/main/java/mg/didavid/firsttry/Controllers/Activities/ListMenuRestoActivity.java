@@ -4,53 +4,31 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.iceteck.silicompressorr.FileUtils;
-import com.iceteck.silicompressorr.SiliCompressor;
-import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,7 +118,6 @@ public class ListMenuRestoActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
         //hide others menu
-        menu.findItem(R.id.menu_search_button).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
         menu.findItem(R.id.menu_logout_profil).setVisible(false);
         if (id_resto.equals("resto_" + user_id)) {
@@ -148,7 +125,64 @@ public class ListMenuRestoActivity extends AppCompatActivity {
         }else {
             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         }
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchMenu(query);
+                }else {
+                    setData();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //called as and when user press any lettre
+                if (!TextUtils.isEmpty(newText)){
+                    searchMenu(newText);
+                }else {
+                    setData();
+                }
+                return false;
+            }
+        });
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void searchMenu(final String query) {
+        //path of all menu
+        final CollectionReference collectionMenu = FirebaseFirestore.getInstance().collection("Menu_list");
+        //get all data from this reference
+        collectionMenu.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                modelRestoSampleMenuList.clear(); //for deleting auto redundancy
+                List<ModelRestoSampleMenu> modelSampleMenu = queryDocumentSnapshots.toObjects(ModelRestoSampleMenu.class);
+                int size = modelSampleMenu.size();
+                for (int i = 0; i < size; i++) {
+                    if (modelSampleMenu.get(i).getMenuIngredient().toLowerCase().contains(query.toLowerCase())
+                    || modelSampleMenu.get(i).getMenuName().toLowerCase().contains(query.toLowerCase())
+                    || modelSampleMenu.get(i).getMenuPrice().contains(query.toLowerCase())) {
+                        modelRestoSampleMenuList.add(modelSampleMenu.get(i));
+                    }
+                }
+                //add data to adapter
+                adapterListMenu = new AdapterListMenu(ListMenuRestoActivity.this, modelRestoSampleMenuList);
+                //set adapter to recyclerView
+                recyclerView.setAdapter(adapterListMenu);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ListMenuRestoActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

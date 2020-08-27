@@ -77,7 +77,7 @@ import mg.didavid.firsttry.R;
 public class PostDetailsActivity extends AppCompatActivity {
 
     //to get details of the post and user
-    String myName, myPseudo, myUid = FirebaseAuth.getInstance().getCurrentUser().getUid()
+    String myName_temp, myName, myPseudo, myUid = FirebaseAuth.getInstance().getCurrentUser().getUid()
             , myProfile_image, post_id, post_kiff, comment_count, hidName, hisProfile_image, hisPseudo,
             postImage1, postImage2, postImage3, postDescription, user_id;
 
@@ -95,7 +95,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     EditText commnet_addComment;
     ImageButton comment_buttonSend, comment_addImage;
 
-    ProgressDialog progressDialog_sendComment, progressDialog_loadComment;
+    ProgressDialog progressDialog_loadComment;
 
     List<ModelComment> modelComments;
 
@@ -164,8 +164,6 @@ public class PostDetailsActivity extends AppCompatActivity {
 
         storageReference = FirebaseStorage.getInstance().getReference();
 
-        progressDialog_sendComment = new ProgressDialog(this);
-        progressDialog_sendComment.setMessage("Envoie de votre commentaire...");
         progressDialog_loadComment = new ProgressDialog(this);
         progressDialog_loadComment.setMessage("Chargement...");
         progressDialog_loadComment.show();
@@ -327,7 +325,7 @@ public class PostDetailsActivity extends AppCompatActivity {
             popupMenu.getMenu().add(Menu.NONE, 4, 4, "Envoyer un message");
         }
         popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir le profile");
-        if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) {
+        if (user_id.contains("resto") && !user_id.equals("resto_" + FirebaseAuth.getInstance().getCurrentUser().getUid())) {
             popupMenu.getMenu().add(Menu.NONE, 6, 6, "Noter ce restaurant");
             popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
         }
@@ -441,7 +439,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                                 @Override
                                 public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                                     if (value != null) {
-                                        myName = "" + value.getString("name_resto");
+                                        myName_temp = "" + value.getString("name_resto");
                                         myPseudo = "" + value.getString("rating_resto");
                                         myProfile_image = "" + value.getString("logo_resto");
 
@@ -690,9 +688,8 @@ public class PostDetailsActivity extends AppCompatActivity {
         if (post_comment.isEmpty()){
             Toast.makeText(this, "Votre commentaire est vide", Toast.LENGTH_SHORT).show();
         }else if (imageCompressed_uri == null){ //upload comment without image
-            progressDialog_sendComment.show();
             String comment_time = String.valueOf(System.currentTimeMillis());
-            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName, myPseudo, myProfile_image, "noImage");
+            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName_temp, myPseudo, myProfile_image, "noImage");
             //store data to database
             DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
 
@@ -711,10 +708,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                             inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
-                            myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
                             updateCommentCount();
-                            progressDialog_sendComment.dismiss();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -724,7 +718,6 @@ public class PostDetailsActivity extends AppCompatActivity {
                         }
                     });
         }else {
-            progressDialog_sendComment.show();
             final String timestamp = String.valueOf(System.currentTimeMillis());
             String filePathAndName = storagePdPPath + timestamp + "_comment_image" + "_" + firebaseUser.getUid(); //nom de l'image
 
@@ -739,7 +732,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                             Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
                             while (!uriTask.isSuccessful()){} //loop until task is complete
                             String comment_image = uriTask.getResult().toString();
-                            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName, myPseudo, myProfile_image, comment_image);
+                            ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName_temp, myPseudo, myProfile_image, comment_image);
                             //store data to database
                             DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
 
@@ -762,10 +755,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                                             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                                             inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
-                                            myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
                                             updateCommentCount();
-                                            progressDialog_sendComment.dismiss();
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {
@@ -959,6 +949,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     }
 
     private void loadUserInfo() {
+        myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         //get current user info
         final DocumentReference documentReference_currentUser = FirebaseFirestore.getInstance().collection("Users").document(myUid);
         documentReference_currentUser.get()
@@ -974,6 +965,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         myPseudo = "" + value.getString("pseudo");
                                         myProfile_image = "" + value.getString("profile_image");
 
+                                        myName_temp = myName;
                                         //set image to comment view
                                         try {
                                             Picasso.get().load(myProfile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(comment_userProfileImage);

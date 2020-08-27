@@ -375,6 +375,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             public void onClick(View v) {
                 Intent intent = new Intent(context, PostDetailsActivity.class);
                 intent.putExtra("post_id", post_id);
+                intent.putExtra("user_id", user_id);
                 context.startActivity(intent);
             }
         });
@@ -482,6 +483,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     //option comment is checked
                     Intent intent = new Intent(context, PostDetailsActivity.class);
                     intent.putExtra("post_id", post_id);
+                    intent.putExtra("user_id", user_id);
                     context.startActivity(intent);
                 }else if (item_id == 3) {
                     //option show profile is checked

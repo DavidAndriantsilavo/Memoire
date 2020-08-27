@@ -166,6 +166,8 @@ public class ActuFragment extends Fragment {
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
+                }else {
+                    loadPosts();
                 }
                 return false;
             }
@@ -175,6 +177,8 @@ public class ActuFragment extends Fragment {
                 //called as and when user press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
+                }else {
+                    loadPosts();
                 }
                 return false;
             }

@@ -1,16 +1,17 @@
 package mg.didavid.firsttry.Controllers.Fragments;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -85,6 +87,7 @@ public class RestoFragment extends Fragment {
                             @Override
                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                 if (value != null && !value.isEmpty()) {
+                                    modelRestoList.clear();
                                     for (DocumentSnapshot ds : value.getDocuments()) {
                                         //get resto informations
                                         final ModelResto modelResto = new ModelResto();
@@ -146,7 +149,7 @@ public class RestoFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(@NonNull final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
-        menu.findItem(R.id.menu_search_button).setVisible(false);
+
         menu.findItem(R.id.menu_logout_profil).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
@@ -181,7 +184,65 @@ public class RestoFragment extends Fragment {
                     }
                 });
 
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchResto(query);
+                }else {
+                    setData();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //called as and when user press any lettre
+                if (!TextUtils.isEmpty(newText)){
+                    searchResto(newText);
+                }else {
+                    setData();
+                }
+                return false;
+            }
+        });
+
         super.onCreateOptionsMenu(menu, inflater);
+    }
+
+
+    private void searchResto(final String query) {
+        //path of all Restaurants
+        final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Resto");
+        //get all data from this reference
+        collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                modelRestoList.clear(); //for deleting auto redundancy
+                List<ModelResto> modelRestos = queryDocumentSnapshots.toObjects(ModelResto.class);
+                int size = modelRestos.size();
+                for (int i = 0; i < size; i++) {
+                    if (modelRestos.get(i).getName_resto().toLowerCase().contains(query.toLowerCase())
+                    || modelRestos.get(i).getRating_resto().contains(query)) {
+                        modelRestoList.add(modelRestos.get(i));
+                    }
+                }
+                //adapter
+                adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                //set adapter to recyclerView
+                recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
