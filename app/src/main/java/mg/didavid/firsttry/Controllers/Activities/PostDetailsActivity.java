@@ -36,6 +36,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -70,21 +71,23 @@ import java.util.Map;
 
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurComments;
 import mg.didavid.firsttry.Models.ModelComment;
+import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
 public class PostDetailsActivity extends AppCompatActivity {
 
     //to get details of the post and user
-    String myName, myPseudo, myUid = FirebaseAuth.getInstance().getUid()
+    String myName, myPseudo, myUid = FirebaseAuth.getInstance().getCurrentUser().getUid()
             , myProfile_image, post_id, post_kiff, comment_count, hidName, hisProfile_image, hisPseudo,
             postImage1, postImage2, postImage3, postDescription, user_id;
 
     //post details views
-    TextView user_name, user_pseudo, post_time, post_description, textView_postKiff, textView_nbrPosComment;
+    TextView user_name, post_time, post_description, textView_pseudo, textView_postKiff, textView_nbrPosComment;
     ImageButton imageButton_more;
     ImageView user_profileImage, post_image1, post_image2, post_image3, imageAddedIntoComment;
     Button kiff_button, share_button;
     LinearLayout linearLayout_image23;
+    RatingBar ratingBar;
 
     //comment views
     RecyclerView recyclerView_comments;
@@ -113,6 +116,8 @@ public class PostDetailsActivity extends AppCompatActivity {
     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     StorageReference storageReference;
 
+    private CollectionReference collectionReference_hasRatingResto = FirebaseFirestore.getInstance().collection("HasRatingResto");
+
     int commentCount;
 
     List<ModelComment> commentList;
@@ -131,9 +136,9 @@ public class PostDetailsActivity extends AppCompatActivity {
         //init views
         //post details views
         user_name = findViewById(R.id.textView_nomUser_comment);
-        user_pseudo = findViewById(R.id.texteView_pseudo_comment);
         post_time = findViewById(R.id.textView_temps_comment);
         post_description = findViewById(R.id.textView_descriptionPost_comment);
+        textView_pseudo = findViewById(R.id.texteView_pseudo_postDetails);
         textView_postKiff = findViewById(R.id.texteView_kiffs_comment);
         textView_nbrPosComment = findViewById(R.id.texteView_commentsNbr_comment);
         imageButton_more = findViewById(R.id.button_moreAction_comment);
@@ -145,6 +150,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         kiff_button = findViewById(R.id.button_kiff_comment);
         share_button = findViewById(R.id.button_partager_comment);
         linearLayout_image23 = findViewById(R.id.linearLayout_imagePost23_comment);
+        ratingBar = findViewById(R.id.ratingBar_postDetails);
         //comment views
         recyclerView_comments = findViewById(R.id.recyclerView_comment);
         comment_userProfileImage = findViewById(R.id.imageView_photoDeProfile_comment);
@@ -270,30 +276,32 @@ public class PostDetailsActivity extends AppCompatActivity {
         commentList = new ArrayList<>();
 
         //check if there is one comment at least
-        CollectionReference collectionReference_comment = FirebaseFirestore.getInstance().collection("Comments");
+        final CollectionReference collectionReference_comment = FirebaseFirestore.getInstance().collection("Comments");
         collectionReference_comment.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()) {
                             //get data
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-                                if (documentSnapshot.exists()) {
-                                    commentList.clear();
-                                    modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
-                                    int size = modelComments.size();
-                                    for (int i = 0; i < size; i++) {
-                                        if (modelComments.get(i).getPost_id().contains(post_id)) {
-                                            commentList.add(modelComments.get(i));
-                                        }
-                                    }
+                            collectionReference_comment
+                                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                            commentList.clear();
+                                            modelComments = value.toObjects(ModelComment.class);
+                                            int size = modelComments.size();
+                                            for (int i = 0; i < size; i++) {
+                                                if (modelComments.get(i).getPost_id().contains(post_id)) {
+                                                    commentList.add(modelComments.get(i));
+                                                }
+                                            }
 
-                                    //setup adapter
-                                    adapteurComments = new AdapteurComments(PostDetailsActivity.this, commentList);
-                                    //set adapter to recyclerView
-                                    recyclerView_comments.setAdapter(adapteurComments);
-                                }
-                            }
+                                            //setup adapter
+                                            adapteurComments = new AdapteurComments(PostDetailsActivity.this, commentList);
+                                            //set adapter to recyclerView
+                                            recyclerView_comments.setAdapter(adapteurComments);
+                                        }
+                                    });
                         }
                     }
                 })
@@ -309,14 +317,20 @@ public class PostDetailsActivity extends AppCompatActivity {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(PostDetailsActivity.this, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
-        if (user_id.equals(mCurrentUserId)){
+        if (user_id.contains(mCurrentUserId)){
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
-            popupMenu.getMenu().add(Menu.NONE, 1, 0, "Modifier la publication");
+            popupMenu.getMenu().add(Menu.NONE, 1, 1, "Modifier la publication");
+            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
+            popupMenu.getMenu().add(Menu.NONE, 2, 2, "Commenter en tant que");
+        }else {
+            popupMenu.getMenu().add(Menu.NONE, 4, 4, "Envoyer un message");
         }
-        popupMenu.getMenu().add(Menu.NONE, 2, 0, "Commenter la publication");
-        popupMenu.getMenu().add(Menu.NONE, 3, 0, "Voir le profile");
-        popupMenu.getMenu().add(Menu.NONE, 4, 0, "Envoyer un message");
+        popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir le profile");
+        if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) {
+            popupMenu.getMenu().add(Menu.NONE, 6, 6, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
+        }
 
         //item click listener
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -330,19 +344,30 @@ public class PostDetailsActivity extends AppCompatActivity {
                     //option edit is checked
                     editPostDescription(post_id, post_description);
                 }else if (item_id == 2) {
-                    //option comment is checked
-                    Intent intent = new Intent(PostDetailsActivity.this, PostDetailsActivity.class);
-                    intent.putExtra("post_id", post_id);
-                    startActivity(intent);
+                    //option comment as is checked
+                    changeAccount();
+                    Toast.makeText(PostDetailsActivity.this, "comment as ... user or resto", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 3) {
                     //option show profile is checked
-                    if (user_id.equals(mCurrentUserId)) {
-                        if (!PostDetailsActivity.this.getClass().equals(ProfileUserActivity.class)) {
+                    if (user_id.equals(mCurrentUserId)) { //set user to his profile
+                        if (!getClass().equals(ProfileUserActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, ProfileUserActivity.class);
                             startActivity(intent);
                         }
-                    }else {
-                        if (!PostDetailsActivity.this.getClass().equals(OtherUsersProfileActivity.class)) {
+                    }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                        if (!getClass().equals(ProfileRestoActivity.class)) {
+                            Intent intent = new Intent(PostDetailsActivity.this, ProfileRestoActivity.class);
+                            intent.putExtra("user_id", user_id);
+                            startActivity(intent);
+                        }
+                    }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                        if (!getClass().equals(OtherRestoProfileActivity.class)) {
+                            Intent intent = new Intent(PostDetailsActivity.this, OtherRestoProfileActivity.class);
+                            intent.putExtra("id_resto", user_id);
+                            startActivity(intent);
+                        }
+                    }else { //send user to other user profile
+                        if (!getClass().equals(OtherUsersProfileActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, OtherUsersProfileActivity.class);
                             intent.putExtra("user_id", user_id);
                             startActivity(intent);
@@ -351,12 +376,167 @@ public class PostDetailsActivity extends AppCompatActivity {
                 }else if (item_id == 4) {
                     //option send message is checked
                     Toast.makeText(PostDetailsActivity.this, "send message...\nwill implement later", Toast.LENGTH_LONG).show();
-                }
+                }else if (item_id == 5) {
+                    //voir tous les menus
+                    Intent intent = new Intent(PostDetailsActivity.this, ListMenuRestoActivity.class);
+                    intent.putExtra("key", user_id);
+                    startActivity(intent);
+                }else if (item_id == 6) {
+                    //raitng selected
+                    //check if user has rating resto yet, if not show rating dialog
+                    collectionReference_hasRatingResto.document(user_id).get() // here user_id == id_resto
+                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    if (documentSnapshot.exists()) {
+                                        if (documentSnapshot.get(mCurrentUserId) != null) {
+                                            Toast.makeText(PostDetailsActivity.this, "Vous avez déjà noté ce restaurant", Toast.LENGTH_LONG).show();
+                                        }else {
+                                            showRatingDialog(user_id); // here user_id == id_resto
+                                        }
+                                    }
+                                }
+                            });
+            }
                 return false;
             }
         });
         //show menu
         popupMenu.show();
+    }
+
+    private void changeAccount() {
+        String[] option = {"En tant que " + hidName, "EN tant que " + myName};
+        //show alert dialog to choose account
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(option, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0) {
+                    //comment as his restaurant account
+                    loadRestoInfo();
+                }
+                if (which == 1) {
+                    // comment as his user account
+                    loadUserInfo();
+                }
+            }
+        });
+
+        //create and show dialog
+        builder.create().show();
+
+    }
+
+    private void loadRestoInfo() {
+        //get current user info
+        myUid = user_id;
+        final DocumentReference documentReference_currentUserResto = FirebaseFirestore.getInstance().collection("Resto").document(user_id);
+        documentReference_currentUserResto.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()){
+                            documentReference_currentUserResto.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    if (value != null) {
+                                        myName = "" + value.getString("name_resto");
+                                        myPseudo = "" + value.getString("rating_resto");
+                                        myProfile_image = "" + value.getString("logo_resto");
+
+                                        //set image to comment view
+                                        try {
+                                            Picasso.get().load(myProfile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(comment_userProfileImage);
+                                        }catch (Exception e){
+
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(PostDetailsActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void showRatingDialog(final String id_resto) {
+        //create dialog
+        final Dialog ratingDialog = new Dialog(this);
+        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setCanceledOnTouchOutside(false);
+
+        //init dialog views
+        final RatingBar ratingBar = ratingDialog.findViewById(R.id.ratingBar_ratingDialog_actuFragment);
+        Button button_annuler = ratingDialog.findViewById(R.id.btn_annuler_ratingDialog);
+        Button button_envoyer = ratingDialog.findViewById(R.id.btn_envoyer_ratingDialog);
+
+        button_annuler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ratingDialog.dismiss();
+            }
+        });
+
+        button_envoyer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DocumentReference documentReference_resto = FirebaseFirestore.getInstance().collection("Resto").document(id_resto);
+                documentReference_resto.get()
+                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                float ratingResto = Float.parseFloat(documentSnapshot.getString("rating_resto"));
+                                int nbrRatingResto = Integer.parseInt((documentSnapshot.getString("nbrRating_resto")));
+                                float thisRatingResto = ratingBar.getRating();
+
+                                ratingResto = ((ratingResto * nbrRatingResto) + thisRatingResto) / (nbrRatingResto + 1);
+                                nbrRatingResto += 1;
+
+                                //store new values
+                                HashMap<String, Object> rating = new HashMap<>();
+                                rating.put("rating_resto", String.valueOf(ratingResto));
+                                rating.put("nbrRating_resto", String.valueOf(nbrRatingResto));
+                                documentReference_resto.set(rating, SetOptions.merge());
+
+                                //set user as having rate this restaurant
+                                HashMap<String, Object> userRating = new HashMap<>();
+                                userRating.put(firebaseUser.getUid(), "rating");
+                                collectionReference_hasRatingResto.document(id_resto).set(userRating, SetOptions.merge());
+
+                                //update rating on restaurant post
+                                final float finalRatingResto = ratingResto;
+                                FirebaseFirestore.getInstance().collection("Publications").get()
+                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                if (!queryDocumentSnapshots.isEmpty()) {
+                                                    List<ModelePost> modelePostList = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                                    int size = modelePostList.size();
+                                                    for (int i = 0; i < size; i++) {
+                                                        if (modelePostList.get(i).getUser_id().equals(id_resto)) {
+                                                            HashMap<String, Object> pseudo = new HashMap<>();
+                                                            pseudo.put("pseudo", String.valueOf(finalRatingResto));
+                                                            FirebaseFirestore.getInstance().collection("Publications").document(modelePostList.get(i).getPost_id()).update(pseudo);
+                                                        }
+                                                    }
+                                                }
+                                                ratingDialog.dismiss();
+                                                Toast.makeText(PostDetailsActivity.this, "Merci pour votre appreciation", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });
+            }
+        });
+
+        //show dialog
+        ratingDialog.show();
     }
 
     private void editPostDescription(final String post_id, final String post_description) {
@@ -531,6 +711,8 @@ public class PostDetailsActivity extends AppCompatActivity {
                             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                             inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
 
+                            myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
                             updateCommentCount();
                             progressDialog_sendComment.dismiss();
                         }
@@ -579,6 +761,8 @@ public class PostDetailsActivity extends AppCompatActivity {
                                             //to hide soft keyboard when comment sent
                                             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                                             inputMethodManager.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+
+                                            myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
                                             updateCommentCount();
                                             progressDialog_sendComment.dismiss();
@@ -868,7 +1052,15 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         }
                                         post_time.setText(pTemps);
                                         user_name.setText(hidName);
-                                        user_pseudo.setText(hisPseudo);
+                                        if (user_id.contains("resto")) {
+                                            textView_pseudo.setVisibility(View.GONE);
+                                            ratingBar.setVisibility(View.VISIBLE);
+                                            ratingBar.setRating(Float.parseFloat(hisPseudo));
+                                        }else {
+                                            textView_pseudo.setVisibility(View.VISIBLE);
+                                            ratingBar.setVisibility(View.GONE);
+                                            textView_pseudo.setText(hisPseudo);
+                                        }
                                         //set image1
                                         if (postImage1.equals("noImage")) {
                                             post_image1.setVisibility(View.GONE);

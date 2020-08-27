@@ -58,19 +58,19 @@ import mg.didavid.firsttry.R;
 
 public class ActuFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    List<ModelePost> modelePostList;
-    AdapteursPost adapteursPost;
+    private RecyclerView recyclerView;
+    private List<ModelePost> modelePostList;
+    private AdapteursPost adapteursPost;
 
-    List<ModelePost> modelePost;
+    private List<ModelePost> modelePost;
 
-    ProgressDialog progressDialog_loadPost;
+    private ProgressDialog progressDialog_loadPost;
 
-    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    ProgressDialog progressDialog_logout;
-    boolean btnSearchClicked = false;
+    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    private ProgressDialog progressDialog_logout;
+
     //path of all post
-    final CollectionReference collectionPosts = FirebaseFirestore.getInstance().collection("Publications");
+    private static final CollectionReference collectionPosts = FirebaseFirestore.getInstance().collection("Publications");
 
     public static ActuFragment newInstance() {
         return (new ActuFragment());
@@ -120,7 +120,6 @@ public class ActuFragment extends Fragment {
         @Override
         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
             if (!queryDocumentSnapshots.isEmpty()) {
-                for (final DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                     List<ModelePost> modelePosts2 = queryDocumentSnapshots.toObjects(ModelePost.class);
                     int size = modelePosts2.size();
                     for (int i = 0; i < size; i++) {
@@ -140,7 +139,6 @@ public class ActuFragment extends Fragment {
                                     }
                                 });
                     }
-                }
             }
         }
     }).addOnFailureListener(new OnFailureListener() {
@@ -165,7 +163,6 @@ public class ActuFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                btnSearchClicked = true;
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
@@ -191,7 +188,6 @@ public class ActuFragment extends Fragment {
         collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                for (DocumentSnapshot documentSnapshot: queryDocumentSnapshots.getDocuments()){
                     modelePostList.clear(); //for deleting auto redundancy
                     List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                     int size = modelePost.size();
@@ -204,7 +200,6 @@ public class ActuFragment extends Fragment {
                     adapteursPost = new AdapteursPost(getContext(), modelePostList);
                     //set adapter to recyclerView
                     recyclerView.setAdapter(adapteursPost);
-                }
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

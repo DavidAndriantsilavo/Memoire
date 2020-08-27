@@ -54,6 +54,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.iceteck.silicompressorr.FileUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,9 +68,10 @@ public class NewPostActivity extends AppCompatActivity {
     FirebaseAuth mCurrentUser;
 
     EditText postDescription;
-    TextView textView_addImage_post;
+    TextView textView_addImage_post, textView_name;
     ImageButton imageButton_addImage;
     Button publishBtn;
+    ImageView imageView_ImageProfile;
     int countImage = 0;
     final int NUMBER_MAX_OF_IMAGES = 3;
     boolean imagePicked = false;
@@ -120,6 +122,8 @@ public class NewPostActivity extends AppCompatActivity {
         textView_addImage_post = findViewById(R.id.textView_nearAddImage_newPost);
         textView_addImage_post.setVisibility(View.VISIBLE);
         imageButton_addImage = findViewById(R.id.imageButton_addImage_post);
+        textView_name = findViewById(R.id.textView_userName_newPost);
+        imageView_ImageProfile = findViewById(R.id.imageView_photoDeProfile_newPost);
 
         progressDialog_uploadPost = new ProgressDialog(this);
 
@@ -209,29 +213,51 @@ public class NewPostActivity extends AppCompatActivity {
             }
         });
 
-        //get some info of current user to include in post
-        uid = user.getUid();
-        docRefProfileUser = collectionUsers.document(uid);
-        docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()){
-                    docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                        @Override
-                        public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                            nomEtPrenonm = value.getString("name");
-                            pseudo = value.getString("pseudo");
-                            photoDeProfile = value.getString("profile_image");
-                        }
-                    });
+        //get data from intent
+        Intent intent = getIntent();
+        String key = intent.getStringExtra("key");
+        if (key != null && key.equals("resto")) {
+            nomEtPrenonm = intent.getStringExtra("name"); //resto name
+            pseudo = intent.getStringExtra("pseudo"); //resto rating
+            uid = intent.getStringExtra("user_id"); //resto id
+            photoDeProfile = intent.getStringExtra("logo_resto"); //logo resto
+
+            //set image profile and name
+            try {
+                Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
+            }catch (Exception e) {}
+            textView_name.setText(nomEtPrenonm);
+        } else {
+            //get some info of current user to include in post
+            uid = user.getUid();
+            docRefProfileUser = collectionUsers.document(uid);
+            docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot.exists()) {
+                        docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                            @Override
+                            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                nomEtPrenonm = value.getString("name");
+                                pseudo = value.getString("pseudo");
+                                photoDeProfile = value.getString("profile_image");
+
+                                //set image profile and name
+                                try {
+                                    Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
+                                }catch (Exception e) {}
+                                textView_name.setText(nomEtPrenonm);
+                            }
+                        });
+                    }
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
-            }
-        });
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void uploadPost(final String description) {

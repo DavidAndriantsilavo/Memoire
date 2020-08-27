@@ -54,14 +54,32 @@
             android:layout_alignParentRight="true"
             android:background="@color/white"/>
 
-        <!--comment - user pseudo-->
-        <TextView
-            android:id="@+id/texteView_pseudo_commentContent"
+        <LinearLayout
+            android:id="@+id/linearLayout_comment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pseudo"
             android:layout_toEndOf="@id/cardView_imageProfile"
-            android:layout_below="@id/textView_userName_comment"/>
+            android:layout_below="@+id/textView_userName_comment"
+            android:orientation="vertical">
+
+            <!--comment - user pseudo-->
+            <TextView
+                android:id="@+id/texteView_pseudo_commentContent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pseudo"/>
+
+            <RatingBar
+                android:id="@+id/ratingBar_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:rating="3.5"
+                android:stepSize="0.1"
+                android:isIndicator="true"
+                style="?android:attr/ratingBarStyleSmall"/>
+
+        </LinearLayout>
 
         <!--comment content-->
         <TextView
@@ -70,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/cardView_imageProfile"
             android:text="This is post comment"
-            android:layout_below="@id/texteView_pseudo_commentContent"
+            android:layout_below="@id/linearLayout_comment"
             android:textColor="@color/black"
             android:layout_marginTop="5dp"/>
 

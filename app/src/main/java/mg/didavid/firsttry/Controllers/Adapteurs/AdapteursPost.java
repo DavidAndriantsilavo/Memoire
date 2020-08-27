@@ -18,7 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +39,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.model.DocumentCollections;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -49,9 +50,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import mg.didavid.firsttry.Controllers.Activities.MainActivity;
+import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
+import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.PostDetailsActivity;
+import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.ShowImageActivity;
 import mg.didavid.firsttry.Controllers.Activities.ShowWhoKiffAvtivity;
@@ -62,6 +65,8 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
     private Context context;
     private List<ModelePost> postList;
+
+    private CollectionReference collectionReference_hasRatingResto = FirebaseFirestore.getInstance().collection("HasRatingResto");
 
     private String mCurrentUserId;
     private int postKiff;
@@ -118,26 +123,29 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 String  name_ds = "",
                         profile_image_ds = "",
                         post_description_ds = "",
-                        post_time_ds = "",
                         post_kiff_ds = "",
-                        comment_count_ds = "",
-                        imagePost1 = "",
-                        imagePost2 = "",
-                        imagePost3 = "";
+                        comment_count_ds = "";
+                float pseudo_ds = 0;
                 if (value != null) {
                     name_ds = value.getString("name");
                     profile_image_ds = value.getString("profile_image");
                     post_description_ds = value.getString("post_description");
                     post_kiff_ds = value.getString("post_kiff");
                     comment_count_ds = value.getString("comment_count");
-                    imagePost1 = value.getString("post_image1");
-                    imagePost2 = value.getString("post_image2");
-                    imagePost3 = value.getString("post_image3");
+                    if (user_id.contains("resto")) {
+                        pseudo_ds = Float.parseFloat(value.getString("pseudo"));
+                    }
                 }
                 //set data
                 try {
                     holder.uNameTv.setText(name_ds);
                     holder.pDescriptionTv.setText(post_description_ds);
+
+                    if (user_id.contains("resto")) {
+                        holder.pseudo.setVisibility(View.GONE);
+                        holder.ratingBar.setVisibility(View.VISIBLE);
+                        holder.ratingBar.setRating(pseudo_ds);
+                    }
 
                     //set user profile image
                     try{
@@ -186,7 +194,15 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
         //set data
         try {
-            holder.pseudo.setText(pseudo);
+            if (user_id.contains("resto")){
+                holder.pseudo.setVisibility(View.GONE);
+                holder.ratingBar.setVisibility(View.VISIBLE);
+                holder.ratingBar.setRating(Float.parseFloat(pseudo));
+            }else {
+                holder.ratingBar.setVisibility(View.GONE);
+                holder.pseudo.setVisibility(View.VISIBLE);
+                holder.pseudo.setText(pseudo);
+            }
             holder.pTimeTv.setText(pTemps);
             holder.uNameTv.setText(name);
             holder.pDescriptionTv.setText(post_description);
@@ -295,12 +311,24 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.uNameTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (user_id.equals(mCurrentUserId)) {
+                if (user_id.equals(mCurrentUserId)) { //set user to his profile
                     if (!context.getClass().equals(ProfileUserActivity.class)) {
                         Intent intent = new Intent(context, ProfileUserActivity.class);
                         context.startActivity(intent);
                     }
-                }else {
+                }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                    if (!context.getClass().equals(ProfileRestoActivity.class)) {
+                        Intent intent = new Intent(context, ProfileRestoActivity.class);
+                        intent.putExtra("user_id", user_id);
+                        context.startActivity(intent);
+                    }
+                }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                    if (!context.getClass().equals(OtherRestoProfileActivity.class)) {
+                        Intent intent = new Intent(context, OtherRestoProfileActivity.class);
+                        intent.putExtra("id_resto", user_id);
+                        context.startActivity(intent);
+                    }
+                }else { //send user to other user profile
                     if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
                         Intent intent = new Intent(context, OtherUsersProfileActivity.class);
                         intent.putExtra("user_id", user_id);
@@ -314,12 +342,24 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.uPictureIv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (user_id.equals(mCurrentUserId)) {
+                if (user_id.equals(mCurrentUserId)) { //set user to his profile
                     if (!context.getClass().equals(ProfileUserActivity.class)) {
                         Intent intent = new Intent(context, ProfileUserActivity.class);
                         context.startActivity(intent);
                     }
-                }else {
+                }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                    if (!context.getClass().equals(ProfileRestoActivity.class)) {
+                        Intent intent = new Intent(context, ProfileRestoActivity.class);
+                        intent.putExtra("user_id", user_id);
+                        context.startActivity(intent);
+                    }
+                }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                    if (!context.getClass().equals(OtherRestoProfileActivity.class)) {
+                        Intent intent = new Intent(context, OtherRestoProfileActivity.class);
+                        intent.putExtra("id_resto", user_id);
+                        context.startActivity(intent);
+                    }
+                }else { //send user to other user profile
                     if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
                         Intent intent = new Intent(context, OtherUsersProfileActivity.class);
                         intent.putExtra("user_id", user_id);
@@ -330,7 +370,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
 
         //linear layout of user details clicked, go to PostDetailsActivity
-        holder.user_details.setOnClickListener(new View.OnClickListener() {
+        holder.pDescriptionTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, PostDetailsActivity.class);
@@ -356,13 +396,13 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     private void kiffsGestion(final String post_id, final String nbrKiffs) {
         mPressKiff = true;
         kiffFirstPressed = true;
-        //get id of the post clicked
         final String postId = post_id;
         collectionReference_kiffs.document(postId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 if (mPressKiff){
+                    //get id of the post clicked
                     //get total number of kiffs for the post
                     postKiff = Integer.parseInt(nbrKiffs);
                     String kiffs;
@@ -412,14 +452,20 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
-        if (user_id.equals(mCurrentUserId)){
+        if (user_id.contains(mCurrentUserId)){
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
-            popupMenu.getMenu().add(Menu.NONE, 1, 0, "Modifier la publication");
+            popupMenu.getMenu().add(Menu.NONE, 1, 1, "Modifier la publication");
+            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
+        }else {
+            popupMenu.getMenu().add(Menu.NONE, 4, 4, "Envoyer un message");
         }
-        popupMenu.getMenu().add(Menu.NONE, 2, 0, "Commenter la publication");
-        popupMenu.getMenu().add(Menu.NONE, 3, 0, "Voir le profile");
-        popupMenu.getMenu().add(Menu.NONE, 4, 0, "Envoyer un message");
+        popupMenu.getMenu().add(Menu.NONE, 2, 2, "Commenter la publication");
+        popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir le profile");
+        if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) {
+            popupMenu.getMenu().add(Menu.NONE, 6, 6, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
+        }
 
         //item click listener
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -439,12 +485,24 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     context.startActivity(intent);
                 }else if (item_id == 3) {
                     //option show profile is checked
-                    if (user_id.equals(mCurrentUserId)) {
+                    if (user_id.equals(mCurrentUserId)) { //set user to his profile
                         if (!context.getClass().equals(ProfileUserActivity.class)) {
                             Intent intent = new Intent(context, ProfileUserActivity.class);
                             context.startActivity(intent);
                         }
-                    }else {
+                    }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                        if (!context.getClass().equals(ProfileRestoActivity.class)) {
+                            Intent intent = new Intent(context, ProfileRestoActivity.class);
+                            intent.putExtra("user_id", user_id);
+                            context.startActivity(intent);
+                        }
+                    }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                        if (!context.getClass().equals(OtherRestoProfileActivity.class)) {
+                            Intent intent = new Intent(context, OtherRestoProfileActivity.class);
+                            intent.putExtra("id_resto", user_id);
+                            context.startActivity(intent);
+                        }
+                    }else { //send user to other user profile
                         if (!context.getClass().equals(OtherUsersProfileActivity.class)) {
                             Intent intent = new Intent(context, OtherUsersProfileActivity.class);
                             intent.putExtra("user_id", user_id);
@@ -454,12 +512,107 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 }else if (item_id == 4) {
                     //option send message is checked
                     Toast.makeText(context, "send message...\nwill implement later", Toast.LENGTH_LONG).show();
+                }else if (item_id == 5) {
+                    //voir tous les menus
+                    Intent intent = new Intent(context, ListMenuRestoActivity.class);
+                    intent.putExtra("key", user_id);
+                    context.startActivity(intent);
+                }else if (item_id == 6) {
+                    //raitng selected
+                    //check if user has rating resto yet, if not show rating dialog
+                    collectionReference_hasRatingResto.document(user_id).get() // here user_id == id_resto
+                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    if (documentSnapshot.exists()) {
+                                        if (documentSnapshot.get(mCurrentUserId) != null) {
+                                            Toast.makeText(context, "Vous avez déjà noté ce restaurant", Toast.LENGTH_LONG).show();
+                                        }else {
+                                            showRatingDialog(user_id); // here user_id == id_resto
+                                        }
+                                    }
+                                }
+                            });
                 }
                 return false;
             }
         });
         //show menu
         popupMenu.show();
+    }
+
+    private void showRatingDialog(final String id_resto) {
+        //create dialog
+        final Dialog ratingDialog = new Dialog(context);
+        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setCanceledOnTouchOutside(false);
+
+        //init dialog views
+        final RatingBar ratingBar = ratingDialog.findViewById(R.id.ratingBar_ratingDialog_actuFragment);
+        Button button_annuler = ratingDialog.findViewById(R.id.btn_annuler_ratingDialog);
+        Button button_envoyer = ratingDialog.findViewById(R.id.btn_envoyer_ratingDialog);
+
+        button_annuler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ratingDialog.dismiss();
+            }
+        });
+
+        button_envoyer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final DocumentReference documentReference_resto = FirebaseFirestore.getInstance().collection("Resto").document(id_resto);
+                documentReference_resto.get()
+                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                float ratingResto = Float.parseFloat(documentSnapshot.getString("rating_resto"));
+                                int nbrRatingResto = Integer.parseInt((documentSnapshot.getString("nbrRating_resto")));
+                                float thisRatingResto = ratingBar.getRating();
+
+                                ratingResto = ((ratingResto * nbrRatingResto) + thisRatingResto) / (nbrRatingResto + 1);
+                                nbrRatingResto += 1;
+
+                                //store new values
+                                HashMap<String, Object> rating = new HashMap<>();
+                                rating.put("rating_resto", String.valueOf(ratingResto));
+                                rating.put("nbrRating_resto", String.valueOf(nbrRatingResto));
+                                documentReference_resto.set(rating, SetOptions.merge());
+
+                                //set user as having rate this restaurant
+                                HashMap<String, Object> userRating = new HashMap<>();
+                                userRating.put(mCurrentUserId, "rating");
+                                collectionReference_hasRatingResto.document(id_resto).set(userRating, SetOptions.merge());
+
+                                //update rating on restaurant post
+                                final float finalRatingResto = ratingResto;
+                                FirebaseFirestore.getInstance().collection("Publications").get()
+                                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                            @Override
+                                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                if (!queryDocumentSnapshots.isEmpty()) {
+                                                    List<ModelePost> modelePostList = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                                    int size = modelePostList.size();
+                                                    for (int i = 0; i < size; i++) {
+                                                        if (modelePostList.get(i).getUser_id().equals(id_resto)) {
+                                                            HashMap<String, Object> pseudo = new HashMap<>();
+                                                            pseudo.put("pseudo", String.valueOf(finalRatingResto));
+                                                            FirebaseFirestore.getInstance().collection("Publications").document(modelePostList.get(i).getPost_id()).update(pseudo);
+                                                        }
+                                                    }
+                                                }
+                                                ratingDialog.dismiss();
+                                                Toast.makeText(context, "Merci pour votre appreciation", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });
+            }
+        });
+
+        //show dialog
+        ratingDialog.show();
     }
 
     private void editPostDescription(final String post_id, final String post_description) {
@@ -616,7 +769,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pComment, pseudo;
         ImageButton moreBtn;
         Button kiffBtn, commenterBtn, partagerBtn;
-        LinearLayout user_details, linearLayout_image23;
+        RatingBar ratingBar;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -636,8 +789,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             kiffBtn = itemView.findViewById(R.id.button_kiff_actu);
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
             partagerBtn = itemView.findViewById(R.id.button_partager_actu);
-            user_details = itemView.findViewById(R.id.linearLayout_userDetails);
-            linearLayout_image23 = itemView.findViewById(R.id.linearLayout_imagePost23_actu);
+            ratingBar = itemView.findViewById(R.id.ratingBar_newPost);
         }
     }
 }

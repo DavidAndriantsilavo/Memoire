@@ -3,13 +3,14 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -33,8 +34,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,26 +63,38 @@ import com.iceteck.silicompressorr.SiliCompressor;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapterSampleMenu;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
 import mg.didavid.firsttry.Models.ModelComment;
+import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
 public class ProfileRestoActivity extends AppCompatActivity {
 
-    TextView textView_restoName, textView_restoPhone;
-    String resto_name, value_name, phone_resto;
-    final Map<String, Object> logoRestoChanged = new HashMap<>();
+    String resto_name, value_name, speciality_resto, rating_resto, logo_resto;
+    final Map<String, Object> imageChanged = new HashMap<>();
     final Map<String, Object> nameChanged_result = new HashMap<>();
 
-    ImageView imageView_logoResto;
+    List<ModelePost> modelePosts_profile;
+    AdapteursPost adapteursPost_profile;
+    RecyclerView restoProfile_recyclerView;
+
+    TextView textView_restoName;
+    ImageView imageView_logoResto, imageView_coverPhoto;
     FloatingActionButton floatingActionButton_editProfileResto;
     Button btnAddLogo, btnNewPost;
+    RecyclerView recyclerView_sampleMenu;
+    TextView textView_showAllMenu;
+    Button button_addCoverPhoto;
+    ImageButton imageButton_fleche;
+    RatingBar ratingBar;
 
     FirebaseFirestore firestore;
     CollectionReference collectionResto, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
@@ -103,7 +118,7 @@ public class ProfileRestoActivity extends AppCompatActivity {
     String user_id = Objects.requireNonNull(user).getUid();
     String id_resto = "resto_" + user_id;
 
-    ActionBar actionBar;
+    boolean addLogoImageClicked = false, addCoverPhotoClicked = false;
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -113,11 +128,26 @@ public class ProfileRestoActivity extends AppCompatActivity {
 
         //recuperation des vues
         textView_restoName = findViewById(R.id.texteView_nameResto_restoProfile);
-        textView_restoPhone = findViewById(R.id.texteView_email_restoProfile);
         imageView_logoResto = findViewById(R.id.imageView_logoResto_restoProfile);
+        imageView_coverPhoto = findViewById(R.id.imageView_photoDeCouverture_restoProfile);
         floatingActionButton_editProfileResto = findViewById(R.id.floating_btn_editProfil_restoProfile);
         btnAddLogo = findViewById(R.id.add_profile_photo_restoProfile);
         btnNewPost = findViewById(R.id.button_newPost_restoProfile);
+        button_addCoverPhoto = findViewById(R.id.add_cover_photo_restoProfile);
+        textView_showAllMenu = findViewById(R.id.textView_showAllMenuList_restoProfile);
+        recyclerView_sampleMenu = findViewById(R.id.recyclerView_sampleMenu_restoProfile);
+        restoProfile_recyclerView = findViewById(R.id.recyclerView_post_restoProfile);
+        imageButton_fleche = findViewById(R.id.flecheBtn_restoProfile);
+        ratingBar = findViewById(R.id.ratingBar_restoProfile);
+
+        //linear layout for recyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(ProfileRestoActivity.this);
+        //show newest post first (the newest post is in the last of the post list store on th database)
+        layoutManager.setStackFromEnd(true);
+        layoutManager.setReverseLayout(true);
+        //set this layout to recyclerView
+        restoProfile_recyclerView.setLayoutManager(layoutManager);
+        modelePosts_profile = new ArrayList<>();
 
         //init progressDialog
         progressDialog_editProfile = new ProgressDialog(this);
@@ -129,6 +159,7 @@ public class ProfileRestoActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         collectionResto = firestore.collection("Resto");
         storageReference = FirebaseStorage.getInstance().getReference();
+        docRefProfileResto = collectionResto.document(id_resto);
 
         collectioonPost = FirebaseFirestore.getInstance().collection("Publications");
         collectionComment = FirebaseFirestore.getInstance().collection("Comments");
@@ -144,11 +175,36 @@ public class ProfileRestoActivity extends AppCompatActivity {
             }
         });
 
+        button_addCoverPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCoverPhotoClicked = true;
+                showImagePicDialog();
+            }
+        });
+
+        textView_showAllMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfileRestoActivity.this, ListMenuRestoActivity.class);
+                intent.putExtra("key", id_resto);
+                startActivity(intent);
+            }
+        });
+        imageButton_fleche.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ProfileRestoActivity.this, ListMenuRestoActivity.class);
+                intent.putExtra("key", id_resto);
+                startActivity(intent);
+            }
+        });
+
         btnAddLogo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //modifier photo de profile
-                progressDialog_editProfile.setMessage("Importation de la photo de profile");
+                addLogoImageClicked = true;
                 showImagePicDialog();
             }
         });
@@ -156,12 +212,193 @@ public class ProfileRestoActivity extends AppCompatActivity {
         btnNewPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ProfileRestoActivity.this, NewPostActivity.class));
+                Intent intent = new Intent(ProfileRestoActivity.this, NewPostActivity.class);
+                intent.putExtra("key", "resto");
+                intent.putExtra("name", resto_name);
+                intent.putExtra("pseudo", rating_resto);
+                intent.putExtra("user_id", id_resto);
+                intent.putExtra("logo_resto", logo_resto);
+                startActivity(intent);
                 finish();
             }
         });
 
         checkingRestoInfo();
+        loadSampleMenu();
+        loadMyRestoPost();
+        snapshootUserInfo();
+    }
+
+    private void snapshootUserInfo() {
+        docRefProfileResto.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (value != null) {
+                    String logo_resto = value.getString("logo_resto");
+                    HashMap<String, Object> logo = new HashMap<>();
+                    logo.put("profile_image", logo_resto);
+                    if (logo_resto != null || !logo_resto.isEmpty()){
+                        uploadProfileImageEverywhere(logo);
+                    }
+                    String name_resto = value.getString("name_resto");
+                    HashMap<String, Object> name = new HashMap<>();
+                    name.put("name", name_resto);
+                    if (name_resto != null || !name_resto.isEmpty()){
+                        uploadUserNameEverywhere(name);
+                    }
+
+                    //configure toolbar
+                    configureToolbar(name_resto, value.getString("speciality_resto"));
+                }
+            }
+        });
+    }
+
+    private void uploadProfileImageEverywhere(final Map<String, Object> result) {
+        //update profile image of all user's posts
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().equals(id_resto)) {
+                                        String post_id = modelePost.get(i).getPost_id();
+                                        collectioonPost.document(post_id).update(result);
+                                    }
+                                }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileRestoActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also profile image of all user's comment on post
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().equals(id_resto)) {
+                                        String comment_id = modelComments.get(i).getComment_time(); //comment_time is the id of the comment
+                                        collectionComment.document(comment_id).update(result);
+                                    }
+                                }
+                        }
+                    }
+                });
+    }
+
+    private void uploadUserNameEverywhere(final Map<String, Object> nameChanged_result) {
+        //update also current user name in all his publications
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().equals(id_resto)) {
+                                        collectioonPost.document(modelePost.get(i).getPost_id()).update(nameChanged_result);
+                                    }
+                                }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileRestoActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also current user name on all comments whom he has commented
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().equals(id_resto)) {
+                                        collectionComment.document(modelComments.get(i).getComment_time()).update(nameChanged_result);
+                                    }
+                                }
+                        }
+                    }
+                });
+    }
+
+    private void loadMyRestoPost() {
+        CollectionReference reference_post = FirebaseFirestore.getInstance().collection("Publications");
+        reference_post.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                                modelePosts_profile.clear();
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().equals(id_resto)) {
+                                        modelePosts_profile.add(modelePost.get(i));
+                                    }
+                                }
+                                //adapter
+                                adapteursPost_profile = new AdapteursPost(ProfileRestoActivity.this, modelePosts_profile);
+                                //set adapter to recyclerView
+                                restoProfile_recyclerView.setAdapter(adapteursPost_profile);
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ProfileRestoActivity.this, ""+ e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void loadSampleMenu() {
+
+        final ArrayList<ModelRestoSampleMenu> restoSampleMenuArrayList = new ArrayList<>();
+
+        final CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
+        collectionReference_sampleMenu.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        collectionReference_sampleMenu
+                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    if (!value.isEmpty()) {
+                                            restoSampleMenuArrayList.clear();
+                                            List<ModelRestoSampleMenu> restoSampleMenus = value.toObjects(ModelRestoSampleMenu.class);
+                                            int size = restoSampleMenus.size();
+                                            for (int i = 0; i < size; i++) {
+                                                if (restoSampleMenus.get(i).getId_resto().contains(id_resto)) {
+                                                    restoSampleMenuArrayList.add(restoSampleMenus.get(i));
+                                                }
+                                            }
+
+                                        AdapterSampleMenu adapterSampleMenu = new AdapterSampleMenu(ProfileRestoActivity.this, restoSampleMenuArrayList);
+                                        recyclerView_sampleMenu.setLayoutManager(new LinearLayoutManager(ProfileRestoActivity.this, LinearLayoutManager.HORIZONTAL, false));
+                                        recyclerView_sampleMenu.setAdapter(adapterSampleMenu);
+                                    }
+                                }
+                            });
+                    }
+                });
     }
 
     private void goToShowImage(String imageUri) {
@@ -218,7 +455,6 @@ public class ProfileRestoActivity extends AppCompatActivity {
     //check if user has already informations
     private void checkingRestoInfo() {
         progressDialog_loadingProfile.show();
-        docRefProfileResto = collectionResto.document(id_resto);
         docRefProfileResto.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -228,22 +464,35 @@ public class ProfileRestoActivity extends AppCompatActivity {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                             resto_name = value.getString("name_resto");
-                            phone_resto = value.getString("phone_resto");
-                            final String logo_resto = value.getString("logo_resto");
+                            speciality_resto = value.getString("speciality_resto");
+                            rating_resto = value.getString("rating_resto");
+                            logo_resto = value.getString("logo_resto");
+                            final String coverPhoto_resto = value.getString("coverPhoto_resto");
 
                             //configure toolbar
-                            configureToolbar(resto_name, phone_resto);
+                            configureToolbar(resto_name, speciality_resto);
 
                             //setting data from Firestore
-                            setData(resto_name, phone_resto, logo_resto);
+                            setData(resto_name, speciality_resto, logo_resto, coverPhoto_resto, rating_resto);
 
                             //profile image clicked
-                            imageView_logoResto.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    goToShowImage(logo_resto);
-                                }
-                            });
+                            if (!logo_resto.equals("noImage")) {
+                                imageView_logoResto.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        goToShowImage(logo_resto);
+                                    }
+                                });
+                            }
+                            //cover photo clicked
+                            if (coverPhoto_resto != null && !coverPhoto_resto.equals("noImage")) {
+                                imageView_coverPhoto.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        goToShowImage(coverPhoto_resto);
+                                    }
+                                });
+                            }
                         }
                     });
                 }
@@ -264,13 +513,20 @@ public class ProfileRestoActivity extends AppCompatActivity {
     }
 
     //setting user's data from Firestore
-    private void setData(String resto_name, String phone_resto, String logo_resto) {
+    private void setData(String resto_name, String speciality_resto, String logo_resto, String coverPhoto_resto, String rating_resto) {
         textView_restoName.setText(resto_name);
-        textView_restoPhone.setText(phone_resto);
+        ratingBar.setRating(Float.parseFloat(rating_resto));
+        //set logo resto
         try {
             Picasso.get().load(logo_resto).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_logoResto);
         }catch (Exception e){
             Picasso.get().load(R.drawable.ic_image_profile_icon_dark).into(imageView_logoResto);
+            Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+        //set cover photo
+        try {
+            Picasso.get().load(coverPhoto_resto).into(imageView_coverPhoto);
+        }catch (Exception e){
             Toast.makeText(this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -388,10 +644,22 @@ public class ProfileRestoActivity extends AppCompatActivity {
     private void uploadProfileImage(Uri uri) {
         progressDialog_editProfile.show();
         final String timestamp = String.valueOf(System.currentTimeMillis());
-        String filePathAndName = "LogoResto/" + "logoResto_" + user_id; //nom de l'image
+        String filePathAndName = "", key = "";
+        if (addLogoImageClicked) {
+            //update logo_resto
+            filePathAndName = "LogoResto/" + "logoResto_" + user_id + "_" + timestamp;
+            key = "logo_resto";
+            addLogoImageClicked = false;
+        } else if (addCoverPhotoClicked) {
+            //update coverPhoto_resto
+            filePathAndName = "CoverPhoto_resto/" + "coverPhoto_" + user_id + "_" + timestamp;
+            key = "coverPhoto_resto";
+            addCoverPhotoClicked = false;
+        }
 
         //storing imagge to Firabase Storage
         StorageReference storageReference1 = storageReference.child(filePathAndName);
+        final String finalKey = key;
         storageReference1.putFile(uri)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @SuppressLint("LongLogTag")
@@ -402,31 +670,26 @@ public class ProfileRestoActivity extends AppCompatActivity {
                             Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
                             Toast.makeText(ProfileRestoActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
                         }
-                        String downloadUri = uriTask.getResult().toString();
-
                         //verifier si l'image est téléversée ou pas et que l'url est bien reçu
-                        if (uriTask.isSuccessful()){
-                            //update profile image
-                            logoRestoChanged.put("profile_image", downloadUri);
-                            docRefProfileResto.update(logoRestoChanged)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            progressDialog_editProfile.dismiss();
-                                            Toast.makeText(ProfileRestoActivity.this, "Photo de profile mise à jour", Toast.LENGTH_SHORT).show();
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    progressDialog_editProfile.dismiss();
-                                    Log.d("message important", "******************************" +e.getMessage());
-                                    Toast.makeText(ProfileRestoActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }else {
-                            progressDialog_editProfile.dismiss();
-                            Toast.makeText(ProfileRestoActivity.this, "Une erreur est survenue!", Toast.LENGTH_SHORT).show();
-                        }
+                        uriTask.isSuccessful();
+                        String downloadUri = uriTask.getResult().toString();
+                        imageChanged.put(finalKey, downloadUri);
+                        docRefProfileResto.update(imageChanged)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        uploadProfileImageEverywhere(imageChanged);
+                                        progressDialog_editProfile.dismiss();
+                                        Toast.makeText(ProfileRestoActivity.this, "Photo mise à jour", Toast.LENGTH_SHORT).show();
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                progressDialog_editProfile.dismiss();
+                                Log.d("message important", "******************************" +e.getMessage());
+                                Toast.makeText(ProfileRestoActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                         progressDialog_editProfile.dismiss();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -440,7 +703,7 @@ public class ProfileRestoActivity extends AppCompatActivity {
     }
 
     private void showDialogEditProfile() {
-        String[] options = {"Changer le logo de votre restaurant", "Modifier le nom de votre restaurant"};
+        String[] options = {"Changer le logo de votre restaurant", "Changer la photo de couverture", "Modifier le nom de votre restaurant"};
         //constructin de l'alert dialogue
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Option de modification");
@@ -448,13 +711,17 @@ public class ProfileRestoActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0){
-                    //modifier photo de profile
-                    progressDialog_editProfile.setMessage("Changement du logo de votre restaurant");
+                    //modifier le logo du restaurant
                     showImagePicDialog();
+                    addLogoImageClicked = true;
                 }
                 if (which == 1){
-                    //modifier le nom de l'user
-                    progressDialog_editProfile.setMessage("Changement du nom de votre restaurant");
+                    //modifier la photo de couverture du restaurant
+                    showImagePicDialog();
+                    addCoverPhotoClicked = true;
+                }
+                if (which == 2){
+                    //modifier le nom du restaurant
                     showNameUpdateDialog("name_resto");
                 }
             }
@@ -510,6 +777,7 @@ public class ProfileRestoActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        uploadUserNameEverywhere(nameChanged_result);
                         progressDialog_editProfile.dismiss();
                         Toast.makeText(ProfileRestoActivity.this, "Nom du restaurant mis à jour", Toast.LENGTH_SHORT).show();
                     }

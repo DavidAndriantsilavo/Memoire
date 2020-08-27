@@ -209,16 +209,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()){
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                                 List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                                 int size = modelePost.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
                                         String post_id = modelePost.get(i).getPost_id();
                                         collectioonPost.document(post_id).update(nameChanged_result);
                                     }
                                 }
-                            }
                         }
                     }
                 })
@@ -234,16 +232,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()){
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                                 List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
                                 int size = modelComments.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelComments.get(i).getUser_id().contains(user_id)) {
+                                    if (modelComments.get(i).getUser_id().equals(user_id)) {
                                         String comment_id = modelComments.get(i).getComment_time();
                                         collectionComment.document(comment_id).update(nameChanged_result);
                                     }
                                 }
-                            }
                         }
                     }
                 });
@@ -263,12 +259,11 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()) {
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                                 modelePosts_profile.clear();
                                 List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                                 int size = modelePost.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
                                         modelePosts_profile.add(modelePost.get(i));
                                     }
                                 }
@@ -276,7 +271,6 @@ public class ProfileUserActivity extends AppCompatActivity {
                                 adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
                                 //set adapter to recyclerView
                                 profile_recyclerView.setAdapter(adapteursPost_profile);
-                            }
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -559,16 +553,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()){
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                                 List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                                 int size = modelePost.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
                                         String post_id = modelePost.get(i).getPost_id();
                                         collectioonPost.document(post_id).update(result);
                                     }
                                 }
-                            }
                         }
                     }
                 })
@@ -584,16 +576,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()){
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
                                 List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
                                 int size = modelComments.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelComments.get(i).getUser_id().contains(user_id)) {
+                                    if (modelComments.get(i).getUser_id().equals(user_id)) {
                                         String comment_id = modelComments.get(i).getComment_time(); //comment_time is the id of the comment
                                         collectionComment.document(comment_id).update(result);
                                     }
                                 }
-                            }
                         }
                     }
                 });
@@ -670,6 +660,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        uploadUserNameEverywhere(nameChanged_result);
                         progressDialog_editProfile.dismiss();
                         Toast.makeText(ProfileUserActivity.this, "Nom mis à jour", Toast.LENGTH_SHORT).show();
                     }

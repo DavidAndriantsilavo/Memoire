@@ -60,13 +60,14 @@ public class AdapterUsers extends RecyclerView.Adapter<AdapterUsers.Myholder> {
         if (user_id.equals(mCurrentUserId)) {
             holder.textView_whoKiff.setVisibility(View.VISIBLE);
         } else {
-
             holder.textView_whoKiff.setVisibility(View.GONE);
         }
         //set user image profile
         try {
             Picasso.get().load(profile_image).placeholder(R.drawable.ic_image_profile_icon_dark).into(holder.imageView_profileImage);
-        }catch (Exception e){ }
+        }catch (Exception e){
+            Picasso.get().load(R.drawable.ic_image_profile_icon_dark).into(holder.imageView_profileImage);
+        }
 
         //layout clicked, go to user profile
         holder.relativeLayout_user.setOnClickListener(new View.OnClickListener() {

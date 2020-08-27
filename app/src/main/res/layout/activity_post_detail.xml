@@ -71,11 +71,21 @@
                                 android:textSize="18dp" />
 
                             <TextView
-                                android:id="@+id/texteView_pseudo_comment"
+                                android:id="@+id/texteView_pseudo_postDetails"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Pseudo"
-                                android:textSize="15dp" />
+                                android:textSize="15dp"/>
+
+                            <RatingBar
+                                android:id="@+id/ratingBar_postDetails"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:numStars="5"
+                                android:rating="3.5"
+                                android:stepSize="0.1"
+                                android:isIndicator="true"
+                                style="?android:attr/ratingBarStyleSmall"/>
 
                             <TextView
                                 android:id="@+id/textView_temps_comment"

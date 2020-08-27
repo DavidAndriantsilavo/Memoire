@@ -1,15 +1,19 @@
 package mg.didavid.firsttry.Models;
 
+import java.util.List;
 import java.util.Map;
 
 public class ModelResto {
-    String user_id, user_email, user_pseudo, id_resto, name_resto, password_resto, phone_resto, email_resto, logo_resto;
-    Map<String, Object> location_resto;
+    private String user_id, user_email, user_pseudo, id_resto, name_resto, password_resto, phone_resto, email_resto, logo_resto, coverPhoto_resto, speciality_resto;
+    private String rating_resto, nbrRating_resto;
+    private Map<String, Object> location_resto;
+
+    private List<ModelRestoSampleMenu> sampleMenuList;
 
     public ModelResto() {
     }
 
-    public ModelResto(String user_id, String user_email, String user_pseudo, String id_resto, String name_resto, String password_resto, String phone_resto, String email_resto, String logo_resto, Map<String, Object> location_resto) {
+    public ModelResto(String user_id, String user_email, String user_pseudo, String id_resto, String name_resto, String password_resto, String phone_resto, String email_resto, String logo_resto, String coverPhoto_resto, String speciality_resto, String rating_resto, String nbrRating_resto, Map<String, Object> location_resto) {
         this.user_id = user_id;
         this.user_email = user_email;
         this.user_pseudo = user_pseudo;
@@ -19,7 +23,44 @@ public class ModelResto {
         this.phone_resto = phone_resto;
         this.email_resto = email_resto;
         this.logo_resto = logo_resto;
+        this.coverPhoto_resto = coverPhoto_resto;
+        this.speciality_resto = speciality_resto;
+        this.rating_resto = rating_resto;
+        this.nbrRating_resto = nbrRating_resto;
         this.location_resto = location_resto;
+        this.sampleMenuList = sampleMenuList;
+    }
+
+    public String getCoverPhoto_resto() {
+        return coverPhoto_resto;
+    }
+
+    public void setCoverPhoto_resto(String coverPhoto_resto) {
+        this.coverPhoto_resto = coverPhoto_resto;
+    }
+
+    public String getRating_resto() {
+        return rating_resto;
+    }
+
+    public void setRating_resto(String rating_resto) {
+        this.rating_resto = rating_resto;
+    }
+
+    public String getNbrRating_resto() {
+        return nbrRating_resto;
+    }
+
+    public void setNbrRating_resto(String nbrRating_resto) {
+        this.nbrRating_resto = nbrRating_resto;
+    }
+
+    public String getSpeciality_resto() {
+        return speciality_resto;
+    }
+
+    public void setSpeciality_resto(String speciality_resto) {
+        this.speciality_resto = speciality_resto;
     }
 
     public String getUser_id() {
@@ -100,5 +141,13 @@ public class ModelResto {
 
     public void setLogo_resto(String logo_resto) {
         this.logo_resto = logo_resto;
+    }
+
+    public List<ModelRestoSampleMenu> getSampleMenuList() {
+        return sampleMenuList;
+    }
+
+    public void setSampleMenuList(List<ModelRestoSampleMenu> sampleMenuList) {
+        this.sampleMenuList = sampleMenuList;
     }
 }

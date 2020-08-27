@@ -31,9 +31,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -60,12 +57,12 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class RestoRegisterActivity extends AppCompatActivity implements LocationListener {
 
-    private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText;
+    private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
     private ImageView restoLogo_imageView;
     private Button restoLocalisation_button, send_button;
     protected LinearLayout restoAddLogo_linearLayout;
 
-    private String logoResto, nameResto, passwordResto, confirmPasswordResto, phoneResto, emailResto,
+    private String logoResto, nameResto, passwordResto, confirmPasswordResto, phoneResto, emailResto, culinarySpeciality,
             user_id, user_email, user_pseudo;
     private Map<String, Object> locationResto = new HashMap<>();
 
@@ -86,7 +83,8 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
             password_boolean = false,
             phone_boolean = false,
             email_boolean = false,
-            location_boolean = false;
+            location_boolean = false,
+            speciality_boolean = false;
 
     //private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int PERMISSIONS_REQUEST_ENABLE_GPS = 8001;
@@ -108,6 +106,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
         restoConfirmPassword_editText = findViewById(R.id.editText_confirmRestoPassword_registerResto);
         restoPhone_editText = findViewById(R.id.editText_phoneResto_registerResto);
         restoEmail_editText = findViewById(R.id.editText_emailResto_registerResto);
+        culinarySpeciality_editText = findViewById(R.id.editText_culinarySpeciality_registerResto);
         restoLogo_imageView = findViewById(R.id.imageView_logoResto_registerResto);
         restoLocalisation_button = findViewById(R.id.button_localisationResto_registerResto);
         send_button = findViewById(R.id.button_send_registerResto);
@@ -383,7 +382,14 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
         confirmPasswordResto = restoConfirmPassword_editText.getText().toString();
         phoneResto = restoPhone_editText.getText().toString();
         emailResto = restoEmail_editText.getText().toString();
+        culinarySpeciality = culinarySpeciality_editText.getText().toString();
 
+        //control field culinary speciality
+        if (culinarySpeciality.isEmpty()) {
+            culinarySpeciality_editText.setError("Veillez renseigner votre spécialité culinare !");
+        }else {
+            speciality_boolean = true;
+        }
         //control logo resto
         if (imageCompressed_uri == null) {
             Toast.makeText(this, "Veillez ajouter le logo de votre restaurant pour continuer", Toast.LENGTH_LONG).show();
@@ -457,7 +463,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
         }
 
 
-        if (email_boolean && phone_boolean && location_boolean && phone_boolean && password_boolean && nameResto_boolean) {
+        if (email_boolean && phone_boolean && location_boolean && phone_boolean && password_boolean && nameResto_boolean && speciality_boolean) {
             progressDialog_registerRestoAccount.show();
             //store image into Firebase Storage
             String filePathName = "LogoResto/" + "logoResto_" + user_id;
@@ -482,7 +488,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     private void singinResto() {
         String id_resto = "resto_" + user_id;
-        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, passwordResto, phoneResto, emailResto, logoResto, locationResto);
+        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, passwordResto, phoneResto, emailResto, logoResto, "noImage", culinarySpeciality, "0", "0", locationResto);
 
         //store data
         collectionReference_resto.document(id_resto).set(modelResto)
@@ -492,7 +498,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                         Toast.makeText(RestoRegisterActivity.this, "Compte créé avec succès", Toast.LENGTH_SHORT).show();
                         assert manager != null;
                         manager.removeUpdates(RestoRegisterActivity.this);
-                        sendToRestoProfile();
+                        sendListeMenu();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -503,8 +509,8 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                 });
     }
 
-    private void sendToRestoProfile() {
-        startActivity(new Intent(RestoRegisterActivity.this, ProfileRestoActivity.class));
+    private void sendListeMenu() {
+        startActivity(new Intent(RestoRegisterActivity.this, ListMenuRestoActivity.class));
         progressDialog_registerRestoAccount.dismiss();
         finish();
     }
@@ -583,6 +589,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                 //change button location
                 restoLocalisation_button.setText("");
                 restoLocalisation_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_button_icon_dark, 0, 0, 0);
+                restoLocalisation_button.setBackground(null);
                 restoLocalisation_button.setCompoundDrawablePadding(10);
             }
         }else {
@@ -601,6 +608,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                     //change button location
                     restoLocalisation_button.setText("");
                     restoLocalisation_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_button_icon_dark, 0, 0, 0);
+                    restoLocalisation_button.setBackground(null);
                     restoLocalisation_button.setCompoundDrawablePadding(10);
                 }
                 Log.d(TAG, "FT : GPS enabled");

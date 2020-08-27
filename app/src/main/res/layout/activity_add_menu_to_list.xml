@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Controllers.Activities.AddMenuToListActivity"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/imageView_menuPhoto_addListMenu"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            android:layout_marginVertical="10dp"
+            android:src="@drawable/ic_photo_icon_dark"/>
+
+        <Button
+            android:id="@+id/btn_addImage_addListMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/rounded_white_button"
+            android:text="Ajouter une image"
+            android:textAllCaps="false"
+            android:textColor="@color/black"
+            android:layout_marginHorizontal="30dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nom du menu :"
+                android:textColor="@color/black"/>
+
+            <EditText
+                android:id="@+id/editText_menuName_addListMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences"
+                android:lines="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ingredients :"
+                android:textColor="@color/black"/>
+
+            <EditText
+                android:id="@+id/editText_menuIngredient_addListMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences|textMultiLine"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="15dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Prix :"
+                android:textColor="@color/black"/>
+
+            <EditText
+                android:id="@+id/editText_menuPrice_addListMenu"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:hint="En Ariary"
+                android:inputType="numberDecimal"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_send_addListMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/rounded_primary_button"
+            android:text="Poster"
+            android:textSize="18dp"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:layout_marginHorizontal="30dp"/>
+    </LinearLayout>
+
+</ScrollView>

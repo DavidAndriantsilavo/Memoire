@@ -126,7 +126,7 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                                 List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                                 int size = modelePost.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
                                         modelePosts_profile.add(modelePost.get(i));
                                     }
                                 }

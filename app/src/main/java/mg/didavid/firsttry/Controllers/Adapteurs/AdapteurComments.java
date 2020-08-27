@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,11 +55,11 @@ import mg.didavid.firsttry.R;
 
 public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHolder> {
 
-    Context context;
-    List<ModelComment> commentList;
+    private Context context;
+    private List<ModelComment> commentList;
 
-    String mCurrentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-    CollectionReference collectionReference_comment = FirebaseFirestore.getInstance().collection("Comments");
+    private String mCurrentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private CollectionReference collectionReference_comment = FirebaseFirestore.getInstance().collection("Comments");
 
     public AdapteurComments(Context context, List<ModelComment> commentList) {
         this.context = context;
@@ -94,24 +95,17 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         String commentTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
         //set data
-        //add document snapshot on view for updating data snapshotly
-        // we just need to do this for the comment's content only because it can be changed
-        DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);
-        documentReference_comment
-                .addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                        if (value != null){
-                            String comment_content = value.getString("post_comment");
-                            if (comment_content != null && !comment_content.isEmpty()) {
-                                holder.commentContent_comment.setText(comment_content);
-                            }
-                        }
-                    }
-                });
         holder.userName_comment.setText(name);
-        holder.userPseudo_comment.setText(pseudo);
-        //holder.commentContent_comment.setText(post_comment);
+        if (user_id.contains("resto")) {
+            holder.userPseudo_comment.setVisibility(View.GONE);
+            holder.ratingBar.setVisibility(View.VISIBLE);
+            holder.ratingBar.setRating(Float.parseFloat(pseudo));
+        }else {
+            holder.userPseudo_comment.setVisibility(View.VISIBLE);
+            holder.ratingBar.setVisibility(View.GONE);
+            holder.userPseudo_comment.setText(pseudo);
+        }
+        holder.commentContent_comment.setText(post_comment);
         holder.commentTimeStamp_comment.setText(commentTemps);
         //set user image profile
         try {
@@ -188,7 +182,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreAction_comment, Gravity.END);
         //show popup menu in only posts of currently singed-in user
-        if (user_id.equals(mCurrentUserId)){
+        if (user_id.contains(mCurrentUserId)){
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Modifier le commentaire");
             popupMenu.getMenu().add(Menu.NONE, 1, 0, "Supprimer le commentaire");
@@ -383,6 +377,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         ImageView profileImage_comment, image_comment;
         ImageButton moreAction_comment;
         TextView userName_comment, userPseudo_comment, commentContent_comment, commentTimeStamp_comment;
+        RatingBar ratingBar;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -394,6 +389,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
             userPseudo_comment = itemView.findViewById(R.id.texteView_pseudo_commentContent);
             commentContent_comment = itemView.findViewById(R.id.textView_commentContent_comment);
             commentTimeStamp_comment = itemView.findViewById(R.id.textView_commentTime_comment);
+            ratingBar = itemView.findViewById(R.id.ratingBar_comment);
         }
     }
 }

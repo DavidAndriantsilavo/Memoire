@@ -23,14 +23,12 @@
         android:id="@+id/et_postDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="80dp"
         android:maxHeight="300dp"
         android:gravity="start"
         android:layout_marginHorizontal="7dp"
         android:paddingHorizontal="10dp"
         android:text="Edition de la description"
-        android:inputType="textCapSentences|textMultiLine"
-        android:background="@drawable/edittextstle"/>
+        android:inputType="textCapSentences|textMultiLine"/>
 
     <LinearLayout
         android:layout_width="match_parent"

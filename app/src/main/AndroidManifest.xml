@@ -20,9 +20,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Controllers.Activities.ProfileRestoActivity" />
-        <activity android:name=".Controllers.Activities.RestoRegisterActivity"
+        <activity android:name=".Controllers.Activities.AddMenuToListActivity"
+            android:label="Ajoute de menu"
+            android:parentActivityName=".Controllers.Activities.MainActivity"
+            android:theme="@style/WithActionBarTheme"
             android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name=".Controllers.Activities.ListMenuRestoActivity" />
+        <activity android:name=".Controllers.Activities.OtherRestoProfileActivity" />
+        <activity android:name=".Controllers.Activities.ProfileRestoActivity" />
+        <activity
+            android:name=".Controllers.Activities.RestoRegisterActivity"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".Controllers.Activities.ShowWhoKiffAvtivity"
             android:parentActivityName=".Controllers.Activities.MainActivity"

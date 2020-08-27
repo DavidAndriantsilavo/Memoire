@@ -118,6 +118,25 @@
         </LinearLayout>
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Votre spécialité"
+            android:paddingLeft="30dp"
+            android:textSize="15sp"
+            android:labelFor="@+id/editText_nom"
+            />
+
+        <EditText
+            android:id="@+id/editText_culinarySpeciality_registerResto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:inputType="textPersonName"
+            android:lines="1"
+            />
+
+        <TextView
             android:id="@+id/textView_prenom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

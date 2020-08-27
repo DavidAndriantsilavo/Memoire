@@ -1,49 +1,55 @@
 package mg.didavid.firsttry.Controllers.Fragments;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
-import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
-import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.RestoRegisterActivity;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapterRestoPresentation;
 import mg.didavid.firsttry.Models.ModelResto;
+import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
 
 public class RestoFragment extends Fragment {
 
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    private ProgressDialog progressDialog_logout;
 
+    private RecyclerView recyclerView_restoFragment;
+    private AdapterRestoPresentation adapterRestoPresentation;
+    private List<ModelResto> modelRestoList;
+    private TextView textView_aboutSinginResto;
+
+    private String user_id;
 
     public static RestoFragment newInstance() {
         return (new RestoFragment());
@@ -52,8 +58,83 @@ public class RestoFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_resto, container, false);
+        modelRestoList = new ArrayList<>();
 
-        return inflater.inflate(R.layout.fragment_resto, container, false);
+        //set recycler view
+        textView_aboutSinginResto = view.findViewById(R.id.textView_aboutRestoRregister_restoFragment);
+        recyclerView_restoFragment = view.findViewById(R.id.restoRecyclerview);
+        recyclerView_restoFragment.setHasFixedSize(true);
+        recyclerView_restoFragment.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+
+        user_id = user.getUid();
+
+        setData();
+
+        return view;
+    }
+
+    private void setData() {
+        final CollectionReference collectionReference_resto = FirebaseFirestore.getInstance().collection("Resto");
+        collectionReference_resto.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                collectionReference_resto
+                        .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                            @Override
+                            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                if (value != null && !value.isEmpty()) {
+                                    for (DocumentSnapshot ds : value.getDocuments()) {
+                                        //get resto informations
+                                        final ModelResto modelResto = new ModelResto();
+                                        modelResto.setName_resto(ds.getString("name_resto"));
+                                        modelResto.setSpeciality_resto(ds.getString("speciality_resto"));
+                                        modelResto.setRating_resto(ds.getString("rating_resto"));
+                                        modelResto.setNbrRating_resto(ds.getString("nbrRating_resto"));
+                                        modelResto.setLogo_resto(ds.getString("logo_resto"));
+
+                                        final String id_resto = ds.getString("id_resto");
+                                        modelResto.setId_resto(id_resto);
+                                        final List<ModelRestoSampleMenu> modelRestoSampleMenuList = new ArrayList<>();
+                                        final CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
+                                        collectionReference_sampleMenu.get()
+                                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                        collectionReference_sampleMenu.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                                                                    @Override
+                                                                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                                                        if (value != null && !value.isEmpty()) {
+                                                                            modelRestoSampleMenuList.clear();
+                                                                            List<ModelRestoSampleMenu> restoSampleMenus = value.toObjects(ModelRestoSampleMenu.class);
+                                                                            int size = restoSampleMenus.size();
+                                                                            for (int i = 0; i < size; i++) {
+                                                                                if (restoSampleMenus.get(i).getId_resto().contains(id_resto)) {
+                                                                                    modelRestoSampleMenuList.add(restoSampleMenus.get(i));
+                                                                                }
+                                                                            }
+                                                                            modelResto.setSampleMenuList(modelRestoSampleMenuList);
+                                                                            modelRestoList.add(modelResto);
+                                                                            //set adapter to thi recycler view
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+                                                                        } else {
+                                                                            modelRestoList.add(modelResto);
+                                                                            //set adapter to thi recycler view
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+                                                                        }
+                                                                    }
+                                                                });
+                                                    }
+                                                });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
     }
 
     @Override
@@ -63,13 +144,15 @@ public class RestoFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
         menu.findItem(R.id.menu_search_button).setVisible(false);
         menu.findItem(R.id.menu_logout_profil).setVisible(false);
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-        final String user_id = user.getUid();
+        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
+
+        final boolean[] userHasRestoAccount = {false};
+
         CollectionReference collectionReference_resto = FirebaseFirestore.getInstance().collection("Resto");
         collectionReference_resto.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -78,22 +161,26 @@ public class RestoFragment extends Fragment {
                         if (!queryDocumentSnapshots.isEmpty()) {
                             List<ModelResto> modelRestos = queryDocumentSnapshots.toObjects(ModelResto.class);
                             int size = modelRestos.size();
-                            for ( int i = 0; i < size; i++) {
-                                if (modelRestos.get(i).getId_resto().contains(user_id)) {
-                                    //the user have already one restaurant account so, hide menu add restaurant account and show menu view profile
-                                    menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
-                                    break;
-                                }else {
-                                    menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
+                            for (int i = 0; i < size; i++) {
+                                if (!userHasRestoAccount[0]) {
+                                    if (modelRestos.get(i).getId_resto().contains(user_id)) {
+                                        //the user have already one restaurant account so, hide menu add restaurant account and show menu view profile
+                                        menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
+                                        textView_aboutSinginResto.setVisibility(View.GONE);
+                                        userHasRestoAccount[0] = true;
+                                    }else {
+                                        //current user doesn't have resto account, allow him to add new resto account
+                                        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
+                                    }
                                 }
                             }
                         }else {
-                            //the document is empty, so allow user to add restaurant account
-                            menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
+                            //current user doesn't have resto account, allow him to add new resto account
                             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
                         }
                     }
                 });
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
