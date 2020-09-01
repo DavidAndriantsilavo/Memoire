@@ -12,15 +12,17 @@ public class User implements Parcelable{
     private String password;
     private String sexe;
     private String pseudo;
+    private String profile_image;
 
-    public User(String user_id, String name, String pseudo, String sexe, String email, String phone, String password) {
+    public User(String user_id, String name, String sexe, String pseudo, String email, String phone, String password, String profile_image) {
         this.email = email;
         this.user_id = user_id;
         this.name = name;
-        this.phone =  phone;
+        this.phone = phone;
         this.password = password;
         this.sexe = sexe;
         this.pseudo = pseudo;
+        this.profile_image = profile_image;
     }
 
     public User() {
@@ -83,6 +85,13 @@ public class User implements Parcelable{
         this.phone = phone;
     }
 
+    public String getProfile_image() {
+        return profile_image;
+    }
+
+    public void setProfile_image(String profile_image) {
+        this.profile_image = profile_image;
+    }
 
     protected User(Parcel in) {
         email = in.readString();
@@ -90,7 +99,7 @@ public class User implements Parcelable{
         name = in.readString();
     }
 
-    public static final Parcelable.Creator<User> CREATOR = new Creator<User>() {
+    public static final Creator<User> CREATOR = new Creator<User>() {
         @Override
         public User createFromParcel(Parcel in) {
             return new User(in);

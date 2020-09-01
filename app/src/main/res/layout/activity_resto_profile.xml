@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Controllers.Activities.ProfileRestoActivity">
+
+    <!-- Importation de notre Toolbar -->
+    <include
+        android:id="@+id/toolbar_restoprofile"
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <ScrollView
+        android:id="@+id/scrollView_restoProfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar_restoprofile">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="180dp">
+                <ImageView
+                    android:id="@+id/imageView_photoDeCouverture_restoProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp"
+                    android:background="@color/colorPrimaryDark"/>
+
+                <LinearLayout
+                    android:id="@+id/linearLayout_addCoverPhoto_restoProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:paddingHorizontal="5dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="@color/black"
+                    android:alpha="0.7"
+                    tools:ignore="RtlSymmetry">
+
+                    <Button
+                        android:id="@+id/add_cover_photo_restoProfile"
+                        android:layout_width="21dp"
+                        android:layout_height="21dp"
+                        android:background="@drawable/ic_image_add_photo_de_profile_profile_icon_dark"
+                        android:autoLink="all"
+                        android:layout_margin="3dp"/>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/relativeLayout_restoProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="85dp">
+
+                <RelativeLayout
+                    android:id="@+id/relativeLayout_pdp_restoProfile"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:layout_marginStart="20dp"
+                    android:gravity="center"
+                    android:foregroundGravity="center">
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/card_root"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        app:cardCornerRadius="37.5dp"
+                        android:foregroundGravity="center"
+                        app:cardBackgroundColor="@color/colorPrimary">
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="145dp"
+                            android:layout_height="145dp"
+                            app:cardCornerRadius="36.25dp"
+                            android:layout_gravity="center"
+                            app:cardBackgroundColor="@color/colorPrimary">
+                            <ImageView
+                                android:id="@+id/imageView_logoResto_restoProfile"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/ic_image_profile_icon_dark"
+                                />
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                app:cardCornerRadius="8dp"
+                                app:cardBackgroundColor="@color/white"
+                                android:alpha="0.5">
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="28dp"
+                                    android:layout_height="28dp"
+                                    app:cardCornerRadius="7dp"
+                                    android:layout_gravity="center"
+                                    app:cardBackgroundColor="@color/colorPrimary">
+
+                                    <Button
+                                        android:id="@+id/add_profile_photo_restoProfile"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="@drawable/ic_image_add_photo_de_profile_profile_icon_dark"
+                                        android:autoLink="all"
+                                        android:layout_margin="3dp"/>
+
+                                </androidx.cardview.widget.CardView>
+
+                            </androidx.cardview.widget.CardView>
+
+                        </androidx.cardview.widget.CardView>
+
+                    </androidx.cardview.widget.CardView>
+
+
+
+                </RelativeLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:orientation="vertical"
+                    android:layout_toEndOf="@id/relativeLayout_pdp_restoProfile"
+                    tools:ignore="NotSibling"
+                    android:background="@color/black"
+                    android:alpha="0.8"
+                    android:layout_marginTop="35dp"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/texteView_nameResto_restoProfile"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5sp"
+                        android:layout_marginLeft="5sp"
+                        android:text="Name"
+                        android:textColor="@color/white"
+                        android:textSize="14dp"
+                        android:textStyle="bold"/>
+
+                    <RatingBar
+                        android:id="@+id/ratingBar_restoProfile"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="5sp"
+                        android:numStars="5"
+                        android:rating="3.5"
+                        android:stepSize="0.1"
+                        android:isIndicator="true"
+                        style="?android:attr/ratingBarStyleSmall"/>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout_seeAllMenu_restoProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/relativeLayout_restoProfile"
+                android:layout_alignParentEnd="true"
+                android:orientation="horizontal"
+                android:layout_marginTop="30dp">
+
+                <TextView
+                    android:id="@+id/textView_showAllMenuList_restoProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Voir tous le menu"
+                    android:textSize="17dp"/>
+
+                <ImageButton
+                    android:id="@+id/flecheBtn_restoProfile"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginEnd="7dp"
+                    android:clickable="true"
+                    android:background="@drawable/ic_fleche_vers_droite_icon_dark"/>
+
+            </LinearLayout>
+
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView_sampleMenu_restoProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginBottom="20sp"
+                    android:orientation="horizontal"
+                    android:layout_below="@+id/linearLayout_seeAllMenu_restoProfile"/>
+
+            <Button
+                android:id="@+id/button_newPost_restoProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="40dp"
+                android:text="Nouvelle publication"
+                android:textSize="14dp"
+                android:drawableStart="@drawable/ic_add__newpost_profile_icon_dark"
+                android:drawablePadding="20dp"
+                android:paddingStart="60dp"
+                android:textAllCaps="false"
+                android:textAlignment="textStart"
+                android:gravity="center"
+                android:layout_below="@+id/recyclerView_sampleMenu_restoProfile"
+                android:background="@drawable/rounded_grey_button"
+                tools:ignore="RtlCompat" />
+
+            <ScrollView
+                android:id="@+id/scrollView_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/button_newPost_restoProfile"
+                android:layout_marginTop="20dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView_post_restoProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/browser_actions_divider_color"/>
+            </ScrollView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="--    Fin de l'actualité  --"
+                android:gravity="center"
+                android:layout_below="@+id/scrollView_body"/>
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floating_btn_editProfil_restoProfile"
+        android:src="@drawable/ic_edit_profile_icon_dark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="20dp"
+        android:layout_alignParentRight="true"/>
+
+</RelativeLayout>

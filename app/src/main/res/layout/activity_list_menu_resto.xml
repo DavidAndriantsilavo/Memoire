@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Controllers.Activities.ListMenuRestoActivity">
+
+    <include
+        android:id="@+id/toolbar_menuList"
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <ScrollView
+        android:id="@+id/scrollView_menuList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar_menuList">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView_indication_menuList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\t\tAjouter une liste de menu pour les afficher ici. Tout utilisateur peut voir ce contenu. Puis séléctionner un menu pour l'ajouter comme échantillion. Vous pouver ajouter jusqu'à 5 échantillons de menu pour les mettre en avant dans la liste des restaurants. Toute personne qui visiteront l'onglet 'Resto' et aussi votre profile peut voir vos échantillons/"
+                android:layout_margin="10dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_menuList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginHorizontal="7dp"/>
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+</RelativeLayout>

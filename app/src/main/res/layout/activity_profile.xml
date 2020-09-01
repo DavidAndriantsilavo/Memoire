@@ -19,7 +19,6 @@
                 android:layout_height="180dp">
                 <ImageView
                     android:id="@+id/imageView_photoDeCouverture_profile"
-                    android:src="@drawable/electronique"
                     android:layout_width="match_parent"
                     android:layout_height="180dp"
                     android:background="@color/colorPrimaryDark"/>
@@ -129,12 +128,32 @@
                 </LinearLayout>
 
             </RelativeLayout>
+
+            <Button
+                android:id="@+id/button_newPost_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="40dp"
+                android:text="Nouvelle publication"
+                android:textSize="14dp"
+                android:drawableStart="@drawable/ic_add__newpost_profile_icon_dark"
+                android:drawablePadding="20dp"
+                android:paddingStart="60dp"
+                android:textAllCaps="false"
+                android:textAlignment="textStart"
+                android:gravity="center"
+                android:layout_below="@+id/relativeLayout_profile"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/rounded_grey_button"
+                tools:ignore="RtlCompat" />
+
             <ScrollView
                 android:id="@+id/scrollView_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/relativeLayout_profile"
-                android:layout_marginTop="30dp">
+                android:layout_below="@+id/button_newPost_profile"
+                android:layout_marginTop="20dp">
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView_post"
                     android:layout_width="match_parent"

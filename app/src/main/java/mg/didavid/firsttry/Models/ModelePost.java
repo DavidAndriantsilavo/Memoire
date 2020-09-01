@@ -2,9 +2,24 @@ package mg.didavid.firsttry.Models;
 
 public class ModelePost {
     //spécifications du posteur
-    String user_id, name, pseudo, post_kiff, profile_image, post_id, post_title, post_description, post_image, post_time;
+    private String user_id, name, pseudo, post_kiff, comment_count, profile_image, post_id, post_description, post_image1, post_image2, post_image3, post_time;
 
     public ModelePost(){ }
+
+    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String comment_count, String profile_image, String post_id, String post_description, String post_image1, String post_image2, String post_image3, String post_time) {
+        this.user_id = user_id;
+        this.name = name;
+        this.pseudo = pseudo;
+        this.post_kiff = post_kiff;
+        this.comment_count = comment_count;
+        this.profile_image = profile_image;
+        this.post_id = post_id;
+        this.post_description = post_description;
+        this.post_image1 = post_image1;
+        this.post_image2 = post_image2;
+        this.post_image3 = post_image3;
+        this.post_time = post_time;
+    }
 
     public String getUser_id() {
         return user_id;
@@ -38,6 +53,14 @@ public class ModelePost {
         this.post_kiff = post_kiff;
     }
 
+    public String getComment_count() {
+        return comment_count;
+    }
+
+    public void setComment_count(String comment_count) {
+        this.comment_count = comment_count;
+    }
+
     public String getProfile_image() {
         return profile_image;
     }
@@ -54,14 +77,6 @@ public class ModelePost {
         this.post_id = post_id;
     }
 
-    public String getPost_title() {
-        return post_title;
-    }
-
-    public void setPost_title(String post_title) {
-        this.post_title = post_title;
-    }
-
     public String getPost_description() {
         return post_description;
     }
@@ -70,12 +85,28 @@ public class ModelePost {
         this.post_description = post_description;
     }
 
-    public String getPost_image() {
-        return post_image;
+    public String getPost_image1() {
+        return post_image1;
     }
 
-    public void setPost_image(String post_image) {
-        this.post_image = post_image;
+    public void setPost_image1(String post_image1) {
+        this.post_image1 = post_image1;
+    }
+
+    public String getPost_image2() {
+        return post_image2;
+    }
+
+    public void setPost_image2(String post_image2) {
+        this.post_image2 = post_image2;
+    }
+
+    public String getPost_image3() {
+        return post_image3;
+    }
+
+    public void setPost_image3(String post_image3) {
+        this.post_image3 = post_image3;
     }
 
     public String getPost_time() {
@@ -84,22 +115,6 @@ public class ModelePost {
 
     public void setPost_time(String post_time) {
         this.post_time = post_time;
-    }
-
-    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String profile_image, String post_id, String post_title, String post_description, String post_image, String post_time) {
-        this.user_id = user_id;
-        this.name = name;
-        this.pseudo = pseudo;
-        this.post_kiff = post_kiff;
-        this.profile_image = profile_image;
-        this.post_id = post_id;
-        this.post_title = post_title;
-        this.post_description = post_description;
-        this.post_image = post_image;
-        this.post_time = post_time;
-
-
-
     }
 }
 

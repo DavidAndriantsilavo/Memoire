@@ -10,45 +10,48 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="20dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="@drawable/edittextstle">
-
-            <EditText
-                android:id="@+id/editText_inputTitlePost_newPost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Entrer le titre de votre publication ici"
-                android:inputType="textCapSentences"
-                android:singleLine="true"
-                android:padding="10dp"/>
-
-        </LinearLayout>
+        android:layout_marginTop="10dp">
 
         <RelativeLayout
+            android:id="@+id/relativeLayout_whokiff"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <ImageView
-                android:id="@+id/imageView_inputImage_newPost"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+
+            <!--profile image of current user-->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardView_imageProfile"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:cardCornerRadius="25dp"
+                app:cardBackgroundColor="@color/colorPrimary"
+                android:layout_gravity="center"
+                android:layout_marginRight="15dp">
+                <androidx.cardview.widget.CardView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    app:cardCornerRadius="22.5sp"
+                    android:layout_gravity="center">
+                    <ImageView
+                        android:id="@+id/imageView_photoDeProfile_newPost"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_profile_icon_dark"/>
+                </androidx.cardview.widget.CardView>
+            </androidx.cardview.widget.CardView>
+
+            <!--comment - user name-->
+            <TextView
+                android:id="@+id/textView_userName_newPost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minHeight="0dp"
-                android:maxHeight="400dp"
-                android:minWidth="0dp"
-                android:maxWidth="400dp"
-                android:background="@color/colorPrimaryDark"/>
-            <Button
-                android:id="@+id/button_delete_image_post"
-                android:layout_width="40dp"
-                android:layout_height="30dp"
-                android:padding="20dp"
-                android:layout_alignEnd="@+id/imageView_inputImage_newPost"
-                android:background="@drawable/ic_delete_image_post_icon_dark"
-                android:visibility="gone"/>
+                android:layout_toRightOf="@id/cardView_imageProfile"
+                android:text="User name"
+                android:textSize="19dp"
+                android:textStyle="bold"
+                android:textColor="@color/black"/>
+
 
         </RelativeLayout>
 
@@ -60,28 +63,57 @@
             android:padding="10dp"
             android:inputType="textCapSentences|textMultiLine"
             android:gravity="start"
-            android:height="100dp"
-            android:hint="Entrer votre description ici"/>
+            android:height="150dp"
+            android:hint="Entrer votre description ici"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="20sp"/>
 
-        <Button
-            android:id="@+id/button_addImage_post"
-            android:layout_width="300dp"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:text="Ajouter une photo"
-            android:textAllCaps="false"
-            android:drawableStart="@drawable/ic_add_new_image_post_icon_dark"
-            android:drawablePadding="10dp"
-            android:paddingHorizontal="50dp"
-            android:background="@drawable/rounded_white_button"/>
+            android:orientation="horizontal"
+            android:layout_marginVertical="20dp"
+            android:layout_marginHorizontal="7dp">
+            <LinearLayout
+                android:id="@+id/linearLayout_forImageAddedDynamically"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+            </LinearLayout>
+
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linearLayout_addImage_newPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageButton
+                android:id="@+id/imageButton_addImage_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_add_image_newpost_icon_dark"
+                android:background="@color/white"/>
+            <TextView
+                android:id="@+id/textView_nearAddImage_newPost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter une photo"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
 
         <Button
             android:id="@+id/button_publish_post"
             android:layout_width="300dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="13dp"
             android:layout_marginBottom="60dp"
             android:text="Publier"
             android:textAllCaps="false"

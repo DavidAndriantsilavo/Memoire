@@ -1,20 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:tag="mapFragment"/>
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:tag="mapFragment"/>
 
-    <Switch
-        android:id="@+id/switch_show_other"
-        android:layout_width="wrap_content"
+    <SeekBar
+        android:id="@+id/seekBar_distance"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:text="show others"
-        android:layout_margin="5dp"/>
-</RelativeLayout>
+        android:layout_centerInParent="true"
+        android:layout_gravity="end|center_vertical"
+        android:max="100"
+        android:progress="0"
+        android:rotation="270"
+        android:paddingLeft="100dp"
+        android:translationX="110dp"/>
+
+    <LinearLayout
+            android:id="@+id/linearLayoutCustomView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            android:layout_margin="10dp"
+            android:visibility="gone"
+
+            android:background="@color/white">
+
+            <ImageView
+                android:id="@+id/imageView_profile_picture"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_image_profile_icon_dark"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="20sp"
+                    android:text="TExt"
+                    android:layout_marginLeft="10dp"
+                    android:textStyle="bold"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/button_profile"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginLeft="10dp"
+                        android:text="Profile"
+                        android:textSize="10sp"
+                        android:textAllCaps="false"/>
+
+                    <Button
+                        android:id="@+id/button_directions"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Directions"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="10sp"
+                        android:textAllCaps="false"/>
+
+                    <Button
+                        android:id="@+id/button_message"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Message"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="10sp"
+                        android:textAllCaps="false"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+</FrameLayout>

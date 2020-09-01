@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Noter ce restaurant"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:layout_marginTop="10dp"
+        android:gravity="center"/>
+
+    <RatingBar
+        android:id="@+id/ratingBar_ratingDialog_actuFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:stepSize="1"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="5dp"
+        android:paddingBottom="15dp">
+        <Button
+            android:id="@+id/btn_annuler_ratingDialog"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_grey_button"
+            android:text="Plus tard"
+            android:textAllCaps="false"
+            android:layout_marginEnd="40dp"/>
+        <Button
+            android:id="@+id/btn_envoyer_ratingDialog"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_primary_button"
+            android:text="Envoyer"
+            android:textAllCaps="false"
+            android:textColor="@color/white"/>
+
+
+    </LinearLayout>
+</LinearLayout>

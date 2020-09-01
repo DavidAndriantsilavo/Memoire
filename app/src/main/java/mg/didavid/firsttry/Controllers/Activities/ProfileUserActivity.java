@@ -4,8 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,7 +39,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -52,13 +53,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.iceteck.silicompressorr.FileUtils;
+import com.iceteck.silicompressorr.SiliCompressor;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +69,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
@@ -73,13 +77,16 @@ import mg.didavid.firsttry.R;
 public class ProfileUserActivity extends AppCompatActivity {
 
     TextView textView_displayLastname, textView_email;
+    String user_name, value_name;
+    final Map<String, Object> profileImageChanged_result = new HashMap<>();
+    final Map<String, Object> nameChanged_result = new HashMap<>();
 
     ImageView imageView_photoDeProfile;
     FloatingActionButton floatingActionButton_editProfile;
-    Button btnAddProfileImage;
+    Button btnAddProfileImage, btnNewPost;
 
     FirebaseFirestore firestore;
-    CollectionReference collectionUsers; // Firestore's collection reference : root/reference
+    CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
     DocumentReference docRefProfileUser; // reference of the document in Firestoer : root/reference/document
     StorageReference storageReference; // reference of the Firebase storage
     String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
@@ -95,6 +102,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     String [] cameraPermission;
     String [] storagePermission;
     Uri image_uri = null;
+    Uri imageCompressed_uri = null;
 
     List<ModelePost> modelePosts_profile;
     AdapteursPost adapteursPost_profile;
@@ -113,6 +121,7 @@ public class ProfileUserActivity extends AppCompatActivity {
         floatingActionButton_editProfile = findViewById(R.id.floating_btn_editProfil);
         btnAddProfileImage = findViewById(R.id.add_profile_photo_profile);
         profile_recyclerView = findViewById(R.id.recyclerView_post);
+        btnNewPost = findViewById(R.id.button_newPost_profile);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
@@ -128,6 +137,8 @@ public class ProfileUserActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
         collectionUsers = firestore.collection("Users");
         storageReference = FirebaseStorage.getInstance().getReference();
+        collectioonPost = FirebaseFirestore.getInstance().collection("Publications");
+        collectionComment = FirebaseFirestore.getInstance().collection("Comments");
 
         //linear layout for recyclerView
         LinearLayoutManager layoutManager = new LinearLayoutManager(ProfileUserActivity.this);
@@ -141,9 +152,6 @@ public class ProfileUserActivity extends AppCompatActivity {
         //init array of permissions
         cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
-        //DISPLAY THE USER INFORMATIONS IN THE TEXTVIEW
-        displayInformations();
 
         floatingActionButton_editProfile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -161,8 +169,87 @@ public class ProfileUserActivity extends AppCompatActivity {
             }
         });
 
+        btnNewPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
+                finish();
+            }
+        });
+
         checkingUserInfo();
         loadMyPost();
+
+        snapshootUserInfo();
+    }
+
+    private void snapshootUserInfo() {
+        docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (value != null) {
+                    String imagegProfile = value.getString("profile_image");
+                    if (imagegProfile != null || !imagegProfile.isEmpty()){
+                        uploadProfileImageEverywhere(profileImageChanged_result);
+                    }
+                    String name = value.getString("name");
+                    if (name != null || !name.isEmpty()){
+                        uploadUserNameEverywhere(nameChanged_result);
+                    }
+
+                }
+            }
+        });
+    }
+
+    private void uploadUserNameEverywhere(final Map<String, Object> nameChanged_result) {
+        //update also current user name in all his publications
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
+                                        String post_id = modelePost.get(i).getPost_id();
+                                        collectioonPost.document(post_id).update(nameChanged_result);
+                                    }
+                                }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also current user name on all comments whom he has commented
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().equals(user_id)) {
+                                        String comment_id = modelComments.get(i).getComment_time();
+                                        collectionComment.document(comment_id).update(nameChanged_result);
+                                    }
+                                }
+                        }
+                    }
+                });
+    }
+
+    private void goToShowImage(String imageUri) {
+        Intent intent = new Intent(ProfileUserActivity.this, ShowImageActivity.class);
+        intent.putExtra("showImage", imageUri);
+        Log.d("valeur de image uri", " :" + imageUri);
+        startActivity(intent);
     }
 
     private void loadMyPost() {
@@ -172,12 +259,11 @@ public class ProfileUserActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()) {
-                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                                 modelePosts_profile.clear();
                                 List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                                 int size = modelePost.size();
                                 for (int i = 0; i < size; i++) {
-                                    if (modelePost.get(i).getUser_id().contains(user_id)) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
                                         modelePosts_profile.add(modelePost.get(i));
                                     }
                                 }
@@ -185,7 +271,6 @@ public class ProfileUserActivity extends AppCompatActivity {
                                 adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
                                 //set adapter to recyclerView
                                 profile_recyclerView.setAdapter(adapteursPost_profile);
-                            }
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -251,12 +336,20 @@ public class ProfileUserActivity extends AppCompatActivity {
                     docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                            String lastName = value.getString("name");
+                            user_name = value.getString("name");
                             String pseudo = value.getString("pseudo");
-                            String photoDeProfile = value.getString("profile_image");
+                            final String photoDeProfile = value.getString("profile_image");
 
                             //setting data from Firestore
-                            setData(lastName, pseudo, photoDeProfile);
+                            setData(user_name, pseudo, photoDeProfile);
+
+                            //profile image clicked
+                            imageView_photoDeProfile.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    goToShowImage(photoDeProfile);
+                                }
+                            });
                         }
                     });
                 }
@@ -377,18 +470,33 @@ public class ProfileUserActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK){
             if (requestCode == IMAGE_PICK_GALLERY_REQUEST_CODE){
                 image_uri = data.getData();
-                uploadProfileImage(image_uri);
+                imageCompressed_uri = compressedAndSetImage();
+                uploadProfileImage(imageCompressed_uri);
             }
             if (requestCode == IMAGE_PICK_CAMERA_REQUEST_CODE){
-                uploadProfileImage(image_uri);
+                imageCompressed_uri = compressedAndSetImage();
+                uploadProfileImage(imageCompressed_uri);
             }
         }
     }
 
+    //compression de l'image
+    private Uri compressedAndSetImage() {
+        Uri compressedImage = null;
+        if (image_uri != null){
+            File file = new File(SiliCompressor.with(this)
+                    .compress(FileUtils.getPath(this, image_uri), new File(this.getCacheDir(), "temp")));
+            compressedImage = Uri.fromFile(file);
+        }
+        return compressedImage;
+    }
+
     private void uploadProfileImage(Uri uri) {
         progressDialog_editProfile.show();
-        String filePathAndName = storagePdPPath + "profile_image" + "_" + user.getUid(); //nom de l'image
+        final String timestamp = String.valueOf(System.currentTimeMillis());
+        String filePathAndName = storagePdPPath + timestamp + "_profile_image" + "_" + user.getUid(); //nom de l'image
 
+        //storing imagge to Firabase Storage
         StorageReference storageReference1 = storageReference.child(filePathAndName);
         storageReference1.putFile(uri)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -405,12 +513,12 @@ public class ProfileUserActivity extends AppCompatActivity {
                         //verifier si l'image est téléversée ou pas et que l'url est bien reçu
                         if (uriTask.isSuccessful()){
                             //update profile image
-                            Map<String, Object> result = new HashMap<>();
-                            result.put("profile_image", downloadUri);
-                            docRefProfileUser.update(result)
+                            profileImageChanged_result.put("profile_image", downloadUri);
+                            docRefProfileUser.update(profileImageChanged_result)
                                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
+                                            uploadProfileImageEverywhere(profileImageChanged_result);
                                             progressDialog_editProfile.dismiss();
                                             Toast.makeText(ProfileUserActivity.this, "Photo de profile mise à jour", Toast.LENGTH_SHORT).show();
                                         }
@@ -438,8 +546,51 @@ public class ProfileUserActivity extends AppCompatActivity {
         });
     }
 
+    private void uploadProfileImageEverywhere(final Map<String, Object> result) {
+        //update profile image of all user's posts
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                                int size = modelePost.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelePost.get(i).getUser_id().equals(user_id)) {
+                                        String post_id = modelePost.get(i).getPost_id();
+                                        collectioonPost.document(post_id).update(result);
+                                    }
+                                }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+        //update also profile image of all user's comment on post
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()){
+                                List<ModelComment> modelComments = queryDocumentSnapshots.toObjects(ModelComment.class);
+                                int size = modelComments.size();
+                                for (int i = 0; i < size; i++) {
+                                    if (modelComments.get(i).getUser_id().equals(user_id)) {
+                                        String comment_id = modelComments.get(i).getComment_time(); //comment_time is the id of the comment
+                                        collectionComment.document(comment_id).update(result);
+                                    }
+                                }
+                        }
+                    }
+                });
+    }
+
     private void showDialogEditProfile() {
-        String[] options = {"Changer la photo de profile", "Modifier votre nom", "Modifier votre pseudo"};
+        String[] options = {"Changer la photo de profile", "Modifier votre nom"};
         //constructin de l'alert dialogue
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Option de modification");
@@ -454,19 +605,14 @@ public class ProfileUserActivity extends AppCompatActivity {
                 if (which == 1){
                     //modifier le nom de l'user
                     progressDialog_editProfile.setMessage("Edition de votre nom");
-                    showNamePseudoUpdateDialog("nom");
-                }
-                if (which == 2){
-                    //modifier le pseudo de l'user
-                    progressDialog_editProfile.setMessage("Edition de votre pseudo");
-                    showNamePseudoUpdateDialog("pseudo");
+                    showNameUpdateDialog("name");
                 }
             }
         });
         builder.create().show();
     }
 
-    private void showNamePseudoUpdateDialog(final String key) {
+    private void showNameUpdateDialog(final String key) {
         //custom dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Modifier votre " + key);
@@ -476,15 +622,9 @@ public class ProfileUserActivity extends AppCompatActivity {
         linearLayout.setPadding(10,10,10,10);
         //add EditText
         final EditText editText = new EditText(this);
-        editText.setHint("Entrer votre nouveau " + key);
+        editText.setText(user_name);
         linearLayout.addView(editText);
 
-        final String key1;
-        if (key == "nom"){
-            key1 = "name";
-        }else {
-            key1 = key;
-        }
         builder.setView(linearLayout);
 
         //add button in dialog
@@ -492,27 +632,9 @@ public class ProfileUserActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //get the input text
-                String value = editText.getText().toString();
-                if (!TextUtils.isEmpty(value)){
-                    progressDialog_editProfile.show();
-                    Map<String, Object> result = new HashMap<>();
-                    result.put(key1, value);
-
-                    docRefProfileUser = collectionUsers.document(user.getUid());
-                    docRefProfileUser.update(result)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    progressDialog_editProfile.dismiss();
-                                    Toast.makeText(ProfileUserActivity.this, key + " mis à jour", Toast.LENGTH_SHORT).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    progressDialog_editProfile.dismiss();
-                                    Toast.makeText(ProfileUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                value_name = editText.getText().toString();
+                if (!TextUtils.isEmpty(value_name)){
+                    uploadUserName(value_name, key);
                 }else {
                     Toast.makeText(ProfileUserActivity.this, "Veillez entre votre nouveau " + key, Toast.LENGTH_SHORT).show();
                 }
@@ -527,6 +649,28 @@ public class ProfileUserActivity extends AppCompatActivity {
         //create and show dialog
         builder.create().show();
 
+    }
+
+    private void uploadUserName(String value, String key) {
+        progressDialog_editProfile.show();
+        nameChanged_result.put(key, value);
+
+        docRefProfileUser = collectionUsers.document(user.getUid());
+        docRefProfileUser.update(nameChanged_result)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        uploadUserNameEverywhere(nameChanged_result);
+                        progressDialog_editProfile.dismiss();
+                        Toast.makeText(ProfileUserActivity.this, "Nom mis à jour", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressDialog_editProfile.dismiss();
+                Toast.makeText(ProfileUserActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showImagePicDialog() {
@@ -559,26 +703,73 @@ public class ProfileUserActivity extends AppCompatActivity {
         builder.create().show();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_logout_et_deleteprofile_profile, menu);
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
-    //recuperation des information de l'utilisateur
-    private void displayInformations() {
-        GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(this);
-        if(signInAccount != null)
-        {
-            textView_displayLastname.setText(signInAccount.getDisplayName());
-            textView_email.setText(signInAccount.getEmail());
-        }
-        else
-        {
-            textView_displayLastname.setText("NULL");
-            textView_email.setText("NULL");
-        }
+        //hide others menu
+        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
+        menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
+        menu.findItem(R.id.menu_logout_profil).setVisible(false);
+
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchPost(query);
+                }else {
+                    loadMyPost();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //called as and when user press any lettre
+                if (!TextUtils.isEmpty(newText)){
+                    searchPost(newText);
+                }else {
+                    loadMyPost();
+                }
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_logout_et_deleteprofile_profile, menu);
-        return super.onCreateOptionsMenu(menu);
+    private void searchPost(final String query) {
+        //path of all post
+        final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Publications");
+        //get all data from this reference
+        collectionUsers.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                    modelePosts_profile.clear(); //for deleting auto redundancy
+                    List<ModelePost> modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
+                    int size = modelePost.size();
+                    for (int i = 0; i < size; i++) {
+                        if (modelePost.get(i).getPost_description().toLowerCase().contains(query.toLowerCase()) && modelePost.get(i).getUser_id().equals(user_id)) {
+                            modelePosts_profile.add(modelePost.get(i));
+                        }
+                    }
+                    //adapter
+                    adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
+                    //set adapter to recyclerView
+                    profile_recyclerView.setAdapter(adapteursPost_profile);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(ProfileUserActivity.this, ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
@@ -641,7 +832,6 @@ public class ProfileUserActivity extends AppCompatActivity {
             alert.show();
         }
     }
-
 
     private void avertissement() {
         if(user!=null)

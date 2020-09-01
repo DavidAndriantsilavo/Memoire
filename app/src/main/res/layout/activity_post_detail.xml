@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Controllers.Activities.PostDetailsActivity">
+
+    <!--field that we write comment-->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/relativeLayout_comment">
+
+            <!--details of the post-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:background="@color/white">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="10dp"
+                    android:paddingTop="10dp">
+
+                    <LinearLayout
+                        android:id="@+id/linearLayout_profile_post"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="65dp"
+                            android:layout_height="65dp"
+                            android:layout_gravity="center"
+                            app:cardBackgroundColor="@color/colorPrimary"
+                            app:cardCornerRadius="32.5dp">
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="60dp"
+                                android:layout_height="60dp"
+                                android:layout_gravity="center"
+                                app:cardCornerRadius="30dp">
+
+                                <ImageView
+                                    android:id="@+id/imageView_photoDeProfile_postComment"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:clickable="true"
+                                    android:scaleType="centerCrop"
+                                    android:src="@drawable/ic_image_profile_icon_dark" />
+                            </androidx.cardview.widget.CardView>
+                        </androidx.cardview.widget.CardView>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/textView_nomUser_comment"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:clickable="true"
+                                android:text="Nom"
+                                android:textColor="@color/black"
+                                android:textSize="18dp" />
+
+                            <TextView
+                                android:id="@+id/texteView_pseudo_postDetails"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Pseudo"
+                                android:textSize="15dp"/>
+
+                            <RatingBar
+                                android:id="@+id/ratingBar_postDetails"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:numStars="5"
+                                android:rating="3.5"
+                                android:stepSize="0.1"
+                                android:isIndicator="true"
+                                style="?android:attr/ratingBarStyleSmall"/>
+
+                            <TextView
+                                android:id="@+id/textView_temps_comment"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="25 min"
+                                android:textSize="12dp" />
+
+                        </LinearLayout>
+
+                        <ImageButton
+                            android:id="@+id/button_moreAction_comment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:src="@drawable/ic_moret_icon_dark" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1.5dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@color/browser_actions_divider_color" />
+
+                    <TextView
+                        android:id="@+id/textView_descriptionPost_comment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="10dp"
+                        android:autoLink="all"
+                        android:text="Déscription du post"
+                        android:textColor="@color/black" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        android:maxHeight="400dp"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/imageView_imagePost1_comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:adjustViewBounds="true"
+                            android:background="@color/white"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_weight="1"/>
+
+                        <LinearLayout
+                            android:id="@+id/linearLayout_imagePost23_comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <ImageView
+                                android:id="@+id/imageView_imagePost2_comment"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:adjustViewBounds="true"
+                                android:background="@color/white"
+                                android:layout_gravity="center_horizontal"
+                                android:layout_weight="1"
+                                tools:ignore="NestedWeights" />
+
+                            <ImageView
+                                android:id="@+id/imageView_imagePost3_comment"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:adjustViewBounds="true"
+                                android:background="@color/white"
+                                android:layout_gravity="center_horizontal"
+                                android:layout_weight="1"/>
+
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp">
+                        <TextView
+                            android:id="@+id/texteView_kiffs_comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="1M Kiffs"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:layout_weight="1"/>
+                        <TextView
+                            android:id="@+id/texteView_commentsNbr_comment"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="500 commentaires"
+                            android:textColor="@color/colorPrimaryDark"
+                            android:layout_weight="1"
+                            android:gravity="end"/>
+                    </LinearLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1.5dp"
+                        android:background="@color/browser_actions_divider_color" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/button_kiff_comment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="35dp"
+                            android:layout_marginHorizontal="5dp"
+                            android:layout_marginVertical="10dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/rounded_grey_button"
+                            android:drawableStart="@drawable/ic_jkiff_icon_dark"
+                            android:drawablePadding="7dp"
+                            android:paddingStart="50dp"
+                            android:text="J'kiff"
+                            android:textAlignment="textStart"
+                            android:textAllCaps="false"
+                            android:textSize="13dp" />
+
+
+                        <Button
+                            android:id="@+id/button_partager_comment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="35dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/rounded_grey_button"
+                            android:drawableStart="@drawable/ic_partager_icon_dark"
+                            android:drawablePadding="5dp"
+                            android:layout_marginHorizontal="5dp"
+                            android:paddingStart="50dp"
+                            android:text="Partager"
+                            android:textAlignment="viewStart"
+                            android:textAllCaps="false"
+                            android:textSize="13dp" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerView_comment"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="10dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout_comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:background="@color/white"
+        android:layout_alignParentBottom="true">
+        <View
+            android:id="@+id/view_post"
+            android:layout_width="match_parent"
+            android:layout_height="1.5dp"
+            android:background="@color/browser_actions_divider_color"/>
+
+        <ImageView
+            android:id="@+id/imageView_inputImage_EditComment_comment"
+            android:layout_width="75dp"
+            android:layout_height="100dp"
+            android:maxHeight="100dp"
+            android:adjustViewBounds="true"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="5dp"
+            android:visibility="gone"/>
+
+        <!--profile image of current user-->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView_imageProfile"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardCornerRadius="20sp"
+            android:layout_marginTop="5dp"
+            app:cardBackgroundColor="@color/colorPrimary"
+            android:layout_gravity="center"
+            android:layout_marginStart="6dp"
+            android:layout_below="@id/imageView_inputImage_EditComment_comment">
+            <androidx.cardview.widget.CardView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                app:cardCornerRadius="17.5dp"
+                android:layout_gravity="center">
+                <ImageView
+                    android:id="@+id/imageView_photoDeProfile_comment"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_image_profile_icon_dark"/>
+            </androidx.cardview.widget.CardView>
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_toEndOf="@+id/cardView_imageProfile"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="8dp"
+            android:background="@drawable/edittextstle"
+            android:layout_marginHorizontal="6dp"
+            android:layout_marginTop="7dp"
+            android:layout_below="@id/imageView_inputImage_EditComment_comment">
+
+            <EditText
+                android:id="@+id/editComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:background="@null"
+                android:gravity="center_vertical"
+                android:hint="Ajouez votre commentaire..."
+                android:textSize="17dp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxHeight="80dp"
+                android:minHeight="35dp"
+                android:imeOptions="actionSend|flagNoEnterAction" />
+
+            <ImageButton
+                android:id="@+id/btn_addImage_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_add_image_newpost_icon_dark"
+                android:background="@null"
+                android:layout_marginStart="5dp"/>
+
+            <ImageButton
+                android:id="@+id/btn_sendComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_send_button_icon_dark"
+                android:background="@null"
+                android:layout_marginStart="15dp"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</RelativeLayout>
+
