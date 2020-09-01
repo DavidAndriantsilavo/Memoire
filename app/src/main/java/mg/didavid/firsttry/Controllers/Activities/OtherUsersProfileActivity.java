@@ -46,7 +46,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurPost;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
@@ -65,7 +65,7 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
     final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     List<ModelePost> modelePosts_profile;
-    AdapteursPost adapteursPost_profile;
+    AdapteurPost adapteursPost_profile;
     RecyclerView profile_recyclerView;
     String user_id;
     String lastName;
@@ -129,7 +129,7 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                                     }
                                 }
                                 //adapter
-                                adapteursPost_profile = new AdapteursPost(OtherUsersProfileActivity.this, modelePosts_profile);
+                                adapteursPost_profile = new AdapteurPost(OtherUsersProfileActivity.this, modelePosts_profile);
                                 //set adapter to recyclerView
                                 profile_recyclerView.setAdapter(adapteursPost_profile);
                                 progressDialog_loadingProfile.dismiss();
@@ -196,7 +196,7 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()){
                     docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                        @RequiresApi(api = Build.VERSION_CODES.O)
+
                         @Override
                         public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                             lastName = value.getString("name");
@@ -238,7 +238,6 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void configureToolbar(String name, String pseudo){
         // Get the toolbar view inside the activity layout
         Toolbar toolbar = findViewById(R.id.toolbar_otherUsersProfil);
@@ -312,7 +311,7 @@ public class OtherUsersProfileActivity extends AppCompatActivity {
                         }
                     }
                     //adapter
-                    adapteursPost_profile = new AdapteursPost(OtherUsersProfileActivity.this, modelePosts_profile);
+                    adapteursPost_profile = new AdapteurPost(OtherUsersProfileActivity.this, modelePosts_profile);
                     //set adapter to recyclerView
                     profile_recyclerView.setAdapter(adapteursPost_profile);
                 }

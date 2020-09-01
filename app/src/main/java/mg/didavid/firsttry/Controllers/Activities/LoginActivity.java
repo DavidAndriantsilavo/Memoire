@@ -142,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
                                             //redirection vers la page d'accueil
                                             Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
                                             startActivity(connexion);
+                                            progressDialog.cancel();
                                             finish();
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -299,6 +300,7 @@ public class LoginActivity extends AppCompatActivity {
                                         intent.putExtra("password", password);
                                         progressDialog_register.dismiss();
                                         startActivity(intent);
+                                        dialog.dismiss();
                                         finish();
                                     }
                                 }

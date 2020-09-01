@@ -206,6 +206,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         button_directions = linearLayoutCustomView.findViewById(R.id.button_directions);
         button_message = linearLayoutCustomView.findViewById(R.id.button_message);
 
+        //markerListner to listen for click event on marker
         mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(final Marker marker) {
@@ -265,6 +266,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             }
         });
 
+        //click event listner on MAP
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
@@ -450,6 +452,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         });
     }
 
+    //check the seekBar value and draw a circle relative on it
     private void checkSeekBarDistance(){
         seekBar_distance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
@@ -458,8 +461,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
                 seekBarProgress = progress;
                 distanceCircle.setRadius(distanceRadius);
-
-                mGoogleMap.getCameraPosition().s
 
                 for(int i = 0; i < otherMarkerList.size(); i++){
                     Marker marker = otherMarkerList.get(i);
@@ -916,6 +917,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                         public void onClick(DialogInterface dialog, int id) {
                             progressDialog_logout.show();
                             logOut();
+                            dialog.cancel();
                         }
                     });
 

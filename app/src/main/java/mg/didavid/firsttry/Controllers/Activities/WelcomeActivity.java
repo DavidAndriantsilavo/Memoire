@@ -50,8 +50,11 @@ public class WelcomeActivity extends AppCompatActivity {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
+    private String password = "NULL";
     private String profile_image ="NULL";
     private final String TAG= "MainActivity";
+
+    private String intentKey, intentPseudo, intentPassword;
 
     private String[] separated_name;
 
@@ -79,11 +82,20 @@ public class WelcomeActivity extends AppCompatActivity {
         checkConnexion();
 
         Intent intent = getIntent();
-        String singinPseudo = "" + intent.getStringExtra("key");
-        String register_pseudo = "" + intent.getStringExtra("pseudo");
-        String register_pwd = "" + intent.getStringExtra("password");
-        String password = null;
-        final String finalPassword = password;
+        if(getIntent().hasExtra("key") && getIntent().hasExtra("pseudo") && getIntent().hasExtra("password")){
+            intentKey = "" + intent.getStringExtra("key");
+            intentPseudo = "" + intent.getStringExtra("pseudo");
+            intentPassword = "" + intent.getStringExtra("password");
+
+            pseudo = intentPseudo;
+            password = intentPassword;
+
+            editText_pseudo.setEnabled(false);
+            editText_pseudo.setText(intentPseudo);
+        }else{
+            configureUserFromProvider();
+        }
+
         button_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -112,23 +124,14 @@ public class WelcomeActivity extends AppCompatActivity {
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
 
-                    final User user = new User(user_id, display_name, pseudo, sexe, email, phone, finalPassword, profile_image);
+                    final User user = new User(user_id, display_name, sexe, pseudo, email, phone, password, profile_image);
                     storeUserData(user);
                 }
             }
         });
-
-        //IF USER IS AUTH TO FIREBASE AND NO SINGLETON SET
-        if (singinPseudo.equals("Pseudo and Password")) {
-            editText_pseudo.setEnabled(false);
-            editText_pseudo.setText(register_pseudo);
-            password = register_pwd;
-        }else {
-                configureUser();
-        }
     }
 
-    private void configureUser()
+    private void configureUserFromProvider()
     {
         DocumentReference documentReference = userCollectionReference.document(firebaseUser.getUid());
 

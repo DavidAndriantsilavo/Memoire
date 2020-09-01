@@ -87,6 +87,7 @@ public class ParametreFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int id) {
                             progressDialog_logout.show();
                             logOut();
+                            dialog.cancel();
                         }
                     });
 

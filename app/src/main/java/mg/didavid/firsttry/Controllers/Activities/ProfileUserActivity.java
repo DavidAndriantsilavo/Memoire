@@ -69,7 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurPost;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
@@ -101,7 +101,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     Uri image_uri = null;
 
     List<ModelePost> modelePosts_profile;
-    AdapteursPost adapteursPost_profile;
+    AdapteurPost adapteursPost_profile;
     RecyclerView profile_recyclerView;
     String user_id = Objects.requireNonNull(user).getUid();
 
@@ -193,7 +193,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                                     }
                                 }
                                 //adapter
-                                adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
+                                adapteursPost_profile = new AdapteurPost(ProfileUserActivity.this, modelePosts_profile);
                                 //set adapter to recyclerView
                                 profile_recyclerView.setAdapter(adapteursPost_profile);
                             }
@@ -663,7 +663,7 @@ public class ProfileUserActivity extends AppCompatActivity {
                         }
                     }
                     //adapter
-                    adapteursPost_profile = new AdapteursPost(ProfileUserActivity.this, modelePosts_profile);
+                    adapteursPost_profile = new AdapteurPost(ProfileUserActivity.this, modelePosts_profile);
                     //set adapter to recyclerView
                     profile_recyclerView.setAdapter(adapteursPost_profile);
                 }

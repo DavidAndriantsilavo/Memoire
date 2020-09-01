@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,9 +35,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.firestore.Source;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -48,7 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
@@ -56,7 +52,7 @@ import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
-public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
+public class AdapteurPost extends RecyclerView.Adapter<AdapteurPost.MyMessageHolder>{
 
     Context context;
     List<ModelePost> postList;
@@ -66,7 +62,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     CollectionReference collectionReference_kiffs;
     Boolean mPressKiff = false;
 
-    public AdapteursPost(Context context, List<ModelePost> postList) {
+    public AdapteurPost(Context context, List<ModelePost> postList) {
         this.context = context;
         this.postList = postList;
         mCurrentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -76,15 +72,15 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
     @NonNull
     @Override
-    public MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MyMessageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //inflate layout row_post.xml
         View view = LayoutInflater.from(context).inflate(R.layout.row_post, parent, false);
-        return new MyHolder(view);
+        return new MyMessageHolder(view);
     }
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull final MyHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final MyMessageHolder holder, final int position) {
         //get data
         final String user_id = postList.get(position).getUser_id();
         String name = postList.get(position).getName();
@@ -227,7 +223,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
     }
 
-    private void setKiffs(final MyHolder holder, final String post_id) {
+    private void setKiffs(final MyMessageHolder holder, final String post_id) {
         collectionReference_kiffs.document(post_id).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -378,7 +374,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     }
 
     //view holder class
-    class MyHolder extends RecyclerView.ViewHolder{
+    class MyMessageHolder extends RecyclerView.ViewHolder{
 
         //views from row_post.xml
         ImageView uPictureIv, pImageIv;
@@ -387,7 +383,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         Button kiffBtn, commenterBtn, partagerBtn;
         LinearLayout profile_linearlayout;
 
-        public MyHolder(@NonNull View itemView) {
+        public MyMessageHolder(@NonNull View itemView) {
             super(itemView);
 
             //init views

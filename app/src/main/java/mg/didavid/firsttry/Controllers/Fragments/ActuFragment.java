@@ -2,7 +2,6 @@ package mg.didavid.firsttry.Controllers.Fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -12,13 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Handler;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,19 +33,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
-import mg.didavid.firsttry.Controllers.Activities.MainActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
-import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurPost;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
@@ -57,7 +51,7 @@ public class ActuFragment extends Fragment {
     private static final long LOADING_DELAY = 3000;
     RecyclerView recyclerView;
     List<ModelePost> modelePostList;
-    AdapteursPost adapteursPost;
+    AdapteurPost adapteursPost;
 
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     ProgressDialog progressDialog_logout;
@@ -154,7 +148,7 @@ public class ActuFragment extends Fragment {
                         }
                     }
                     //adapter
-                    adapteursPost = new AdapteursPost(getContext(), modelePostList);
+                    adapteursPost = new AdapteurPost(getContext(), modelePostList);
                     //set adapter to recyclerView
                     recyclerView.setAdapter(adapteursPost);
                 }
@@ -181,7 +175,7 @@ public class ActuFragment extends Fragment {
                         modelePostList.addAll(modelePost);
 
                         //adapter
-                        adapteursPost = new AdapteursPost(getContext(), modelePostList);
+                        adapteursPost = new AdapteurPost(getContext(), modelePostList);
                         //set adapter to recyclerView
                         recyclerView.setAdapter(adapteursPost);
                     }
@@ -232,6 +226,7 @@ public class ActuFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int id) {
                             progressDialog_logout.show();
                             logOut();
+                            dialog.cancel();
                         }
                     });
 
@@ -242,8 +237,6 @@ public class ActuFragment extends Fragment {
                             dialog.cancel();
                         }
                     });
-
-            progressDialog_logout.dismiss();
 
             AlertDialog alert = builder.create();
             alert.show();
@@ -260,6 +253,7 @@ public class ActuFragment extends Fragment {
 
         Intent logOut =  new Intent(getContext(), LoginActivity.class);
         startActivity(logOut);
+        progressDialog_logout.cancel();
 
         getActivity().finish();
     }
