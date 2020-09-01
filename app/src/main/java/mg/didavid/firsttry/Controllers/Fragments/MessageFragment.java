@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,24 +13,46 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
-import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
+import mg.didavid.firsttry.Controllers.Activities.UserListActivity;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurMessage;
+import mg.didavid.firsttry.Models.ModeleChatroom;
+import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 
-public class MessageFragment extends Fragment {
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
-    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+public class MessageFragment extends Fragment implements AdapteurMessage.OnChatRoomListner {
+
+    RecyclerView recyclerView;
+    List<ModeleChatroom> chatroomList;
+    AdapteurMessage adapteursMessage;
+
+    User currentUser;
     ProgressDialog progressDialog_logout;
 
+    private DatabaseReference mChatroomReference = FirebaseDatabase.getInstance().getReference().child("chatroom");
 
     public static MessageFragment newInstance() {
         return (new MessageFragment());
@@ -37,11 +60,90 @@ public class MessageFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_message, container, false);
+
+        currentUser = ((UserSingleton)getActivity().getApplicationContext()).getUser();
+
+        adapteursMessage = new AdapteurMessage();
+
         //init progressDialog
         progressDialog_logout = new ProgressDialog(getContext());
         progressDialog_logout.setMessage("Déconnexion...");
 
-        return inflater.inflate(R.layout.fragment_page4, container, false);
+        //recycler view and its proprieties
+        recyclerView = view.findViewById(R.id.recyclerView_message);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+
+        //show newest post first, for this load from last
+        linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setReverseLayout(true);
+
+        //set Layout to recyclerView
+        recyclerView.setLayoutManager(linearLayoutManager);
+        //init post list
+        chatroomList = new ArrayList<>();
+
+        return view;
+    }
+
+    //get and show the chatrooms of the current user
+    private void loadChatrooms() {
+        mChatroomReference.child(currentUser.getUser_id())
+                .orderByChild("last_message_timestamp")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        chatroomList.clear();
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+                            //Getting User object from dataSnapshot
+                            if(data.exists()){
+                                ModeleChatroom chatroom = data.getValue(ModeleChatroom.class);
+                                chatroomList.add(chatroom);
+                            }
+                        }
+                        configureAdapter();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "%s" + error);
+                    }
+                });
+
+//        //path of all post
+//        final CollectionReference collectionChatrooms = FirebaseFirestore.getInstance().collection("Chatrooms");
+//        //get all data from this reference
+//        collectionChatrooms.whereArrayContains("id_room", currentUser.getUser_id())
+//                .orderBy("last_message_timestamp")
+//                .get()
+//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//            @Override
+//            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                if (!queryDocumentSnapshots.isEmpty()) {
+//                    chatroomList.clear();
+//                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                        ModeleChatroom modeleChatroom = documentSnapshot.toObject(ModeleChatroom.class);
+//                        chatroomList.add(modeleChatroom);
+//                    }
+//
+//                    configureAdapter();
+//                }
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+//
+//                Log.e(TAG, "onFailure: " + e.getMessage());
+//            }
+//        });
+    }
+
+    private void configureAdapter(){
+        //adapter
+        adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
+        //set adapter to recyclerView
+        recyclerView.setAdapter(adapteursMessage);
     }
 
     @Override
@@ -68,14 +170,14 @@ public class MessageFragment extends Fragment {
                 startActivity(new Intent(getContext(), ProfileUserActivity.class));
                 return true;
             case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getContext(), NewPostActivity.class));
+                startActivity(new Intent(getContext(), UserListActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     private void avertissement() {
-        if(user!=null)
+        if(currentUser!=null)
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -88,6 +190,7 @@ public class MessageFragment extends Fragment {
                         public void onClick(DialogInterface dialog, int id) {
                             progressDialog_logout.show();
                             logOut();
+                            dialog.cancel();
                         }
                     });
 
@@ -118,5 +221,21 @@ public class MessageFragment extends Fragment {
         startActivity(logOut);
 
         getActivity().finish();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadChatrooms();
+    }
+
+    //click event listner on a chatroom
+    @Override
+    public void onChatRoomClick(int position) {
+        Intent intent = new Intent (getContext(), ChatActivity.class);
+        intent.putExtra("chatroom_id", chatroomList.get(position).getRoom_id());
+        intent.putExtra("other_user_id", chatroomList.get(position).getOther_user_id());
+        intent.putExtra("other_user_name", chatroomList.get(position).getOther_user_name());
+        startActivity(intent);
     }
 }

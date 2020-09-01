@@ -32,16 +32,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.Calendar;
 import java.util.TimeZone;
-
-import mg.didavid.firsttry.R;
-
-import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class LocationService extends Service {
 
@@ -126,8 +120,9 @@ public class LocationService extends Service {
                             if(user != null){
                                 userLocation.setLatitude(geoPoint.getLatitude());
                                 userLocation.setLongitude(geoPoint.getLongitude());
-                                userLocation.setDisplay_name(user.getName());
+                                userLocation.setName(user.getName());
                                 userLocation.setUser_id(user.getUser_id());
+                                userLocation.setProfile_image((user.getProfile_image()));
 
                                 TimeZone timezone = TimeZone.getTimeZone("GMT+03:00"); //MADAGASCAR TIMEZONE
                                 Calendar c = Calendar.getInstance(timezone);
@@ -154,7 +149,7 @@ public class LocationService extends Service {
                 public void onComplete(@NonNull Task<Void> task) {
                     if(task.isSuccessful()){
                         //Task was successful, data written!
-                        Log.d(TAG, "FT : userLocation updated");
+//                        Log.d(TAG, "FT : userLocation updated");
                     }else{
                         //Task was not successful,
                         Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
