@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterListMenu;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapterSampleMenu;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
 

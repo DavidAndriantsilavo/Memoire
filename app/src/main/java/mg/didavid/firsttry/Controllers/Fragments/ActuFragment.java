@@ -220,7 +220,6 @@ public class ActuFragment extends Fragment {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
-                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
                         modelePostList.clear();
                         modelePost = queryDocumentSnapshots.toObjects(ModelePost.class);
                         modelePostList.addAll(modelePost);
@@ -231,7 +230,6 @@ public class ActuFragment extends Fragment {
                         recyclerView.setAdapter(adapteursPost);
 
                         progressDialog_loadPost.dismiss();
-                    }
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {

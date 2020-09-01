@@ -2,6 +2,7 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -26,6 +28,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
 
@@ -49,13 +52,13 @@ public class AdapterSampleMenu extends RecyclerView.Adapter<AdapterSampleMenu.My
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(@NonNull MyHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyHolder holder, final int position) {
         //get data
         final String menuPhoto = modelRestoSampleMenuList.get(position).getMenuPhoto();
         String menuName = modelRestoSampleMenuList.get(position).getMenuName();
         String menuPrice = modelRestoSampleMenuList.get(position).getMenuPrice();
         final String id_menu = modelRestoSampleMenuList.get(position).getId_menu();
-        String id_resto = modelRestoSampleMenuList.get(position).getId_resto();
+        final String id_resto = modelRestoSampleMenuList.get(position).getId_resto();
 
         String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
@@ -78,6 +81,23 @@ public class AdapterSampleMenu extends RecyclerView.Adapter<AdapterSampleMenu.My
                 }
             });
         }
+
+        holder.imageView_sampleMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, ListMenuRestoActivity.class);
+                intent.putExtra("key", id_resto);
+                context.startActivity(intent);
+            }
+        });
+        holder.textView_nameSampleMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, ListMenuRestoActivity.class);
+                intent.putExtra("key", id_resto);
+                context.startActivity(intent);
+            }
+        });
     }
 
 

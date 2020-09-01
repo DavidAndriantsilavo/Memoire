@@ -2,7 +2,7 @@ package mg.didavid.firsttry.Models;
 
 public class ModelePost {
     //spécifications du posteur
-    String user_id, name, pseudo, post_kiff, comment_count, profile_image, post_id, post_description, post_image1, post_image2, post_image3, post_time;
+    private String user_id, name, pseudo, post_kiff, comment_count, profile_image, post_id, post_description, post_image1, post_image2, post_image3, post_time;
 
     public ModelePost(){ }
 
