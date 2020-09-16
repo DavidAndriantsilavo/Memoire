@@ -90,16 +90,20 @@ public class RestoFragment extends Fragment {
                                     modelRestoList.clear();
                                     for (DocumentSnapshot ds : value.getDocuments()) {
                                         //get resto informations
+
                                         final ModelResto modelResto = new ModelResto();
+
                                         modelResto.setName_resto(ds.getString("name_resto"));
                                         modelResto.setSpeciality_resto(ds.getString("speciality_resto"));
                                         modelResto.setRating_resto(ds.getString("rating_resto"));
                                         modelResto.setNbrRating_resto(ds.getString("nbrRating_resto"));
                                         modelResto.setLogo_resto(ds.getString("logo_resto"));
-
+                                        modelResto.setLatitude(ds.getDouble("latitude"));
+                                        modelResto.setLongitude(ds.getDouble("longitude"));
                                         final String id_resto = ds.getString("id_resto");
                                         modelResto.setId_resto(id_resto);
                                         final List<ModelRestoSampleMenu> modelRestoSampleMenuList = new ArrayList<>();
+
                                         final CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
                                         collectionReference_sampleMenu.get()
                                                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -120,12 +124,13 @@ public class RestoFragment extends Fragment {
                                                                             modelResto.setSampleMenuList(modelRestoSampleMenuList);
                                                                             modelRestoList.add(modelResto);
                                                                             //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                                                                             recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+
                                                                         } else {
                                                                             modelRestoList.add(modelResto);
                                                                             //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                                                                             recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                         }
                                                                     }
@@ -233,7 +238,7 @@ public class RestoFragment extends Fragment {
                     }
                 }
                 //adapter
-                adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                 //set adapter to recyclerView
                 recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
             }

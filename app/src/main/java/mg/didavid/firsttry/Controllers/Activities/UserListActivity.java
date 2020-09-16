@@ -111,6 +111,7 @@ public class UserListActivity extends AppCompatActivity implements AdapteurUserL
         Intent intent = new Intent (getApplicationContext(), ChatActivity.class);
         intent.putExtra("other_user_id", userList.get(position).getUser_id());
         intent.putExtra("other_user_name", userList.get(position).getName());
+        intent.putExtra("other_user_profile_picture", userList.get(position).getProfile_image());
         startActivity(intent);
     }
 }

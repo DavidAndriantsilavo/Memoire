@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
@@ -286,7 +287,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image1, post_image2, post_image3, post_description);
+                showMoreOptions(holder.moreBtn, user_id, name, profile_image, mCurrentUserId, post_id, post_image1, post_image2, post_image3, post_description);
             }
         });
 
@@ -449,7 +450,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
     }
 
-    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
+    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String name, final String profile_image, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
@@ -513,7 +514,14 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     }
                 }else if (item_id == 4) {
                     //option send message is checked
-                    Toast.makeText(context, "send message...\nwill implement later", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(context, "send message...\nwill implement later", Toast.LENGTH_LONG).show();
+
+                    Intent intent = new Intent (context, ChatActivity.class);
+                    intent.putExtra("other_user_id", user_id);
+                    intent.putExtra("other_user_name", name);
+                    intent.putExtra("other_user_profile_picture", profile_image);
+                    context.startActivity(intent);
+
                 }else if (item_id == 5) {
                     //voir tous les menus
                     Intent intent = new Intent(context, ListMenuRestoActivity.class);

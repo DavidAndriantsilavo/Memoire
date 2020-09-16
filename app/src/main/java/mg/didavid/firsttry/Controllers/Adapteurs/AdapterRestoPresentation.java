@@ -3,6 +3,8 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,10 +20,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -33,19 +39,24 @@ import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
+import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoPresentation.MyHolder> {
 
     private Context context;
     private List<ModelResto> modelRestoList;
+    private FragmentManager fragmentManager;
 
     private AdapterSampleMenu adapterSampleMenu;
     private List<ModelRestoSampleMenu> modelRestoSampleMenus;
@@ -55,9 +66,11 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
 
     private CollectionReference collectionReference_hasRatingResto = FirebaseFirestore.getInstance().collection("HasRatingResto");
 
-    public AdapterRestoPresentation(Context context, List<ModelResto> modelRestoList) {
+    public AdapterRestoPresentation(Context context, List<ModelResto> modelRestoList, FragmentManager fragmentManager) {
         this.context = context;
         this.modelRestoList = modelRestoList;
+        this.fragmentManager = fragmentManager;
+
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             mCurrentUser_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
             mCurrentResto_id = "resto_" + mCurrentUser_id;
@@ -76,13 +89,19 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
         //we just take resto id, resto name, resto culinary speciality, the rating of the resto and its logo
-        ModelResto modelResto = modelRestoList.get(position);
+        final ModelResto modelResto = modelRestoList.get(position);
+
         String restoName = modelResto.getName_resto();
         final String restoId = modelResto.getId_resto();
         String restoSpeciality = modelResto.getSpeciality_resto();
         float restoRating = Float.parseFloat(modelResto.getRating_resto());
         String restoNbrRatign = modelResto.getNbrRating_resto();
         String restoLogo = modelResto.getLogo_resto();
+
+        final Double restoLatitude = modelResto.getLatitude();
+        final Double restoLongitude = modelResto.getLongitude();
+
+        Log.d(TAG, "resto: got name  : " + restoName + ", latitude : " + restoLatitude + ", longitude : " + restoLongitude);
 
         //sample menu definition
         modelRestoSampleMenus = modelResto.getSampleMenuList();
@@ -112,7 +131,7 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         holder.imageButton_moreAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreActions(holder.imageButton_moreAction, restoId);
+                showMoreActions(holder.imageButton_moreAction, restoId, restoLatitude, restoLongitude);
             }
         });
 
@@ -131,7 +150,8 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
 
     }
 
-    private void showMoreActions(ImageButton imageButton_moreAction, final String restoId) {
+    private void showMoreActions(ImageButton imageButton_moreAction, final String restoId, final Double restoLatitude, final Double restoLongitude) {
+
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context,imageButton_moreAction, Gravity.END);
         //add items im menu
@@ -161,6 +181,14 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
                     Toast.makeText(context, "passer une commande", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 3) {
                     //voir lieu
+                    Bundle bundleRestaurantPosition = new Bundle();
+                    bundleRestaurantPosition.putDouble("restoLatitude", restoLatitude);
+                    bundleRestaurantPosition.putDouble("restoLongitude", restoLongitude);
+
+                    GMapFragment gMapFramgent = new GMapFragment();
+                    gMapFramgent.setArguments(bundleRestaurantPosition);
+                    fragmentManager.beginTransaction().replace(R.id.content_nav, gMapFramgent).commit();
+
                     Toast.makeText(context, "voir lieu", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 4) {
                     //raitng selected

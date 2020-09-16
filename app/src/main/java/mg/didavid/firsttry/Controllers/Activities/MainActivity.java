@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.appcompat.widget.Toolbar;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 
@@ -21,6 +23,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -55,7 +58,7 @@ import mg.didavid.firsttry.R;
 
 public class MainActivity extends AppCompatActivity{
 
-    BottomNavigationView navigationView;
+    public BottomNavigationView navigationView;
 
     ProgressDialog  progressDialog_del_account, progressDialog_logout;
 
@@ -79,7 +82,6 @@ public class MainActivity extends AppCompatActivity{
 
         navigationView = findViewById(R.id.menu_nav); //associate view with the BottomNavigationView object
         navigationView.setOnNavigationItemSelectedListener(selectedListener); //set BottomNavigationView focus onto the selected item
-
 
         //init progressDialog
         progressDialog_logout = new ProgressDialog(this);
@@ -234,6 +236,14 @@ public class MainActivity extends AppCompatActivity{
         return isConnected;
     }
 
+//    @Override
+//    public void onAttachFragment(@NonNull Fragment fragment) {
+//        super.onAttachFragment(fragment);
+//
+//        if(fragment instanceof GMapFragment){
+//            navigationView.setSelectedItemId(R.id.map_nav);
+//        }
+//    }
 
     @Override
     public void onBackPressed() {

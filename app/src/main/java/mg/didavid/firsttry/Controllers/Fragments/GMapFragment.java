@@ -17,6 +17,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,8 +32,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -53,31 +56,48 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
+import com.google.maps.android.collections.MarkerManager;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
+import mg.didavid.firsttry.Models.ClusterMarkerRestaurant;
+import mg.didavid.firsttry.Models.ClusterMarkerUser;
 import mg.didavid.firsttry.Models.LocationService;
+import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Utils.ClusterManagerRendererRestaurant;
+import mg.didavid.firsttry.Utils.ClusterManagerRendererUser;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.constraintlayout.widget.Constraints.TAG;
@@ -99,12 +119,17 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private boolean mServicesIsGood = false;
 
     private AlertDialog alert = null;
-    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
+//    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
+    private ArrayList<MarkerOptions> userMarkerOptionsList = new ArrayList<MarkerOptions>();
 
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
 
-    private Handler mHandler = new Handler();
+    private CollectionReference restoReference = FirebaseFirestore.getInstance().collection("Resto");
+
+    private Handler otherHandler = new Handler();
+    private Handler userHandler = new Handler();
+
     private Runnable mOtherRunnable, mUserRunnable;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
 
@@ -128,15 +153,24 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private ImageView imageView_marker, imageView_profile_picture;
     private TextView textView_name;
     private Button button_profile, button_directions, button_message;
-    private Marker lastClickedMarker, userMarker;
+    private ClusterMarkerUser lastClickedMarker, userMarker;
     private SeekBar seekBar_distance;
     private int seekBarProgress, distanceRadius, currentDistance;
+    View linearLayoutCustomView;
 
     private Bitmap lastBitmap = null;
     private Bitmap currentBitmap = null;
 
     private HashMap<String, Bitmap> markerBitmap = new HashMap<String, Bitmap>();
 
+    private ClusterManager mClusterManagerRestaurant, mClusterManagerUser;
+    private ClusterManagerRendererRestaurant mClusterManagerRendererRestaurant;
+    private ClusterManagerRendererUser mClusterManagerRendererUser;
+    private ArrayList<ClusterMarkerRestaurant> mClusterMarkersRestaurant = new ArrayList<>();
+    private ArrayList<ClusterMarkerUser> mClusterMarkersUser = new ArrayList<>();
+    MarkerManager markerManager;
+
+    Bundle bundleRestaurantPosition;
 
     @Override
     public void onDetach() {
@@ -169,6 +203,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
+
         user = ((UserSingleton) getActivity().getApplicationContext()).getUser();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -190,12 +225,33 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         mGoogleMap.getUiSettings().setCompassEnabled(true);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
 
-        getOtherPosition();
+        //get the restaurant location bundle from RestoFragment
+        bundleRestaurantPosition = this.getArguments();
+
+        if(bundleRestaurantPosition != null){
+            Log.d(TAG, "resto : got bundle");
+
+            Double restoLatitude = bundleRestaurantPosition.getDouble("restoLatitude");
+            Double restoLongitude = bundleRestaurantPosition.getDouble("restoLongitude");
+
+            if(restoLatitude != null && restoLongitude != null){
+                Log.d(TAG, "resto : got bundle restoLocation " + restoLatitude + " " + restoLongitude);
+                LatLng restoPosition = new LatLng(restoLatitude, restoLongitude);
+
+                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        restoPosition, DEFAULT_ZOOM));
+
+//                BottomNavigationView navigationView = getActivi ty().findViewById(R.id.menu_nav);
+//                navigationView.setSelectedItemId(R.id.map_nav);
+
+            }
+        }
+        ///////////////////////////////////////////////
 
         seekBar_distance = getView().findViewById(R.id.seekBar_distance);
         seekBar_distance.setProgress(seekBarProgress);
 
-        final View linearLayoutCustomView = getView().findViewById(R.id.linearLayoutCustomView);
+        linearLayoutCustomView = getView().findViewById(R.id.linearLayoutCustomView);
         textView_name = linearLayoutCustomView.findViewById(R.id.textView_name);
         imageView_profile_picture = linearLayoutCustomView.findViewById(R.id.imageView_profile_picture);
         button_profile = linearLayoutCustomView.findViewById(R.id.button_profile);
@@ -203,66 +259,68 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         button_message = linearLayoutCustomView.findViewById(R.id.button_message);
 
         //markerListner to listen for click event on marker
-        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(final Marker marker) {
-                Log.d("GoogleMap", " click");
-
-                if(marker.getTag() != null) {
-                    button_directions.setVisibility(View.VISIBLE);
-                    button_message.setVisibility(View.VISIBLE);
-
-                    UserLocation clickedUser = (UserLocation) marker.getTag();
-                    textView_name.setText(clickedUser.getName());
-                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
-
-                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                        @Override
-                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+//        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+//            @Override
+//            public boolean onMarkerClick(final Marker marker) {
+//                Log.d("GoogleMap", " click");
 //
-//                            Canvas canvasBmp2 = new Canvas( currentBitmap );
-//                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
-
-                            if (marker.equals(lastClickedMarker)) {
-                                if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
-                                    linearLayoutCustomView.setVisibility(View.GONE);
-                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
-                                } else {
-                                    linearLayoutCustomView.setVisibility(View.VISIBLE);
-                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                                }
-
-                            } else {
-                                if (lastClickedMarker != null && lastBitmap != null) {
-                                    //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
-                                    lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
-                                }
-
-                                lastClickedMarker = marker;
-                                lastBitmap = bitmap;
-
-                                linearLayoutCustomView.setVisibility(View.VISIBLE);
-                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                            }
-                        }
-
-                        @Override
-                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                        }
-
-                        @Override
-                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-                        }
-                    });
-                }
-
-                return false;
-            }
-        });
+//                if(marker.getTag() != null) {
+//                    button_directions.setVisibility(View.VISIBLE);
+//                    button_message.setVisibility(View.VISIBLE);
+//
+//                    UserLocation clickedUser = (UserLocation) marker.getTag();
+//                    textView_name.setText(clickedUser.getName());
+//
+//                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
+//
+//                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                        @Override
+//                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+////                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+////
+////                            Canvas canvasBmp2 = new Canvas( currentBitmap );
+////                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
+//
+//                            if (marker.equals(lastClickedMarker)) {
+//                                if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
+//                                    linearLayoutCustomView.setVisibility(View.GONE);
+//                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+//                                } else {
+//                                    linearLayoutCustomView.setVisibility(View.VISIBLE);
+//                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+//                                }
+//
+//                            } else {
+//                                if (lastClickedMarker != null && lastBitmap != null) {
+//                                    //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
+//                                    lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
+//                                }
+//
+//                                lastClickedMarker = marker;
+//                                lastBitmap = bitmap;
+//
+//                                linearLayoutCustomView.setVisibility(View.VISIBLE);
+//                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                        }
+//                    });
+//                }
+//
+//                return false;
+//            }
+//        });
 
         //click event listner on MAP
+
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
@@ -272,14 +330,74 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 if (linearLayoutCustomView.getVisibility() == View.VISIBLE){
                     linearLayoutCustomView.setVisibility(View.GONE);
                 }
+
+//                if(otherMarkerList.size() > 0){
+//                    for(int i=0; i < otherMarkerList.size(); i++){
+//                        otherMarkerList.get(i).setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+//                    }
+//                }
             }
         });
 
         if(mServicesIsGood) {
             updateLocationUI();
             checkSeekBarDistance();
+            initialiseClusters();
         }
     }
+
+//    private void showRestaurants(){
+//        restoReference.get()
+//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//                    @Override
+//                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                        if (!queryDocumentSnapshots.isEmpty()) {
+//                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+//                                final ModelResto resto = documentSnapshot.toObject(ModelResto.class);
+//
+//                                Map<String, Object> restoLocation = resto.getLocation_resto();
+//
+//                                Double latitude = (Double) restoLocation.get("latitude");
+//                                Double longitude = (Double) restoLocation.get("longitude");
+//
+//                                final LatLng restoPosition = new LatLng(latitude, longitude);
+//
+//                                Picasso.get().load(resto.getLogo_resto())
+//                                        .resize(100, 100)
+//                                        .transform(new CropTransformation(70, 60, CropTransformation.GravityHorizontal.CENTER, CropTransformation.GravityVertical.CENTER))
+//                                        .into(new Target() {
+//                                    @Override
+//                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                        // Todo: Do something with your bitmap here
+//
+//                                        mGoogleMap.addMarker(new MarkerOptions()
+//                                                .position(restoPosition)
+//                                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+//
+//                                        Log.d(TAG, "self : add resto " + resto.getName_resto());
+//                                    }
+//
+//                                    @Override
+//                                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    }
+//
+//                }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception e) {
+//                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+//            }
+//        });
+//
+//    }
 
     // [START maps_current_place_update_location_ui]
     private void updateLocationUI() {
@@ -305,6 +423,120 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
     // [END maps_current_place_update_location_ui]
+
+    //Initialise the cluster managers for Restaurants and Users and set the rendrers, and clickListners
+    private void initialiseClusters(){
+        markerManager = new MarkerManager(mGoogleMap);
+
+        if(mGoogleMap != null) {
+            if (mClusterManagerRestaurant == null) {
+                mClusterManagerRestaurant = new ClusterManager<ClusterMarkerRestaurant>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
+                mClusterManagerRestaurant.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerRestaurant>());
+            }
+
+            if (mClusterManagerUser == null) {
+                mClusterManagerUser = new ClusterManager<ClusterMarkerUser>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
+                mClusterManagerUser.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerUser>());
+            }
+
+            if (mClusterManagerRendererRestaurant == null) {
+                mClusterManagerRendererRestaurant = new ClusterManagerRendererRestaurant(
+                        getActivity(),
+                        mGoogleMap,
+                        mClusterManagerRestaurant
+                );
+                mClusterManagerRestaurant.setRenderer(mClusterManagerRendererRestaurant);
+                getRestaurantLocation();
+
+                mClusterManagerRestaurant.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener() {
+                    @Override
+                    public boolean onClusterItemClick(ClusterItem item) {
+                        Log.d(TAG, " marker : click on restaurant " + item.getTitle());
+
+                        return false;
+                    }
+                });
+            }
+            if (mClusterManagerRendererUser == null) {
+                mClusterManagerRendererUser = new ClusterManagerRendererUser(
+                        getActivity(),
+                        mGoogleMap,
+                        mClusterManagerUser
+                );
+                mClusterManagerUser.setRenderer(mClusterManagerRendererUser);
+                getOtherLocation();
+
+                mClusterManagerUser.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener() {
+                    @Override
+                    public boolean onClusterItemClick(ClusterItem item) {
+                        Log.d(TAG, " marker : click on user " + item.getTitle());
+
+                            button_directions.setVisibility(View.VISIBLE);
+                            button_message.setVisibility(View.VISIBLE);
+
+                            final ClusterMarkerUser clickedUserMarker = (ClusterMarkerUser) item;
+                            UserLocation userLocation = ((ClusterMarkerUser) item).getUserLocation();
+
+                            textView_name.setText(userLocation.getName());
+
+                            Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
+
+                            Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+                                @Override
+                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
+//
+//                            Canvas canvasBmp2 = new Canvas( currentBitmap );
+//                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
+
+                                    if (clickedUserMarker.equals(lastClickedMarker)) {
+                                        if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
+                                            linearLayoutCustomView.setVisibility(View.GONE);
+//                                            clickedUser.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+                                        } else {
+                                            linearLayoutCustomView.setVisibility(View.VISIBLE);
+//                                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+                                        }
+
+                                    } else {
+//                                        if (lastClickedMarker != null && lastBitmap != null) {
+//                                        if (lastClickedMarker != null) {
+//                                            //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
+//                                            lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
+//                                        }
+
+                                        lastClickedMarker = clickedUserMarker;
+                                        lastBitmap = bitmap;
+
+                                        linearLayoutCustomView.setVisibility(View.VISIBLE);
+//                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+                                    }
+                                }
+
+                                @Override
+                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                                }
+
+                                @Override
+                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                                }
+                            });
+
+                        return false;
+                    }
+                });
+            }
+
+//            mGoogleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+//                @Override
+//                public void onCameraChange(CameraPosition cameraPosition) {
+//                    mClusterManagerRestaurant.onCameraIdle();
+//                    mClusterManagerUser.onCameraIdle();
+//                }
+//            });
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //START REALTIME SERVICES - UPDATE USER'S LOCATION TO FIREBASE AND RETRIEVING OTHERS' LOCATIONS
@@ -341,56 +573,82 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
     private void startOtherUserLocationsRunnable(){
-        Log.d(TAG, "startOtherUserLocationsRunnable: starting runnable for retrieving updated locations.");
-        mHandler.postDelayed(mOtherRunnable = new Runnable() {
+        Log.d(TAG, "self: starting runnable for retrieving updated other_locations.");
+        otherHandler.postDelayed(mOtherRunnable = new Runnable() {
             @Override
             public void run() {
                 updateOtherLocation();
-                mHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
+//                updateUserLocation();
+                otherHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
     }
 
     //STOP THE SERVICE
     private void stopOtherLocationUpdates(){
-        mHandler.removeCallbacks(mOtherRunnable);
+        otherHandler.removeCallbacks(mOtherRunnable);
     }
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
-    private void startUserLocationsRunnable(final Marker marker){
-        Log.d(TAG, "startOtherUserLocationsRunnable: starting runnable for retrieving updated locations.");
-        mHandler.postDelayed(mUserRunnable = new Runnable() {
+    private void startUserLocationsRunnable(){
+        Log.d(TAG, "self: starting runnable for retrieving updated self_locations.");
+        userHandler.postDelayed(mUserRunnable = new Runnable() {
             @Override
             public void run() {
-                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Location> task) {
-                                if (task.isSuccessful()) {
-                                    // Set the map's camera position to the current location of the device.
-                                    lastKnownLocation = task.getResult();
-
-                                    LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                    distanceCircle.setCenter(userPosition);
-                                    marker.setPosition(userPosition);
-                                }
-                            }
-                        });
-                                    mHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
+                updateUserLocation();
+                userHandler.postDelayed(mUserRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
     }
 
     //STOP THE SERVICE
     private void stopUserLocationUpdates(){
-        mHandler.removeCallbacks(mUserRunnable);
+        userHandler.removeCallbacks(mUserRunnable);
     }
 
     //CHECK THE SEEKBAR CHANGE STATE
     // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
     //IF NOT STOP THE RUNNABLE AND CLEAR THE MARKERS AND THE LIST
+    private void getRestaurantLocation(){
+        restoReference.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                final ModelResto resto = documentSnapshot.toObject(ModelResto.class);
 
-    private void getOtherPosition(){
+                                Double latitude = resto.getLatitude();
+                                Double longitude = resto.getLongitude();
+
+                                final LatLng restoPosition = new LatLng(latitude, longitude);
+
+                                ClusterMarkerRestaurant clusterMarkerRestaurant = new ClusterMarkerRestaurant(
+                                        restoPosition,
+                                        resto.getName_resto(),
+                                        "",
+                                        resto
+                                );
+
+                                mClusterManagerRestaurant.addItem(clusterMarkerRestaurant);
+                                mClusterMarkersRestaurant.add(clusterMarkerRestaurant);
+                            }
+
+                            mClusterManagerRestaurant.cluster();
+                        }
+                    }
+
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+
+    private void getOtherLocation(){
         mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -402,42 +660,62 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
                     if(userLocation != null){
                         final LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                        final Marker[] marker = new Marker[1];
-                        String url = userLocation.getProfile_image();
+//                        final Marker[] marker = new Marker[1];
+//                        String url = userLocation.getProfile_image();
+//
+//                        if(!userLocation.getUser_id().equals(user.getUser_id())){
+//                            Log.d(TAG, " test : onDataChange: " + userLocation.getName());
+//
+//                            Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                @Override
+//                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//
+//                                    MarkerOptions markerOptions = new MarkerOptions()
+//                                            .position(otherPosition)
+//                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)))
+//                                            .visible(false);
+//
+//                                    marker[0] = mGoogleMap.addMarker(markerOptions);
+//                                    marker[0].setTag(userLocation);
+//
+////                                    marker[0].setVisible(false);
+//
+//                                    userMarkerOptionsList.add(markerOptions);
+//
+//                                    otherMarkerList.add(i[0], marker[0]);
+//
+//                                    markerBitmap.put(userLocation.getUser_id(), bitmap);
+//                                    i[0]++;
+//                                }
+//
+//                                @Override
+//                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                }
+//                            });
+//                        }
 
                         if(!userLocation.getUser_id().equals(user.getUser_id())){
-                            Log.d(TAG, " test : onDataChange: " + userLocation.getName());
+                            ClusterMarkerUser clusterMarkerUser = new ClusterMarkerUser(
+                                    otherPosition,
+                                    "",
+                                    "",
+                                    userLocation
+                            );
 
-                            Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                            mClusterManagerUser.addItem(clusterMarkerUser);
+                            mClusterMarkersUser.add(i[0], clusterMarkerUser);
 
-                                    marker[0] = mGoogleMap.addMarker(new MarkerOptions()
-                                            .position(otherPosition)
-                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
-                                    marker[0].setTag(userLocation);
-
-                                    marker[0].setVisible(false);
-
-                                    Log.d(TAG, "test : add marker " + i[0] +1);
-                                    otherMarkerList.add(i[0], marker[0]);
-
-                                    markerBitmap.put(userLocation.getUser_id(), bitmap);
-                                    i[0]++;
-                                }
-
-                                @Override
-                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                                }
-
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                                }
-                            });
                         }
                     }
                 }
+
+                mClusterManagerUser.cluster();
+
                 Log.d(TAG, " test : All position get");
             }
 
@@ -453,25 +731,42 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         seekBar_distance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                distanceRadius = seekBarProgress*100;
-
                 seekBarProgress = progress;
+
+                distanceRadius = seekBarProgress*100;
                 distanceCircle.setRadius(distanceRadius);
 
-                for(int i = 0; i < otherMarkerList.size(); i++){
-                    Marker marker = otherMarkerList.get(i);
+//                for(int i = 0; i < otherMarkerList.size(); i++){
+//                    Marker marker = otherMarkerList.get(i);
+//
+//                    Location location = new Location("otherLocation");
+//                    location.setLatitude(marker.getPosition().latitude);
+//                    location.setLongitude(marker.getPosition().longitude);
+//
+//                    currentDistance = Math.round(lastKnownLocation.distanceTo(location));
+//
+//                    if(currentDistance < distanceRadius){
+//                        marker.setVisible(true);
+//                    }else {
+//                        marker.setVisible(false);
+//                    }
+//                }
+
+                for(int i = 0; i < mClusterMarkersUser.size(); i++){
+                    ClusterMarkerUser markerUser = mClusterMarkersUser.get(i);
 
                     Location location = new Location("otherLocation");
-                    location.setLatitude(marker.getPosition().latitude);
-                    location.setLongitude(marker.getPosition().longitude);
+                    location.setLatitude(markerUser.getPosition().latitude);
+                    location.setLongitude(markerUser.getPosition().longitude);
 
                     currentDistance = Math.round(lastKnownLocation.distanceTo(location));
 
                     if(currentDistance < distanceRadius){
-                        marker.setVisible(true);
+                        mClusterManagerUser.addItem(markerUser);
                     }else {
-                        marker.setVisible(false);
+                        mClusterManagerUser.removeItem(markerUser);
                     }
+                    mClusterManagerUser.cluster();
                 }
             }
 
@@ -486,7 +781,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 if(seekBarProgress == 0){
                     stopOtherLocationUpdates();
                 }else {
-                    if(!otherMarkerList.isEmpty()){
+                    if(!mClusterMarkersUser.isEmpty()){
                         startOtherUserLocationsRunnable();
                     }
 
@@ -505,17 +800,23 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                     //Getting User object from dataSnapshot
                     UserLocation userLocation = data.getValue(UserLocation.class);
                     LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                    Marker marker;
-                    try {
-                        marker = otherMarkerList.get(i);
-                        marker.setPosition(otherPosition);
-                        otherMarkerList.set(i, marker);
-                        i++;
+                    ClusterMarkerUser markerUser;
 
-                        Log.d(TAG, " test : other position updated");
-                    }catch (Exception e){
-                        Log.e(TAG, "%s" + e);
+                    if(!userLocation.getUser_id().equals(user.getUser_id())){
+                        try {
+                            markerUser = mClusterMarkersUser.get(i);
+                            markerUser.setPosition(otherPosition);
+                            mClusterMarkersUser.set(i, markerUser);
+                            i++;
+
+                            mClusterManagerUser.cluster();
+
+                            Log.d(TAG, " marker : other position updated" + userLocation.getName());
+                        }catch (Exception e){
+                            Log.e(TAG, "%s" + e);
+                        }
                     }
+
                 }
             }
             @Override
@@ -523,6 +824,50 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 Log.e(TAG, "%s" + error);
             }
         });
+    }
+
+    private void updateUserLocation(){
+        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+        locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    lastKnownLocation = task.getResult();
+
+                    LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    distanceCircle.setCenter(userPosition);
+                    userMarker.setPosition(userPosition);
+
+//                    Log.d(TAG, "self: set user marker position");
+                }
+            }
+        });
+
+//        mUserLocationReference.child(user.getUser_id()).addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot data : dataSnapshot.getChildren()) {
+//                    //Getting User object from dataSnapshot
+//                    UserLocation userLocation = data.getValue(UserLocation.class);
+//
+//                    Log.d(TAG, "self: " + data.getValue());
+//                    LatLng userPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+//                    try {
+//                        distanceCircle.setCenter(userPosition);
+//                        userMarker.setPosition(userPosition);
+//
+//                        Log.d(TAG, "self: set marker position");
+//                    }catch (Exception e){
+//                        Log.e(TAG, "%s" + e);
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.e(TAG, "%s" + error);
+//            }
+//        });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -564,12 +909,16 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                             if (lastKnownLocation != null) {
 
                                 GeoPoint geoPoint = new GeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                                Log.d(TAG, "FT : Location updated!!");
+
+                                if(bundleRestaurantPosition == null){
+                                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                            new LatLng(lastKnownLocation.getLatitude(),
+                                                    lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                }
+
 
                                 String url = user.getProfile_image();
+
                                 final LatLng myPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
 
                                 Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
@@ -577,16 +926,21 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                                         // Todo: Do something with your bitmap here
 
-                                        userMarker = mGoogleMap.addMarker(new MarkerOptions()
-                                                .position(myPosition)
-                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
-                                        userMarker.setTag(mUserLocation);
+                                        userMarker = new ClusterMarkerUser(
+                                                myPosition,
+                                                "",
+                                                "",
+                                                mUserLocation
+                                        );
 
-                                        Log.d(TAG, "FT : add marker");
+                                        mClusterManagerUser.addItem(userMarker);
+                                        mClusterManagerUser.cluster();
+
+                                        Log.d(TAG, "self : add marker");
 
                                         markerBitmap.put(user.getUser_id(), bitmap);
 
-                                        startUserLocationsRunnable(userMarker);
+                                        startUserLocationsRunnable();
                                     }
 
                                     @Override
@@ -599,6 +953,65 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                     }
                                 });
 
+//                                if(!url.equals("NULL")){
+//                                    Log.d(TAG, "self : test non null");
+//
+//                                    Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                        @Override
+//                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                            // Todo: Do something with your bitmap here
+//
+//                                            userMarker = mGoogleMap.addMarker(new MarkerOptions()
+//                                                    .position(myPosition)
+//                                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
+//                                            userMarker.setTag(mUserLocation);
+//
+//                                            Log.d(TAG, "self : add marker");
+//
+//                                            markerBitmap.put(user.getUser_id(), bitmap);
+//
+//                                            startUserLocationsRunnable(userMarker);
+//                                        }
+//
+//                                        @Override
+//                                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                        }
+//                                    });
+//                                }else{
+//                                    Log.d(TAG, "self : test null");
+//
+//                                    Picasso.get().load(R.drawable.ic_image_profile_icon_dark).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                        @Override
+//                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                            // Todo: Do something with your bitmap here
+//
+//                                            userMarker = mGoogleMap.addMarker(new MarkerOptions()
+//                                                    .position(myPosition)
+//                                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
+//                                            userMarker.setTag(mUserLocation);
+//
+//                                            Log.d(TAG, "self : add marker");
+//
+//                                            markerBitmap.put(user.getUser_id(), bitmap);
+//
+//                                            startUserLocationsRunnable(userMarker);
+//                                        }
+//
+//                                        @Override
+//                                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                        }
+//                                    });
+//                                }
 
                                 mUserLocation.setLatitude(geoPoint.getLatitude());
                                 mUserLocation.setLongitude(geoPoint.getLongitude());
@@ -606,7 +1019,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                 distanceCircle = mGoogleMap.addCircle(new CircleOptions()
                                         .center(new LatLng(lastKnownLocation.getLatitude(),
                                                 lastKnownLocation.getLongitude()))
-                                        .radius(seekBarProgress)
+                                        .radius(seekBarProgress*100)
                                         .strokeWidth(1)
                                         .strokeColor(Color.GREEN)
                                         .fillColor(Color.argb(128, 255, 0, 0))
@@ -854,7 +1267,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         stopOtherLocationUpdates();
         Log.d(TAG, "FT : OnDestroyView");
 
-        otherMarkerList.clear();
+        mClusterMarkersUser.clear();
+        userMarkerOptionsList.clear();
         stopUserLocationUpdates();
     }
 
@@ -878,8 +1292,35 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
-        menu.findItem(R.id.menu_search_button).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
+
+//        mClusterMarkersRestaurant;
+
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+
+                }else {
+
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //called as and when user press any lettre
+                if (!TextUtils.isEmpty(newText)){
+
+                }else {
+                }
+                return false;
+            }
+        });
     }
 
     @Override

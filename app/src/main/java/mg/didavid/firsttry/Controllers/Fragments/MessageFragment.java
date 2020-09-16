@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,11 +23,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.w3c.dom.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,7 @@ import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.UserListActivity;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurMessage;
+import mg.didavid.firsttry.Models.Message;
 import mg.didavid.firsttry.Models.ModeleChatroom;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
@@ -109,34 +114,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
                         Log.e(TAG, "%s" + error);
                     }
                 });
-
-//        //path of all post
-//        final CollectionReference collectionChatrooms = FirebaseFirestore.getInstance().collection("Chatrooms");
-//        //get all data from this reference
-//        collectionChatrooms.whereArrayContains("id_room", currentUser.getUser_id())
-//                .orderBy("last_message_timestamp")
-//                .get()
-//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-//            @Override
-//            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                if (!queryDocumentSnapshots.isEmpty()) {
-//                    chatroomList.clear();
-//                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                        ModeleChatroom modeleChatroom = documentSnapshot.toObject(ModeleChatroom.class);
-//                        chatroomList.add(modeleChatroom);
-//                    }
-//
-//                    configureAdapter();
-//                }
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
-//
-//                Log.e(TAG, "onFailure: " + e.getMessage());
-//            }
-//        });
     }
 
     private void configureAdapter(){
@@ -144,6 +121,68 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapteursMessage);
+
+        //start the listner of new message
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new comment has been added, add it to the displayed list
+                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
+
+//                chatroomList.add( chatroom);
+//
+//                adapteursMessage.notifyItemInserted(chatroomList.size());
+
+                adapteursMessage.notifyDataSetChanged();
+                // ...
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so displayed the changed comment.
+                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
+                adapteursMessage.notifyDataSetChanged();
+
+                // ...
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so remove it.
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
+
+                // A comment has changed position, use the key to determine if we are
+                // displaying this comment and if so move it.
+                Comment movedComment = dataSnapshot.getValue(Comment.class);
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "postComments:onCancelled", databaseError.toException());
+                Toast.makeText(getContext(), "Failed to load comments.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        mChatroomReference.child(currentUser.getUser_id()).addChildEventListener(childEventListener);
     }
 
     @Override
