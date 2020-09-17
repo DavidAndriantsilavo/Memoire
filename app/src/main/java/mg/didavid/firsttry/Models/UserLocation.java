@@ -7,17 +7,27 @@ public class UserLocation {
     private String name;
     private String user_id;
     private String profile_image;
+    private boolean seeMyPosition;
 
-    public UserLocation(Double latitude, Double longitude, String timestamp, String name, String user_id, String profile_image) {
+    public UserLocation(Double latitude, Double longitude, String timestamp, String name, String user_id, String profile_image, boolean seeMyPosition) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.timestamp = timestamp;
         this.name = name;
         this.user_id = user_id;
         this.profile_image = profile_image;
+        this.seeMyPosition = seeMyPosition;
     }
 
     public UserLocation() {
+    }
+
+    public boolean isSeeMyPosition() {
+        return seeMyPosition;
+    }
+
+    public void setSeeMyPosition(boolean seeMyPosition) {
+        this.seeMyPosition = seeMyPosition;
     }
 
     public String getProfile_image() {

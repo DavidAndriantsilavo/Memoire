@@ -85,7 +85,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     TextView user_name, post_time, post_description, textView_pseudo, textView_postKiff, textView_nbrPosComment;
     ImageButton imageButton_more;
     ImageView user_profileImage, post_image1, post_image2, post_image3, imageAddedIntoComment;
-    Button kiff_button, share_button;
+    Button kiff_button, location_button;
     LinearLayout linearLayout_image23;
     RatingBar ratingBar;
 
@@ -148,7 +148,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         post_image3 = findViewById(R.id.imageView_imagePost3_comment);
         imageAddedIntoComment = findViewById(R.id.imageView_inputImage_EditComment_comment);
         kiff_button = findViewById(R.id.button_kiff_comment);
-        share_button = findViewById(R.id.button_partager_comment);
+        location_button = findViewById(R.id.button_partager_comment);
         linearLayout_image23 = findViewById(R.id.linearLayout_imagePost23_comment);
         ratingBar = findViewById(R.id.ratingBar_postDetails);
         //comment views
@@ -237,7 +237,7 @@ public class PostDetailsActivity extends AppCompatActivity {
         });
 
         //button share clicked
-        share_button.setOnClickListener(new View.OnClickListener() {
+        location_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(PostDetailsActivity.this, "share button\nWill implement later", Toast.LENGTH_LONG).show();
@@ -1011,6 +1011,7 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         hisPseudo = "" + value.getString("pseudo");
                                         hidName= "" + value.getString("name");
                                         comment_count = "" + value.getString("comment_count");
+                                        HashMap<String, Object> myLocation = (HashMap<String, Object>) value.getData();
 
                                         //convert time
                                         Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -1021,6 +1022,17 @@ public class PostDetailsActivity extends AppCompatActivity {
                                         String pTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
 
                                         //set data to views
+                                        if ((myLocation != null && myLocation.isEmpty()) || myLocation == null) {
+                                            location_button.setVisibility(View.GONE);
+                                        }else {
+                                            location_button.setVisibility(View.VISIBLE);
+                                            location_button.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    Toast.makeText(PostDetailsActivity.this, "Voir Lieu => Send to map", Toast.LENGTH_LONG).show();
+                                                }
+                                            });
+                                        }
                                         post_description.setText(postDescription);
                                         //set kiff number
                                         if (post_kiff.equals("0")){

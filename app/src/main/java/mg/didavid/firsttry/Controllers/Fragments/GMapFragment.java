@@ -89,6 +89,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private static final int PERMISSIONS_REQUEST_ENABLE_GPS = 8001;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 8002;
     private static final int ERROR_DIALOG_REQUEST = 8003;
+    private  int defaultRadius;
 
     private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
@@ -159,6 +160,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
         imageView_marker = mCustomDefaultMarkerView.findViewById(R.id.imageView_marker);
 
+        defaultRadius = ParametreFragment.getDefaultRadius();
+        Toast.makeText(getContext(), "test : " + defaultRadius, Toast.LENGTH_SHORT).show();
+
         Log.d(TAG, "FT : OnCreateView!!");
 
         //init progressDialog
@@ -175,6 +179,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         mMapView = (MapView) v.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this); //this is important
+
 
         return v;
     }
@@ -401,40 +406,42 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                     final UserLocation userLocation = data.getValue(UserLocation.class);
 
                     if(userLocation != null){
-                        final LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                        final Marker[] marker = new Marker[1];
-                        String url = userLocation.getProfile_image();
+                        if (userLocation.isSeeMyPosition()){
+                            final LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+                            final Marker[] marker = new Marker[1];
+                            String url = userLocation.getProfile_image();
 
-                        if(!userLocation.getUser_id().equals(user.getUser_id())){
-                            Log.d(TAG, " test : onDataChange: " + userLocation.getName());
+                            if(!userLocation.getUser_id().equals(user.getUser_id())) {
+                                Log.d(TAG, " test : onDataChange: " + userLocation.getName());
 
-                            Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+                                    @Override
+                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
 
-                                    marker[0] = mGoogleMap.addMarker(new MarkerOptions()
-                                            .position(otherPosition)
-                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
-                                    marker[0].setTag(userLocation);
+                                        marker[0] = mGoogleMap.addMarker(new MarkerOptions()
+                                                .position(otherPosition)
+                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
+                                        marker[0].setTag(userLocation);
 
-                                    marker[0].setVisible(false);
+                                        marker[0].setVisible(false);
 
-                                    Log.d(TAG, "test : add marker " + i[0] +1);
-                                    otherMarkerList.add(i[0], marker[0]);
+                                        Log.d(TAG, "test : add marker " + i[0] + 1);
+                                        otherMarkerList.add(i[0], marker[0]);
 
-                                    markerBitmap.put(userLocation.getUser_id(), bitmap);
-                                    i[0]++;
-                                }
+                                        markerBitmap.put(userLocation.getUser_id(), bitmap);
+                                        i[0]++;
+                                    }
 
-                                @Override
-                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+                                    @Override
+                                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
 
-                                }
+                                    }
 
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                                }
-                            });
+                                    @Override
+                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                                    }
+                                });
+                            }
                         }
                     }
                 }
@@ -453,7 +460,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         seekBar_distance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                distanceRadius = seekBarProgress*100;
+                distanceRadius = seekBarProgress*defaultRadius;
 
                 seekBarProgress = progress;
                 distanceCircle.setRadius(distanceRadius);
@@ -504,17 +511,19 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
                     //Getting User object from dataSnapshot
                     UserLocation userLocation = data.getValue(UserLocation.class);
-                    LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                    Marker marker;
-                    try {
-                        marker = otherMarkerList.get(i);
-                        marker.setPosition(otherPosition);
-                        otherMarkerList.set(i, marker);
-                        i++;
+                    if (userLocation.isSeeMyPosition()) {
+                        LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+                        Marker marker;
+                        try {
+                            marker = otherMarkerList.get(i);
+                            marker.setPosition(otherPosition);
+                            otherMarkerList.set(i, marker);
+                            i++;
 
-                        Log.d(TAG, " test : other position updated");
-                    }catch (Exception e){
-                        Log.e(TAG, "%s" + e);
+                            Log.d(TAG, " test : other position updated");
+                        } catch (Exception e) {
+                            Log.e(TAG, "%s" + e);
+                        }
                     }
                 }
             }

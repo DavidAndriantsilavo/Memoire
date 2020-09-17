@@ -27,11 +27,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:background="@drawable/rounded_white_button"
             android:text="Ajouter une image"
             android:textAllCaps="false"
-            android:textColor="@color/black"
-            android:layout_marginHorizontal="30dp"/>
+            android:layout_marginHorizontal="30dp"
+            android:background="@drawable/rounded_white_button"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -97,7 +96,6 @@
             android:text="Poster"
             android:textSize="18dp"
             android:textAllCaps="false"
-            android:textColor="@color/white"
             android:layout_marginHorizontal="30dp"/>
     </LinearLayout>
 

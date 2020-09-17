@@ -28,6 +28,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenu;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -57,7 +58,6 @@ public class MainActivity extends AppCompatActivity{
 
     BottomNavigationView navigationView;
 
-    ProgressDialog  progressDialog_del_account, progressDialog_logout;
 
     FirebaseUser FirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -79,11 +79,7 @@ public class MainActivity extends AppCompatActivity{
 
         navigationView = findViewById(R.id.menu_nav); //associate view with the BottomNavigationView object
         navigationView.setOnNavigationItemSelectedListener(selectedListener); //set BottomNavigationView focus onto the selected item
-
-
-        //init progressDialog
-        progressDialog_logout = new ProgressDialog(this);
-        progressDialog_logout.setMessage("Déconnexion...");
+        
 
         //default view
         accueil();
@@ -111,7 +107,6 @@ public class MainActivity extends AppCompatActivity{
         itemActu();
         navigationView.setSelectedItemId(R.id.fil_d_actu_nav);
     }
-
     BottomNavigationView.OnNavigationItemSelectedListener selectedListener =
             new BottomNavigationView.OnNavigationItemSelectedListener() {
                 @Override

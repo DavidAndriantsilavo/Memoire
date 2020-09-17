@@ -610,6 +610,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                     restoLocalisation_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_button_icon_dark, 0, 0, 0);
                     restoLocalisation_button.setBackground(null);
                     restoLocalisation_button.setCompoundDrawablePadding(10);
+
                 }
                 Log.d(TAG, "FT : GPS enabled");
             }
@@ -618,9 +619,9 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     @Override
     public void onLocationChanged(Location location) {
-            locationResto.put("latitude", location.getLatitude());
+            /*locationResto.put("latitude", location.getLatitude());
             locationResto.put("longitude", location.getLongitude());
-            Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "longitude" + locationResto.get("longitude"), Toast.LENGTH_LONG).show();
+            Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "longitude" + locationResto.get("longitude"), Toast.LENGTH_LONG).show();*/
     }
 
     /**

@@ -296,7 +296,7 @@ public class ActuFragment extends Fragment {
     }
 
     private void logOut() {
-        progressDialog_logout.show();
+        progressDialog_logout.cancel();
         FirebaseAuth.getInstance().signOut();
         GoogleSignIn.getClient(
                 getContext(),

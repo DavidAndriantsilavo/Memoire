@@ -108,6 +108,31 @@
                 android:layout_marginTop="2dp"/>
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/linearLayout_addMyLocation_newPost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="start"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageButton
+                android:id="@+id/imageButton_location_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:visibility="gone"/>
+            <TextView
+                android:id="@+id/textView_nearAddLocation_newPost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter ma localisation"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="2dp"/>
+        </LinearLayout>
+
         <Button
             android:id="@+id/button_publish_post"
             android:layout_width="300dp"

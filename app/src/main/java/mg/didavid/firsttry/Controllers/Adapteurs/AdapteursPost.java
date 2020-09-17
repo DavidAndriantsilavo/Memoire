@@ -39,7 +39,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.firestore.model.DocumentCollections;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -107,6 +106,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         String post_timeStamp = postList.get(position).getPost_time();
         final String nbrPostKiffs = postList.get(position).getPost_kiff();
         final String nbrPostComments = postList.get(position).getComment_count();
+        HashMap<String, Object> myLocatoin = postList.get(position).getUser_location();
 
         //convert timeStamp to dd/mm/yyyy hh:mm am/pm
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -300,12 +300,17 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 context.startActivity(intent);
             }
         });
-        holder.partagerBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(context, "Partager...\nwill implement later", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if ((myLocatoin != null && myLocatoin.isEmpty()) || myLocatoin == null){
+            holder.locationbtn.setVisibility(View.GONE);
+        }else {
+            holder.locationbtn.setVisibility(View.VISIBLE);
+            holder.locationbtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context, "Voir lieu  => Send to map", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         //user name clicked
         holder.uNameTv.setOnClickListener(new View.OnClickListener() {
@@ -718,9 +723,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     }
 
     private void deletePost(final String post_id) {
-        final ProgressDialog progressDialog_delete = new ProgressDialog(context);
-        progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
-        progressDialog_delete.show();
         //delete data from Firestore
         DocumentReference documentReference = collectionReference_post.document(post_id);
         documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -735,10 +737,9 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                                 if (!queryDocumentSnapshots.isEmpty()){
                                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                        if (queryDocumentSnapshots.getDocuments().contains(mCurrentUserId)){
+                                        if (documentSnapshot.getString("post_id").equals(post_id)){
                                             String comment_id = documentSnapshot.getString("comment_time");
                                             documentReference1.document(comment_id).delete();
-                                            progressDialog_delete.dismiss();
                                         }
                                     }
                                 }
@@ -753,7 +754,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(context, "Impossible de supprimer la publication !", Toast.LENGTH_SHORT).show();
-                progressDialog_delete.dismiss();
             }
         });
     }
@@ -770,7 +770,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         ImageView uPictureIv, pImageIv1, pImageIv2, pImageIv3;
         TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pComment, pseudo;
         ImageButton moreBtn;
-        Button kiffBtn, commenterBtn, partagerBtn;
+        Button kiffBtn, commenterBtn, locationbtn;
         RatingBar ratingBar;
 
         public MyHolder(@NonNull View itemView) {
@@ -790,7 +790,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             moreBtn = itemView.findViewById(R.id.button_moreAction_actu);
             kiffBtn = itemView.findViewById(R.id.button_kiff_actu);
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
-            partagerBtn = itemView.findViewById(R.id.button_partager_actu);
+            locationbtn = itemView.findViewById(R.id.button_location_actu);
             ratingBar = itemView.findViewById(R.id.ratingBar_newPost);
         }
     }

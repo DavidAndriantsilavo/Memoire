@@ -27,6 +27,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.squareup.picasso.Picasso;
@@ -93,7 +94,7 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         holder.textView_restoName.setText(restoName);
         holder.textView_restSpeciality.setText(restoSpeciality);
         holder.ratingBar_restoRating.setRating(restoRating);
-        holder.textView_ratingResto.setText(String.valueOf(restoRating));
+        holder.textView_ratingResto.setText(String.valueOf((float) Math.round(restoRating * 10) / 10));
         if (restoNbrRatign.equals("0")) {
             holder.textView_restoRatingNumber.setVisibility(View.GONE);
         }else if (restoNbrRatign.equals("1")){
@@ -136,11 +137,11 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         PopupMenu popupMenu = new PopupMenu(context,imageButton_moreAction, Gravity.END);
         //add items im menu
         popupMenu.getMenu().add(Menu.NONE, 0, 0, "Voir tous les menus");
-        popupMenu.getMenu().add(Menu.NONE, 1, 0, "Voir profile");
-        popupMenu.getMenu().add(Menu.NONE, 2, 0, "Passer une commande");
-        popupMenu.getMenu().add(Menu.NONE, 3, 0, "Voir lieu");
+        popupMenu.getMenu().add(Menu.NONE, 1, 1, "Voir profile");
+        popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir lieu");
         if (!restoId.contains(mCurrentResto_id)) {
-            popupMenu.getMenu().add(Menu.NONE, 4, 0, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 4, 4, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 2, 2, "Passer une commande");
         }
 
         //button clicked
@@ -165,15 +166,17 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
                 }else if (item_id == 4) {
                     //raitng selected
                     //check if user has rating resto yet, if not show rating dialog
-                    collectionReference_hasRatingResto.document(restoId).get()
-                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    collectionReference_hasRatingResto.get()
+                            .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                                 @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                    if (documentSnapshot.exists()) {
-                                        if (documentSnapshot.get(mCurrentUser_id) != null) {
-                                            Toast.makeText(context, "Vous avez déjà noté ce restaurant", Toast.LENGTH_LONG).show();
-                                        }else {
-                                            showRatingDialog(restoId);
+                                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                    if (!queryDocumentSnapshots.isEmpty()) {
+                                        for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                            if (documentSnapshot.equals(restoId) && documentSnapshot.get(mCurrentUser_id) != null) {
+                                                Toast.makeText(context, "Vous avez déjà noté ce restaurant", Toast.LENGTH_LONG).show();
+                                            }else {
+                                                showRatingDialog(restoId);
+                                            }
                                         }
                                     }
                                 }
