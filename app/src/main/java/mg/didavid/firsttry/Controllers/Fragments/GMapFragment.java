@@ -37,6 +37,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -48,18 +50,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.RoundCap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -71,6 +73,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.PolyUtil;
 import com.google.maps.android.clustering.ClusterItem;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
@@ -81,13 +84,15 @@ import com.squareup.picasso.Target;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
+import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
+import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapterMapSearch;
 import mg.didavid.firsttry.Models.ClusterMarkerRestaurant;
 import mg.didavid.firsttry.Models.ClusterMarkerUser;
 import mg.didavid.firsttry.Models.LocationService;
@@ -103,7 +108,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
-public class GMapFragment extends Fragment implements OnMapReadyCallback{
+public class GMapFragment extends Fragment implements OnMapReadyCallback, AdapterMapSearch.OnMapSearchListner {
 
     //private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int PERMISSIONS_REQUEST_ENABLE_GPS = 8001;
@@ -152,7 +157,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private View mCustomDefaultMarkerView, mCustomClickedMarkerView;
     private ImageView imageView_marker, imageView_profile_picture;
     private TextView textView_name;
-    private Button button_profile, button_directions, button_message;
+    private Button button_profile, button_direction, button_message;
     private ClusterMarkerUser lastClickedMarker, userMarker;
     private SeekBar seekBar_distance;
     private int seekBarProgress, distanceRadius, currentDistance;
@@ -169,8 +174,18 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private ArrayList<ClusterMarkerRestaurant> mClusterMarkersRestaurant = new ArrayList<>();
     private ArrayList<ClusterMarkerUser> mClusterMarkersUser = new ArrayList<>();
     MarkerManager markerManager;
+    ClusterMarkerUser clickedUserMarker;
 
     Bundle bundleRestaurantPosition;
+
+    RecyclerView recyclerView;
+    ArrayList<ModelResto> allRestoList;
+    ArrayList<ModelResto> queryRestoList;
+    AdapterMapSearch adapterMapSearch;
+
+    SearchView searchView;
+    MenuItem item_search;
+    String currentSearchQuery = "";
 
     @Override
     public void onDetach() {
@@ -193,11 +208,22 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
         imageView_marker = mCustomDefaultMarkerView.findViewById(R.id.imageView_marker);
 
-        Log.d(TAG, "FT : OnCreateView!!");
+        //init the search recyclerview
+        adapterMapSearch = new AdapterMapSearch();
+        recyclerView = v.findViewById(R.id.recyclerView_map_search);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setReverseLayout(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        allRestoList = new ArrayList<>();
+        queryRestoList = new ArrayList<>();
+
+        setAdapter(queryRestoList);
 
         //init progressDialog
         progressDialog_logout = new ProgressDialog(getContext());
         progressDialog_logout.setMessage("Déconnexion...");
+        //////////////////////////
 
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
@@ -238,11 +264,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 Log.d(TAG, "resto : got bundle restoLocation " + restoLatitude + " " + restoLongitude);
                 LatLng restoPosition = new LatLng(restoLatitude, restoLongitude);
 
-                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
                         restoPosition, DEFAULT_ZOOM));
-
-//                BottomNavigationView navigationView = getActivi ty().findViewById(R.id.menu_nav);
-//                navigationView.setSelectedItemId(R.id.map_nav);
 
             }
         }
@@ -255,71 +278,41 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         textView_name = linearLayoutCustomView.findViewById(R.id.textView_name);
         imageView_profile_picture = linearLayoutCustomView.findViewById(R.id.imageView_profile_picture);
         button_profile = linearLayoutCustomView.findViewById(R.id.button_profile);
-        button_directions = linearLayoutCustomView.findViewById(R.id.button_directions);
+        button_direction = linearLayoutCustomView.findViewById(R.id.button_direction);
         button_message = linearLayoutCustomView.findViewById(R.id.button_message);
 
-        //markerListner to listen for click event on marker
-//        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-//            @Override
-//            public boolean onMarkerClick(final Marker marker) {
-//                Log.d("GoogleMap", " click");
-//
-//                if(marker.getTag() != null) {
-//                    button_directions.setVisibility(View.VISIBLE);
-//                    button_message.setVisibility(View.VISIBLE);
-//
-//                    UserLocation clickedUser = (UserLocation) marker.getTag();
-//                    textView_name.setText(clickedUser.getName());
-//
-//                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
-//
-//                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-//                        @Override
-//                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-////                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
-////
-////                            Canvas canvasBmp2 = new Canvas( currentBitmap );
-////                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
-//
-//                            if (marker.equals(lastClickedMarker)) {
-//                                if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
-//                                    linearLayoutCustomView.setVisibility(View.GONE);
-//                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
-//                                } else {
-//                                    linearLayoutCustomView.setVisibility(View.VISIBLE);
-//                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-//                                }
-//
-//                            } else {
-//                                if (lastClickedMarker != null && lastBitmap != null) {
-//                                    //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
-//                                    lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
-//                                }
-//
-//                                lastClickedMarker = marker;
-//                                lastBitmap = bitmap;
-//
-//                                linearLayoutCustomView.setVisibility(View.VISIBLE);
-//                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-//
-//                        }
-//
-//                        @Override
-//                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-//                        }
-//                    });
-//                }
-//
-//                return false;
-//            }
-//        });
+        button_message.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(clickedUserMarker != null) {
+                    UserLocation userLocation = clickedUserMarker.getUserLocation();
 
-        //click event listner on MAP
+                    if(userLocation.getUser_id() != user.getUser_id()){
+                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+                        intent.putExtra("other_user_id", userLocation.getUser_id());
+                        intent.putExtra("other_user_name", userLocation.getName());
+                        intent.putExtra("other_user_profile_picture", userLocation.getProfile_image());
+                        startActivity(intent);
+                    }
+                }
+            }
+        });
+
+        button_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(clickedUserMarker != null) {
+                    UserLocation userLocation = clickedUserMarker.getUserLocation();
+                     if(userLocation.getUser_id() == user.getUser_id()){
+                         startActivity(new Intent(getActivity(), ProfileUserActivity.class));
+                     }else{
+                         Intent intent = new Intent(getActivity(), OtherUsersProfileActivity.class);
+                         intent.putExtra("user_id", userLocation.getUser_id());
+                         startActivity(intent);
+                     }
+                }
+            }
+        });
 
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
@@ -331,12 +324,16 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                     linearLayoutCustomView.setVisibility(View.GONE);
                 }
 
+                searchView.setQuery("", false);
+                searchView.setIconified(true);
 //                if(otherMarkerList.size() > 0){
 //                    for(int i=0; i < otherMarkerList.size(); i++){
 //                        otherMarkerList.get(i).setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
 //                    }
 //                }
             }
+
+
         });
 
         if(mServicesIsGood) {
@@ -470,58 +467,83 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                     @Override
                     public boolean onClusterItemClick(ClusterItem item) {
                         Log.d(TAG, " marker : click on user " + item.getTitle());
-
-                            button_directions.setVisibility(View.VISIBLE);
-                            button_message.setVisibility(View.VISIBLE);
-
-                            final ClusterMarkerUser clickedUserMarker = (ClusterMarkerUser) item;
+                            clickedUserMarker = (ClusterMarkerUser) item;
                             UserLocation userLocation = ((ClusterMarkerUser) item).getUserLocation();
+
+                            if(userLocation.getUser_id() == user.getUser_id()){
+                                button_direction.setVisibility(View.GONE);
+                                button_message.setVisibility(View.GONE);
+                            }else{
+                                button_direction.setVisibility(View.VISIBLE);
+                                button_message.setVisibility(View.VISIBLE);
+
+//                                PolylineOptions polylineOptions = new PolylineOptions()
+//                                        .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
+//                                        .add(new LatLng(userLocation.getLatitude(), userLocation.getLongitude()))
+//                                        .color(Color.BLUE)
+//                                        .endCap(new RoundCap());
+//
+//                                Polyline polyline = mGoogleMap.addPolyline(polylineOptions);
+                            }
 
                             textView_name.setText(userLocation.getName());
 
                             Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
 
-                            Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
-//
-//                            Canvas canvasBmp2 = new Canvas( currentBitmap );
-//                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
-
-                                    if (clickedUserMarker.equals(lastClickedMarker)) {
-                                        if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
-                                            linearLayoutCustomView.setVisibility(View.GONE);
+                        if (clickedUserMarker.equals(lastClickedMarker)) {
+                            if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
+                                linearLayoutCustomView.setVisibility(View.GONE);
 //                                            clickedUser.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
-                                        } else {
-                                            linearLayoutCustomView.setVisibility(View.VISIBLE);
+                            } else {
+                                linearLayoutCustomView.setVisibility(View.VISIBLE);
 //                                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                                        }
+                            }
 
-                                    } else {
-//                                        if (lastClickedMarker != null && lastBitmap != null) {
-//                                        if (lastClickedMarker != null) {
-//                                            //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
-//                                            lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
-//                                        }
+                        } else {
 
-                                        lastClickedMarker = clickedUserMarker;
-                                        lastBitmap = bitmap;
+                            lastClickedMarker = clickedUserMarker;
 
-                                        linearLayoutCustomView.setVisibility(View.VISIBLE);
+                            linearLayoutCustomView.setVisibility(View.VISIBLE);
 //                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                                    }
-                                }
+                        }
 
-                                @Override
-                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                                }
-
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                                }
-                            });
+//                            Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                @Override
+//                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//
+//                                    if (clickedUserMarker.equals(lastClickedMarker)) {
+//                                        if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
+//                                            linearLayoutCustomView.setVisibility(View.GONE);
+////                                            clickedUser.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+//                                        } else {
+//                                            linearLayoutCustomView.setVisibility(View.VISIBLE);
+////                                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+//                                        }
+//
+//                                    } else {
+////                                        if (lastClickedMarker != null && lastBitmap != null) {
+////                                        if (lastClickedMarker != null) {
+////                                            //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
+////                                            lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
+////                                        }
+//
+//                                        lastClickedMarker = clickedUserMarker;
+//                                        lastBitmap = bitmap;
+//
+//                                        linearLayoutCustomView.setVisibility(View.VISIBLE);
+////                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+//                                    }
+//                                }
+//
+//                                @Override
+//                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                }
+//                            });
 
                         return false;
                     }
@@ -632,6 +654,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
                                 mClusterManagerRestaurant.addItem(clusterMarkerRestaurant);
                                 mClusterMarkersRestaurant.add(clusterMarkerRestaurant);
+                                allRestoList.add(resto);
                             }
 
                             mClusterManagerRestaurant.cluster();
@@ -1288,6 +1311,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         mMapView.onLowMemory();
     }
 
+    //Configure the recyclerView's adapter
+    public void setAdapter(ArrayList list){
+        adapterMapSearch = new AdapterMapSearch(getActivity(), list, this);
+        recyclerView.setAdapter(adapterMapSearch);
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -1296,27 +1324,61 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
 //        mClusterMarkersRestaurant;
 
-        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+        item_search =  menu.findItem(R.id.menu_search_button);
+        searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!currentSearchQuery.equals("")){
+                    searchView.setQuery(currentSearchQuery, false);
+                }
+
+                if (linearLayoutCustomView.getVisibility() == View.VISIBLE){
+                    linearLayoutCustomView.setVisibility(View.GONE);
+                }
+            }
+        });
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 //called when user press search button
                 if (!TextUtils.isEmpty(query)){
-
+                    if(!allRestoList.isEmpty()){
+                        ModelResto resto;
+                        for (int i = 0; i < allRestoList.size(); i++) {
+                            resto = allRestoList.get(i);
+                            if (resto.getName_resto().toLowerCase().contains(query.toLowerCase())) {
+                                queryRestoList.add(resto);
+                            }
+                        }
+                        setAdapter(queryRestoList);
+                    }
                 }else {
-
+                    setAdapter(queryRestoList);
                 }
                 return false;
             }
 
             @Override
-            public boolean onQueryTextChange(String newText) {
+            public boolean onQueryTextChange(String query) {
                 //called as and when user press any lettre
-                if (!TextUtils.isEmpty(newText)){
+                queryRestoList.clear();
 
+                if (!TextUtils.isEmpty(query)){
+                    if(!allRestoList.isEmpty()){
+                        ModelResto resto;
+                        for (int i = 0; i < allRestoList.size(); i++) {
+                            resto = allRestoList.get(i);
+                            if (resto.getName_resto().toLowerCase().contains(query.toLowerCase())) {
+                                queryRestoList.add(resto);
+                            }
+                        }
+                        setAdapter(queryRestoList);
+                    }
                 }else {
+                    setAdapter(queryRestoList);
                 }
                 return false;
             }
@@ -1385,5 +1447,31 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         startActivity(logOut);
 
         getActivity().finish();
+    }
+
+    //Handle clcik on restaurant search results
+    @Override
+    public void onMapSearchClick(int position) {
+        Log.d(TAG, "search: click on " + queryRestoList.get(position).getName_resto());
+        Log.d(TAG, "search: " + searchView.getQuery());
+
+        if (mLocationPermissionGranted){
+            if(!queryRestoList.isEmpty()){
+                Double restoLatitude = queryRestoList.get(position).getLatitude();
+                Double restoLongitude = queryRestoList.get(position).getLongitude();
+
+                if(restoLatitude != null && restoLongitude != null){
+                    Log.d(TAG, "resto : got bundle restoLocation " + restoLatitude + " " + restoLongitude);
+                    LatLng restoPosition = new LatLng(restoLatitude, restoLongitude);
+
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            restoPosition, DEFAULT_ZOOM));
+                }
+            }
+        }
+
+        currentSearchQuery = searchView.getQuery().toString();
+        searchView.setQuery("",false);
+        searchView.setIconified(true);
     }
 }

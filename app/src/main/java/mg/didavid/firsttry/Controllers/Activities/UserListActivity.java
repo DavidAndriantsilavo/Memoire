@@ -3,11 +3,17 @@ package mg.didavid.firsttry.Controllers.Activities;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,7 +38,8 @@ public class UserListActivity extends AppCompatActivity implements AdapteurUserL
     Context context = this;
 
     RecyclerView recyclerView;
-    List<User> userList;
+    ArrayList<User> userList;
+    ArrayList<User> queryUSerList;
     AdapteurUserList adapteurUserList;
 
     User currentUser;
@@ -59,6 +66,7 @@ public class UserListActivity extends AppCompatActivity implements AdapteurUserL
         recyclerView.setLayoutManager(linearLayoutManager);
         //init post list
         userList = new ArrayList<>();
+        queryUSerList = new ArrayList<>();
     }
 
     //show all user stored in firebase
@@ -80,7 +88,7 @@ public class UserListActivity extends AppCompatActivity implements AdapteurUserL
                     }
 
                     Log.d(TAG, "userList length : " + userList.size());
-                    configureAdapter();
+                    configureAdapter(userList);
                 }
             }
 
@@ -92,11 +100,67 @@ public class UserListActivity extends AppCompatActivity implements AdapteurUserL
         });
     }
 
-    private void configureAdapter(){
+    private void searchUser(String query){
+        if(!userList.isEmpty()){
+            User user;
+            for (int i = 0; i < userList.size(); i++) {
+                user = userList.get(i);
+                if (user.getName().toLowerCase().contains(query.toLowerCase())) {
+                    queryUSerList.add(user);
+                }
+            }
+            configureAdapter(queryUSerList);
+        }
+    }
+
+    private void configureAdapter(ArrayList list){
         //adapter
-        adapteurUserList = new AdapteurUserList(context, userList, this);
+        adapteurUserList = new AdapteurUserList(context, list, this);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapteurUserList);
+    }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_activity_main, menu);
+
+        //hide other menu
+        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
+        menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
+        menu.findItem(R.id.menu_logout_profil).setVisible(false);
+
+        //searchView to seach post bydescription
+        MenuItem item_search =  menu.findItem(R.id.menu_search_button);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when user press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchUser(query);
+                }else {
+                    showUserList();
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                //called as and when user press any lettre
+                queryUSerList.clear();
+                if (!TextUtils.isEmpty(query)){
+                    searchUser(query);
+                }else {
+                    showUserList();
+                }
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override

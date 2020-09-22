@@ -122,7 +122,7 @@ public class ChatActivity extends AppCompatActivity {
                     }else
 
                         //Log the error message
-                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage() );
+                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage());
                 }
             });
 

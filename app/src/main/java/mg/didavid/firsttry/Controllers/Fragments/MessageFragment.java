@@ -88,40 +88,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         //init post list
         chatroomList = new ArrayList<>();
 
-        return view;
-    }
-
-    //get and show the chatrooms of the current user
-    private void loadChatrooms() {
-        mChatroomReference.child(currentUser.getUser_id())
-                .orderByChild("last_message_timestamp")
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        chatroomList.clear();
-                        for (DataSnapshot data : dataSnapshot.getChildren()) {
-                            //Getting User object from dataSnapshot
-                            if(data.exists()){
-                                ModeleChatroom chatroom = data.getValue(ModeleChatroom.class);
-                                chatroomList.add(chatroom);
-                            }
-                        }
-                        configureAdapter();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e(TAG, "%s" + error);
-                    }
-                });
-    }
-
-    private void configureAdapter(){
-        //adapter
-        adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
-        //set adapter to recyclerView
-        recyclerView.setAdapter(adapteursMessage);
-
         //start the listner of new message
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
@@ -131,12 +97,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
                 // A new comment has been added, add it to the displayed list
                 ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
 
-//                chatroomList.add( chatroom);
-//
-//                adapteursMessage.notifyItemInserted(chatroomList.size());
-
-                adapteursMessage.notifyDataSetChanged();
-                // ...
+                loadChatrooms();
             }
 
             @Override
@@ -146,7 +107,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
                 // A comment has changed, use the key to determine if we are displaying this
                 // comment and if so displayed the changed comment.
                 ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
-                adapteursMessage.notifyDataSetChanged();
+                loadChatrooms();
 
                 // ...
             }
@@ -183,6 +144,40 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         };
 
         mChatroomReference.child(currentUser.getUser_id()).addChildEventListener(childEventListener);
+
+        return view;
+    }
+
+    //get and show the chatrooms of the current user
+    private void loadChatrooms() {
+        mChatroomReference.child(currentUser.getUser_id())
+                .orderByChild("last_message_timestamp")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        chatroomList.clear();
+                        for (DataSnapshot data : dataSnapshot.getChildren()) {
+                            //Getting User object from dataSnapshot
+                            if(data.exists()){
+                                ModeleChatroom chatroom = data.getValue(ModeleChatroom.class);
+                                chatroomList.add(chatroom);
+                            }
+                        }
+                        configureAdapter();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e(TAG, "%s" + error);
+                    }
+                });
+    }
+
+    private void configureAdapter(){
+        //adapter
+        adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
+        //set adapter to recyclerView
+        recyclerView.setAdapter(adapteursMessage);
     }
 
     @Override

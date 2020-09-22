@@ -13,10 +13,9 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_map_search"
-        android:background="@color/red"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:background="@color/white" />
 
     <SeekBar
         android:id="@+id/seekBar_distance"
@@ -61,7 +60,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingRight="10dp">
 
                     <Button
                         android:id="@+id/button_profile"
@@ -74,11 +74,11 @@
                         android:textAllCaps="false"/>
 
                     <Button
-                        android:id="@+id/button_directions"
+                        android:id="@+id/button_direction"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Directions"
+                        android:text="Direction"
                         android:layout_marginLeft="10dp"
                         android:textSize="10sp"
                         android:textAllCaps="false"/>
