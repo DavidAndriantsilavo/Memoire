@@ -172,18 +172,18 @@ public class RestoFragment extends Fragment {
                             for (int i = 0; i < size; i++) {
                                 if (!userHasRestoAccount[0]) {
                                     if (modelRestos.get(i).getId_resto().contains(user_id)) {
-                                        //the user have already one restaurant account so, hide menu add restaurant account and show menu view profile
+                                        //the currentUser have already one restaurant account so, hide menu add restaurant account and show menu view profile
                                         menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
                                         textView_aboutSinginResto.setVisibility(View.GONE);
                                         userHasRestoAccount[0] = true;
                                     }else {
-                                        //current user doesn't have resto account, allow him to add new resto account
+                                        //current currentUser doesn't have resto account, allow him to add new resto account
                                         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
                                     }
                                 }
                             }
                         }else {
-                            //current user doesn't have resto account, allow him to add new resto account
+                            //current currentUser doesn't have resto account, allow him to add new resto account
                             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
                         }
                     }
@@ -196,7 +196,7 @@ public class RestoFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchResto(query);
                 }else {
@@ -207,7 +207,7 @@ public class RestoFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchResto(newText);
                 }else {

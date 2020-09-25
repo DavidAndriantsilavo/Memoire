@@ -163,7 +163,7 @@ public class ActuFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
                 }else {
@@ -174,7 +174,7 @@ public class ActuFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
                 }else {

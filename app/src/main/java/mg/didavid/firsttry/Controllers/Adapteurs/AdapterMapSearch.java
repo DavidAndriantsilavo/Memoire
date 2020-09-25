@@ -2,6 +2,7 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,24 +21,26 @@ import java.util.List;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 import mg.didavid.firsttry.Models.ModelResto;
-import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.R;
+
+import static android.graphics.BlendMode.COLOR;
 
 public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHolder>{
 
     final private String TAG = "adapteurUSerList";
 
     Context context;
-    List<ModelResto> modelRestoList;
+    List<Object> objectList;
 
     String mCurrentUserId;
     CollectionReference collectionReference_resto;
 
     private AdapterMapSearch.OnMapSearchListner onMapSearchListner;
 
-    public AdapterMapSearch(Context context, List<ModelResto> modelRestoList, AdapterMapSearch.OnMapSearchListner onMapSearchListner) {
+    public AdapterMapSearch(Context context, List<Object> objectList, AdapterMapSearch.OnMapSearchListner onMapSearchListner) {
         this.context = context;
-        this.modelRestoList = modelRestoList;
+        this.objectList = objectList;
         this.onMapSearchListner = onMapSearchListner;
 
         mCurrentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -61,15 +64,28 @@ public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHo
     @Override
     public void onBindViewHolder(@NonNull final AdapterMapSearch.MyHolder holder, final int position) {
         //get data
-        String restoName = modelRestoList.get(position).getName_resto();
-        String restoLogo = modelRestoList.get(position).getLogo_resto();
+        String name ="null";
+        String picture = "null";
 
+        Object object = objectList.get(position);
 
         try {
-            //set data
-            holder.textView_restoName.setText(restoName);
-            Picasso.get().load(restoLogo).resize(100, 100).transform(new CropCircleTransformation()).into(holder.imageView_restoLogo);
+            if(object instanceof ModelResto){
+                name = ((ModelResto) object).getName_resto();
+                picture = ((ModelResto) object).getLogo_resto();
 
+                holder.imageView_type.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_culinary_speciality_icon_dark));
+                holder.imageView_type.setBackgroundResource(R.drawable.black_background);
+            }else if(object instanceof UserLocation){
+                name = ((UserLocation) object).getName();
+                picture = ((UserLocation) object).getProfile_image();
+
+                holder.imageView_type.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_image_profile_icon_dark));
+                holder.imageView_type.setBackgroundColor(0xFFFFFF);
+            }
+
+            holder.textView_name.setText(name);
+            Picasso.get().load(picture).resize(100, 100).transform(new CropCircleTransformation()).into(holder.imageView_picture);
         }catch (Exception e){
 
         }
@@ -77,15 +93,15 @@ public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHo
 
     @Override
     public int getItemCount() {
-        return modelRestoList.size();
+        return objectList.size();
     }
 
     //view holder class
     public class MyHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         //views from row_userlist.xml
-        TextView textView_restoName;
-        ImageView imageView_restoLogo;
+        TextView textView_name;
+        ImageView imageView_picture, imageView_type;
         AdapterMapSearch.OnMapSearchListner onMapSearchListner;
 
         public MyHolder(@NonNull View itemView, AdapterMapSearch.OnMapSearchListner onMapSearchListner) {
@@ -94,8 +110,9 @@ public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHo
             this.onMapSearchListner = onMapSearchListner;
 
             //init views
-            textView_restoName = itemView.findViewById(R.id.textView_restoName);
-            imageView_restoLogo = itemView.findViewById(R.id.imageView_restoLogo);
+            textView_name = itemView.findViewById(R.id.textView_name);
+            imageView_picture = itemView.findViewById(R.id.imageView_picture);
+            imageView_type = itemView.findViewById(R.id.imageView_type);
 
             itemView.setOnClickListener(this);
         }

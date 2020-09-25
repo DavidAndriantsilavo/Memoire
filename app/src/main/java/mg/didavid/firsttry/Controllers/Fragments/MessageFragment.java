@@ -148,7 +148,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         return view;
     }
 
-    //get and show the chatrooms of the current user
+    //get and show the chatrooms of the current currentUser
     private void loadChatrooms() {
         mChatroomReference.child(currentUser.getUser_id())
                 .orderByChild("last_message_timestamp")
