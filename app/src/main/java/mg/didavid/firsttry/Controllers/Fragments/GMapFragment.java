@@ -55,6 +55,7 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -94,6 +95,7 @@ import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterMapSearch;
 import mg.didavid.firsttry.Models.ClusterMarkerRestaurant;
 import mg.didavid.firsttry.Models.ClusterMarkerUser;
+import mg.didavid.firsttry.Models.FavoriteLocation;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.User;
@@ -102,12 +104,13 @@ import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 import mg.didavid.firsttry.Utils.ClusterManagerRendererRestaurant;
 import mg.didavid.firsttry.Utils.ClusterManagerRendererUser;
+import mg.didavid.firsttry.Utils.FavoriteDialog;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
-public class GMapFragment extends Fragment implements OnMapReadyCallback, AdapterMapSearch.OnMapSearchListner {
+public class GMapFragment extends Fragment implements OnMapReadyCallback, AdapterMapSearch.OnMapSearchListner, FavoriteDialog.FavoriteDialogListner {
 
     //private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int PERMISSIONS_REQUEST_ENABLE_GPS = 8001;
@@ -130,6 +133,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
 
     private CollectionReference restoReference = FirebaseFirestore.getInstance().collection("Resto");
+    private CollectionReference userReference = FirebaseFirestore.getInstance().collection("Users");
 
     private Handler otherHandler = new Handler();
     private Handler userHandler = new Handler();
@@ -163,9 +167,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private View linearLayoutCustomViewUser, linearLayoutCustomViewResto;
     private RatingBar ratingBar_restoRating;
 
-    private Bitmap lastBitmap = null;
-    private Bitmap currentBitmap = null;
-
     private HashMap<String, Bitmap> markerBitmap = new HashMap<String, Bitmap>();
 
     private ClusterManager mClusterManagerRestaurant, mClusterManagerUser;
@@ -188,6 +189,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     SearchView searchView;
     MenuItem item_search;
     String currentSearchQuery = "";
+
+    private MarkerManager.Collection favoriteMarkerCollection;
 
     @Override
     public void onDetach() {
@@ -292,7 +295,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         ratingBar_restoRating = linearLayoutCustomViewResto.findViewById(R.id.ratingBar_restoRating);
         imageView_logoResto = linearLayoutCustomViewResto.findViewById(R.id.imageView_logoResto);
 
-
         button_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -370,65 +372,87 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
         });
 
+        mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                FavoriteDialog favoriteDialog = new FavoriteDialog(latLng);
+                favoriteDialog.setTargetFragment(GMapFragment.this, 1);
+                favoriteDialog.show(getFragmentManager(), "favorite dialog");
+            }
+        });
+
         if(mServicesIsGood) {
             updateLocationUI();
             checkSeekBarDistance();
             initialiseClusters();
+            showFavoriteMarker();
         }
     }
 
-//    private void showRestaurants(){
-//        restoReference.get()
-//                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-//                    @Override
-//                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-//                        if (!queryDocumentSnapshots.isEmpty()) {
-//                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
-//                                final ModelResto resto = documentSnapshot.toObject(ModelResto.class);
-//
-//                                Map<String, Object> restoLocation = resto.getLocation_resto();
-//
-//                                Double latitude = (Double) restoLocation.get("latitude");
-//                                Double longitude = (Double) restoLocation.get("longitude");
-//
-//                                final LatLng restoPosition = new LatLng(latitude, longitude);
-//
-//                                Picasso.get().load(resto.getLogo_resto())
-//                                        .resize(100, 100)
-//                                        .transform(new CropTransformation(70, 60, CropTransformation.GravityHorizontal.CENTER, CropTransformation.GravityVertical.CENTER))
-//                                        .into(new Target() {
-//                                    @Override
-//                                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                                        // Todo: Do something with your bitmap here
-//
-//                                        mGoogleMap.addMarker(new MarkerOptions()
-//                                                .position(restoPosition)
-//                                                .icon(BitmapDescriptorFactory.fromBitmap(bitmap)));
-//
-//                                        Log.d(TAG, "self : add resto " + resto.getName_resto());
-//                                    }
-//
-//                                    @Override
-//                                    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-//
-//                                    }
-//
-//                                    @Override
-//                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    }
-//
-//                }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
-//            }
-//        });
-//
-//    }
+    //creata a new favorite location and put marker on it
+    //and save into the database
+    @Override
+    public void getMarkerOptions(final String title, final String description, final LatLng latLng) {
+        FavoriteLocation favoriteLocation = new FavoriteLocation(latLng.latitude, latLng.longitude, title, description);
+
+        userReference.document(currentUser.getUser_id())
+                .collection("FavoriteCollection")
+                .document(title)
+                .set(favoriteLocation)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            MarkerOptions markerOptions = new MarkerOptions()
+                                    .position(latLng)
+                                    .title(title)
+                                    .snippet(description)
+                                    .draggable(true);
+
+                            favoriteMarkerCollection.addMarker(markerOptions);
+
+                            Toast.makeText(getActivity(), "Location ajoutée", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(getActivity(), "Une erreur s'est produite!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    //get and show saved favorite markers
+    private void showFavoriteMarker(){
+        if(mGoogleMap != null){
+            userReference.document(currentUser.getUser_id())
+                    .collection("FavoriteCollection")
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                favoriteMarkerCollection.clear();
+
+                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                    FavoriteLocation favoriteLocation = documentSnapshot.toObject(FavoriteLocation.class);
+
+                                    MarkerOptions markerOptions = new MarkerOptions()
+                                            .position(new LatLng(favoriteLocation.getLatitude(), favoriteLocation.getLongitude()))
+                                            .title(favoriteLocation.getTitle())
+                                            .snippet(favoriteLocation.getDescription())
+                                            .draggable(true);
+
+                                    Marker marker = mGoogleMap.addMarker(markerOptions);
+
+                                    favoriteMarkerCollection.addMarker(markerOptions);
+
+                                    marker.remove();
+
+                                    Log.d(TAG, "drag : add marker " + favoriteLocation.getTitle() + " at : " + favoriteMarkerCollection.getMarkers().size());
+                                    }
+                                }
+                        }
+                    });
+        }
+    }
 
     // [START maps_current_place_update_location_ui]
     private void updateLocationUI() {
@@ -468,6 +492,76 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             if (mClusterManagerUser == null) {
                 mClusterManagerUser = new ClusterManager<ClusterMarkerUser>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
                 mClusterManagerUser.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerUser>());
+
+                mGoogleMap.setOnMarkerDragListener(mClusterManagerUser.getMarkerManager());
+                mGoogleMap.setOnMarkerClickListener(mClusterManagerUser.getMarkerManager());
+                favoriteMarkerCollection = mClusterManagerUser.getMarkerManager().newCollection();
+
+                favoriteMarkerCollection.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+                    @Override
+                    public void onMarkerDragStart(Marker marker) {
+                        Toast.makeText(getActivity(), "Repositionnez le marqueur", Toast.LENGTH_SHORT).show();
+
+                        Log.d(TAG, "onMarkerDragStart: START");
+                    }
+
+                    @Override
+                    public void onMarkerDrag(Marker marker) {
+
+                    }
+
+                    @Override
+                    public void onMarkerDragEnd(Marker marker) {
+                        userReference.document(currentUser.getUser_id())
+                                .collection("FavoriteCollection")
+                                .document(marker.getTitle())
+                                .update("latitude", marker.getPosition().latitude,
+                                        "longitude", marker.getPosition().longitude);
+
+                        Log.d(TAG, "onMarkerDragEnd: END");
+                    }
+                });
+
+                favoriteMarkerCollection.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Log.d(TAG, "onMarkerClick: dragclick on : " + marker.getId());
+
+                        if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewUser.setVisibility(View.GONE);
+                        }
+
+                        if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewResto.setVisibility(View.GONE);
+                        }
+
+                        return false;
+                    }
+                });
+
+                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+                    @Override
+                    public void onInfoWindowLongClick(final Marker marker) {
+                        userReference.document(currentUser.getUser_id())
+                                    .collection("FavoriteCollection")
+                                    .document(marker.getTitle())
+                                    .delete()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
+
+                                            favoriteMarkerCollection.remove(marker);
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                    }
+                });
             }
 
             if (mClusterManagerRendererRestaurant == null) {

@@ -164,7 +164,13 @@ public class WelcomeActivity extends AppCompatActivity {
                     sexe = radioButton_selected.getText().toString();
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
-                    profileImage_Uri = imageCompressed_uri.toString();
+
+                    if(imageCompressed_uri != null){
+                        profileImage_Uri = imageCompressed_uri.toString();
+                    }else{
+                        profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
+
+                    }
 
                     final User user = new User(email, user_id, display_name, phone, finalPassword, sexe, pseudo, profileImage_Uri);
                     storeUserData(user);
