@@ -150,7 +150,7 @@ public class ChatActivity extends AppCompatActivity {
 
         //if extras came from userListActivity
 
-        if(getIntent().hasExtra("other_user_id") && getIntent().hasExtra("other_user_name") && getIntent().hasExtra("other_user_profile_picture")  ){
+        if(getIntent().hasExtra("other_user_id") && getIntent().hasExtra("other_user_name") && getIntent().hasExtra("other_user_profile_picture")){
             //EXTRA FROM USERLISTACTIVITY
             otherUserId = getIntent().getStringExtra("other_user_id");
             otherUserName = getIntent().getStringExtra("other_user_name");

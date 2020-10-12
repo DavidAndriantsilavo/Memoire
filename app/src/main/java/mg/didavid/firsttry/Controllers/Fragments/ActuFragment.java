@@ -116,37 +116,31 @@ public class ActuFragment extends Fragment {
 
     private void listenDocumentChanges() {
         //listen if there some data added or deleted, then reload post
-        collectionPosts.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-        @Override
-        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-            if (!queryDocumentSnapshots.isEmpty()) {
-                    List<ModelePost> modelePosts2 = queryDocumentSnapshots.toObjects(ModelePost.class);
-                    int size = modelePosts2.size();
-                    for (int i = 0; i < size; i++) {
-                        String user_name = modelePosts2.get(i).getName();
-                        collectionPosts.whereEqualTo("name", user_name)
-                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                        for (DocumentChange documentChange : value.getDocumentChanges()) {
-                                            switch (documentChange.getType()) {
-                                                case REMOVED:
-                                                case ADDED:
-                                                    loadPosts();
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                });
+        collectionPosts.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshots,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("TAG", "listen:error", e);
+                    return;
+                }
+
+                for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                    switch (dc.getType()) {
+                        case ADDED:
+                            Log.d("TAG", "New POST ");
+                            break;
+                        case MODIFIED:
+                            Log.d("TAG", "Modified POST");
+                            break;
+                        case REMOVED:
+                            Log.d("TAG", "Removed POST");
+                            break;
                     }
+                }
+
             }
-        }
-    }).addOnFailureListener(new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception e) {
-            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    });
+        });
     }
 
     //inflate option menu

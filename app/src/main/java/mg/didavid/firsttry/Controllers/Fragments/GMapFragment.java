@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.SeekBar;
@@ -85,6 +86,7 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
+import mg.didavid.firsttry.Controllers.Activities.AppointmentActivity;
 import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
@@ -160,6 +162,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private View mCustomDefaultMarkerView, mCustomClickedMarkerView;
     private ImageView imageView_marker, imageView_profile_picture, imageView_logoResto;
     private TextView textView_name, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount ;
+    private ImageButton imageButton_appointment;
     private Button button_profile, button_direction, button_message;
     private ClusterMarkerUser userMarker;
     private SeekBar seekBar_distance;
@@ -294,6 +297,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         textView_restoRatingCount = linearLayoutCustomViewResto.findViewById(R.id.textView_restoRatingCount);
         ratingBar_restoRating = linearLayoutCustomViewResto.findViewById(R.id.ratingBar_restoRating);
         imageView_logoResto = linearLayoutCustomViewResto.findViewById(R.id.imageView_logoResto);
+        imageButton_appointment = linearLayoutCustomViewResto.findViewById(R.id.imageButton_appointment);
 
         button_message.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -346,19 +350,25 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             }
         });
 
+        imageButton_appointment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Toast.makeText(getActivity(), "Appointment", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), AppointmentActivity.class);
+                intent.putExtra("restaurant_name", clickedRestoMarker.getResto().getName_resto());
+                startActivity(intent);
+            }
+        });
+
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
             public void onMapClick(LatLng arg0)
             {
                 Log.d(TAG, "test : map clicked");
-                if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
-                    linearLayoutCustomViewUser.setVisibility(View.GONE);
-                }
-
-                if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
-                    linearLayoutCustomViewResto.setVisibility(View.GONE);
-                }
+                linearLayoutCustomViewUser.setVisibility(View.GONE);
+                linearLayoutCustomViewResto.setVisibility(View.GONE);
+                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 
                 searchView.setQuery("", false);
                 searchView.setIconified(true);
@@ -388,6 +398,31 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             showFavoriteMarker();
         }
     }
+
+    // [START maps_current_place_update_location_ui]
+    private void updateLocationUI() {
+        if (mGoogleMap == null) {
+            return;
+        }
+        try {
+            if (mLocationPermissionGranted) {
+                mGoogleMap.setMyLocationEnabled(true);
+                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                Log.d(TAG, "FT : UI Updated!!");
+
+                setUserLocation();
+            } else {
+                mGoogleMap.setMyLocationEnabled(false);
+                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                lastKnownLocation = null;
+                getLocationPermission();
+                Log.d(TAG, "FT : UI not updated");
+            }
+        } catch (SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
+    }
+    // [END maps_current_place_update_location_ui]
 
     //creata a new favorite location and put marker on it
     //and save into the database
@@ -453,31 +488,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     });
         }
     }
-
-    // [START maps_current_place_update_location_ui]
-    private void updateLocationUI() {
-        if (mGoogleMap == null) {
-            return;
-        }
-        try {
-            if (mLocationPermissionGranted) {
-                mGoogleMap.setMyLocationEnabled(true);
-                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
-                Log.d(TAG, "FT : UI Updated!!");
-
-                setUserLocation();
-            } else {
-                mGoogleMap.setMyLocationEnabled(false);
-                mGoogleMap.getUiSettings().setMyLocationButtonEnabled(false);
-                lastKnownLocation = null;
-                getLocationPermission();
-                Log.d(TAG, "FT : UI not updated");
-            }
-        } catch (SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
-        }
-    }
-    // [END maps_current_place_update_location_ui]
 
     //Initialise the cluster managers for Restaurants and Users and set the rendrers, and clickListners
     private void initialiseClusters(){
@@ -585,8 +595,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         clickedRestoMarker = (ClusterMarkerRestaurant) item;
                         ModelResto clickedResto = clickedRestoMarker.getResto();
 
-//                        mClusterManagerRendererRestaurant.getMarker(clickedRestoMarker).hideInfoWindow();
-
                         //Set the data for the clicked Restaurant
                         textView_restoName.setText(clickedResto.getName_resto());
                         textView_restoSpeciality.setText(clickedResto.getSpeciality_resto());
@@ -598,9 +606,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         if (clickedRestoMarker.equals(lastClickedRestoMarker)) {
                             if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
                                 linearLayoutCustomViewResto.setVisibility(View.GONE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 //
                             } else {
                                 linearLayoutCustomViewResto.setVisibility(View.VISIBLE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
                             }
 
                         } else {
@@ -608,12 +618,15 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                             lastClickedRestoMarker = clickedRestoMarker;
 
                             linearLayoutCustomViewResto.setVisibility(View.VISIBLE);
+                            mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
 //                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
                         }
 
                         return false;
                     }
                 });
+
+
             }
 
             if (mClusterManagerRendererUser == null) {
@@ -659,9 +672,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         if (clickedUserMarker.equals(lastClickedUserMarker)) {
                             if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {
                                 linearLayoutCustomViewUser.setVisibility(View.GONE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
 //                                            clickedUser.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
                             } else {
                                 linearLayoutCustomViewUser.setVisibility(View.VISIBLE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
 //                                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
                             }
 
@@ -670,6 +685,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                             lastClickedUserMarker = clickedUserMarker;
 
                             linearLayoutCustomViewUser.setVisibility(View.VISIBLE);
+                            mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
 //                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
                         }
 
