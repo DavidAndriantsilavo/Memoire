@@ -1,9 +1,13 @@
 package mg.didavid.firsttry.Models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.view.Display;
+
 import java.util.List;
 import java.util.Map;
 
-public class ModelResto {
+public class ModelResto implements Parcelable {
     private String user_id, user_email, user_pseudo, id_resto, name_resto, password_resto, phone_resto, email_resto, logo_resto, coverPhoto_resto, speciality_resto;
     private String rating_resto, nbrRating_resto;
     private Double latitude, longitude;
@@ -29,6 +33,40 @@ public class ModelResto {
         this.latitude = latitude;
         this.longitude = longitude;
         this.sampleMenuList = sampleMenuList;
+    }
+
+    protected ModelResto(Parcel in) {
+        name_resto = in.readString();
+        user_id = in.readString();
+        logo_resto = in.readString();
+    }
+
+    public static final Creator<ModelResto> CREATOR = new Creator<ModelResto>() {
+        @Override
+        public ModelResto createFromParcel(Parcel in) {
+            return new ModelResto(in);
+        }
+
+        @Override
+        public ModelResto[] newArray(int size) {
+            return new ModelResto[size];
+        }
+    };
+
+    public static Creator<ModelResto> getCREATOR() {
+        return CREATOR;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name_resto);
+        dest.writeString(user_id);
+        dest.writeString(logo_resto);
     }
 
     public String getCoverPhoto_resto() {

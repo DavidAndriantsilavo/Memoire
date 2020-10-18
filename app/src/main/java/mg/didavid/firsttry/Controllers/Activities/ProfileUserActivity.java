@@ -84,6 +84,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     ImageView imageView_photoDeProfile;
     FloatingActionButton floatingActionButton_editProfile;
     Button btnAddProfileImage, btnNewPost;
+    private Button button_appointment, button_favorite;
 
     FirebaseFirestore firestore;
     CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
@@ -122,6 +123,8 @@ public class ProfileUserActivity extends AppCompatActivity {
         btnAddProfileImage = findViewById(R.id.add_profile_photo_profile);
         profile_recyclerView = findViewById(R.id.recyclerView_post);
         btnNewPost = findViewById(R.id.button_newPost_profile);
+        button_appointment = findViewById(R.id.button_appointment);
+        button_favorite = findViewById(R.id.button_favorite);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
@@ -173,7 +176,13 @@ public class ProfileUserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
-                finish();
+            }
+        });
+
+        button_appointment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
             }
         });
 

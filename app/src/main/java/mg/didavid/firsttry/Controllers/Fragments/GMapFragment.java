@@ -86,7 +86,7 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
-import mg.didavid.firsttry.Controllers.Activities.AppointmentActivity;
+import mg.didavid.firsttry.Controllers.Activities.NewAppointmentActivity;
 import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
@@ -354,8 +354,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             @Override
             public void onClick(View v) {
 //                Toast.makeText(getActivity(), "Appointment", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), AppointmentActivity.class);
-                intent.putExtra("restaurant_name", clickedRestoMarker.getResto().getName_resto());
+                Intent intent = new Intent(getActivity(), NewAppointmentActivity.class);
+                intent.putExtra("restaurant", clickedRestoMarker.getResto());
                 startActivity(intent);
             }
         });

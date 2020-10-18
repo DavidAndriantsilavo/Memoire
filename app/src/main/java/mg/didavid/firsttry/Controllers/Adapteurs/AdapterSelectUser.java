@@ -74,9 +74,6 @@ public class AdapterSelectUser extends RecyclerView.Adapter<AdapterSelectUser.My
             holder.textView_userName.setText(userName);
             Picasso.get().load(userPicture).resize(100, 100).transform(new CropCircleTransformation()).into(holder.imageView_userPicture);
 
-//            holder.checkbox_selected.setChecked(!holder.checkbox_selected.isChecked());
-
-
             }catch (Exception e){
 
             }
@@ -93,7 +90,6 @@ public class AdapterSelectUser extends RecyclerView.Adapter<AdapterSelectUser.My
         //views from row_userlist.xml
         TextView textView_userName;
         ImageView imageView_userPicture;
-        CheckBox checkbox_selected;
         AdapterSelectUser.OnSelectUserListner onSelectUserListner;
 
         public MyHolder(@NonNull View itemView, OnSelectUserListner onSelectUserListner) {
@@ -104,7 +100,6 @@ public class AdapterSelectUser extends RecyclerView.Adapter<AdapterSelectUser.My
             //init views
             textView_userName = itemView.findViewById(R.id.textView_userName);
             imageView_userPicture = itemView.findViewById(R.id.imageView_userPicture);
-            checkbox_selected = itemView.findViewById(R.id.checkbox_selected);
 
             itemView.setOnClickListener(this);
         }
@@ -112,18 +107,6 @@ public class AdapterSelectUser extends RecyclerView.Adapter<AdapterSelectUser.My
         @Override
         public void onClick(View v) {
             onSelectUserListner.onSelectUserClick(getAdapterPosition());
-//            selectedPosition = getAdapterPosition();
-//            notifyItemChanged(selectedPosition);
-
-//            Paint viewPaint = ((PaintDrawable) v.getBackground()).getPaint();
-//            int colorARGB = viewPaint.getColor();
-//            if(colorARGB == Color.parseColor("0xFF00FF00")){
-//                v.setBackgroundColor(0xFFFFFFFF);
-//            }else{
-//                v.setBackgroundColor(0xFF00FF00);
-//            }
-
-            checkbox_selected.setChecked(!checkbox_selected.isChecked());
         }
     }
 

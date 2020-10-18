@@ -20,7 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Controllers.Activities.AppointmentActivity"></activity>
+        <activity android:name=".Controllers.Activities.AppointmentListActivity"></activity>
+        <activity android:name=".Controllers.Activities.NewAppointmentActivity" />
         <activity
             android:name=".Controllers.Activities.UserListActivity"
             android:parentActivityName=".Controllers.Activities.MainActivity"
