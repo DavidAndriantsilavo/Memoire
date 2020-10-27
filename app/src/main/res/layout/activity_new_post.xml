@@ -4,19 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controllers.Activities.NewPostActivity">
+    tools:context=".Controllers.Activities.NewPostActivity"
+    android:background="?attr/browser_actions_divider_color">
+
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_marginTop="10dp">
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/toolbar_newPost"
+            layout="@layout/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
         <RelativeLayout
             android:id="@+id/relativeLayout_whokiff"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp">
+            android:layout_marginHorizontal="5dp"
+            android:layout_marginTop="10dp">
 
             <!--profile image of current user-->
             <androidx.cardview.widget.CardView
@@ -50,7 +58,7 @@
                 android:text="User name"
                 android:textSize="19dp"
                 android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textColor="?attr/black"/>
 
 
         </RelativeLayout>
@@ -98,12 +106,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_add_image_newpost_icon_dark"
-                android:background="@color/white"/>
+                android:background="@null"/>
             <TextView
                 android:id="@+id/textView_nearAddImage_newPost"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ajouter une photo"
+                android:textColor="?attr/black"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="2dp"/>
         </LinearLayout>
@@ -129,6 +138,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ajouter ma localisation"
+                android:textColor="?attr/black"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="2dp"/>
         </LinearLayout>

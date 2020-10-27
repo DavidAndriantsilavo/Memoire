@@ -63,8 +63,9 @@ import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class WelcomeActivity extends AppCompatActivity {
+public class WelcomeActivity extends AppMode {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference userCollectionReference = db.collection("Users");

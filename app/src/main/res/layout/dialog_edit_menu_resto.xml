@@ -12,7 +12,7 @@
         android:text="Modification du menu"
         android:textSize="17dp"
         android:layout_margin="10dp"
-        android:textColor="@color/black"
+        android:textColor="?attr/black"
         android:textAllCaps="true"
         android:textStyle="bold"
         android:gravity="center"/>
@@ -21,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Nom du menu"
+        android:textColor="?attr/black"
         android:layout_marginStart="20sp"/>
     <EditText
         android:id="@+id/et_menuName_editDialog"
@@ -37,6 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Ingredients"
+        android:textColor="?attr/black"
         android:layout_marginStart="20sp"/>
     <EditText
         android:id="@+id/et_menuIngredient_editDialog"
@@ -53,6 +55,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Prix"
+        android:textColor="?attr/black"
         android:layout_marginStart="20sp"/>
     <EditText
         android:id="@+id/et_menuPrice_editDialog"

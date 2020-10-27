@@ -46,8 +46,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppMode {
 
     private EditText nom_r, prenom_r, pseudo_r, motDePasse_r, confirmMotDePasse_r;
     private TextView nom_ctrl, prenom_ctrl, pseudo_ctrl, motDePasse_ctrl, confirmePwd_ctrl;

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,8 +34,9 @@ import java.util.Map;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterUsers;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class ShowWhoKiffAvtivity extends AppCompatActivity {
+public class ShowWhoKiffAvtivity extends AppMode {
 
     String post_id;
     int totalKiff;
@@ -53,7 +55,15 @@ public class ShowWhoKiffAvtivity extends AppCompatActivity {
         textView_totalKiffs = findViewById(R.id.textView_totelKiffs);
 
         //set title to ActionBar
-        this.setTitle("Qui ont kiffée");
+        Toolbar toolbar = findViewById(R.id.toolbar_userProile);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Qui ont kiffée");//set tool bar
+        }else {
+            Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
+        }
 
         //get data from intent
         Intent intent = getIntent();

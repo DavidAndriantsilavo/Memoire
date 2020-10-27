@@ -41,6 +41,7 @@ import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.UserListActivity;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
 public class ParametreFragment extends Fragment {
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -97,7 +98,13 @@ public class ParametreFragment extends Fragment {
         switchNightMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
+                if (isChecked) {
+                    new AppMode(isChecked);
+                    Toast.makeText(getContext(), "NightMode", Toast.LENGTH_SHORT).show();
+                }else {
+                    new AppMode(isChecked);
+                    Toast.makeText(getContext(), "Apptheme", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         changeLanguage.setOnClickListener(new View.OnClickListener() {

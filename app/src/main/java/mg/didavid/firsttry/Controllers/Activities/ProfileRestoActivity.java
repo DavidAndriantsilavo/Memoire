@@ -75,8 +75,9 @@ import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class ProfileRestoActivity extends AppCompatActivity {
+public class ProfileRestoActivity extends AppMode {
 
     String resto_name, value_name, speciality_resto, rating_resto, logo_resto;
     final Map<String, Object> imageChanged = new HashMap<>();

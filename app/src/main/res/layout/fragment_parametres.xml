@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="10dp">
+        android:paddingHorizontal="10dp"
+        android:background="?attr/white">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -21,12 +22,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Générals"/>
+                android:text="Générals"
+                android:textColor="?attr/black"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/black"
+                android:background="?attr/black"
                 android:layout_marginStart="10dp"/>
 
         </LinearLayout>
@@ -48,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Rayon d'envergure par défaut"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -76,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Afficher ma position dans la Map"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/black"
                     android:textSize="20sp"
                     android:layout_marginStart="20sp"/>
 
@@ -109,7 +111,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Changer de langue"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -132,7 +134,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Mode nuit"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"
                 android:layout_weight="1"/>
@@ -155,12 +157,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Plus d'options"/>
+                android:text="Plus d'options"
+                android:textColor="?attr/black"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/black"
+                android:background="?attr/black"
                 android:layout_marginStart="10dp"/>
 
         </LinearLayout>
@@ -182,7 +185,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Liste des utilisateurs"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -205,7 +208,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Utilisateurs actif"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -228,7 +231,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mes lieux favoris"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -244,12 +247,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Autres"/>
+                android:text="Autres"
+                android:textColor="?attr/black"/>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/black"
+                android:background="?attr/black"
                 android:layout_marginStart="10dp"/>
 
         </LinearLayout>
@@ -271,7 +275,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="A propos"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -295,7 +299,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20sp"
                 android:text="Aide"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp" />
 
         </LinearLayout>
@@ -317,7 +321,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Contacter les developpeurs"
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:textSize="20sp"
                 android:layout_marginStart="20sp"/>
 
@@ -326,7 +330,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@color/black"/>
+            android:background="?attr/black"/>
 
         <Button
             android:id="@+id/btn_logout_parametre"
@@ -335,7 +339,7 @@
             android:layout_marginVertical="15dp"
             android:text="Se déconnecter"
             android:textAllCaps="false"
-            android:background="@drawable/round_widget_white"/>
+            android:background="@drawable/rounded_grey_button"/>
 
     </LinearLayout>
 

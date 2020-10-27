@@ -1,11 +1,16 @@
 package mg.didavid.firsttry.Controllers.Adapteurs;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -13,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -21,24 +27,21 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.exifinterface.media.ExifInterface;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.squareup.picasso.Picasso;
 
-import java.util.HashMap;
 import java.util.List;
 
-import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.ShowImageActivity;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
@@ -81,7 +84,8 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
         holder.textView_menuPrice.setText(menuPrice + "\tAr");
         try {
             Picasso.get().load(menuPhoto).into(holder.imageView_menuImage);
-        }catch (Exception e) { }
+        } catch (Exception e) {
+        }
 
         //button more action clicked
         holder.imageButton_moreAction.setOnClickListener(new View.OnClickListener() {
@@ -113,7 +117,7 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
         PopupMenu popupMenu = new PopupMenu(context, imageButton_moreAction, Gravity.END);
         if (!id_resto.equals("resto_" + FirebaseAuth.getInstance().getCurrentUser().getUid())) {
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Commander ce menu");
-        }else {
+        } else {
             popupMenu.getMenu().add(Menu.NONE, 1, 0, "Ajouter à l'échantillion");
             popupMenu.getMenu().add(Menu.NONE, 2, 0, "Modifier le menu");
             popupMenu.getMenu().add(Menu.NONE, 3, 0, "Supprimer le menu");
@@ -125,28 +129,109 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
                 int id_item = item.getItemId();
                 if (id_item == 0) {
                     //"commander ce menu" cicked
-                    //send user to chatroom with this restaurant with the menu id, menu image and the menu name
-                    Toast.makeText(context, "Redirecting to chatRoom", Toast.LENGTH_SHORT).show();
+                    showChoiceDialog(id_resto);
                 }
-                 if (id_item == 1) {
-                     //"Ajouter à l'échantillion" clicked
-                     addMenuToSample(menuName, menuPrice, menuPhoto, id_menu, id_resto);
-                 }
-                 if (id_item == 2) {
-                     //"modiier le menu" clicked
-                     //Allow user to edit menu name, menu price and menu ingrendients
-                     showEditMenuDialog(menuName, menuIngredient, menuPrice, menuPhoto, id_menu, id_resto);
-                 }
-                 if (id_item == 3) {
-                     //"supprimer menu" clicked
-                     warring(menuPhoto, id_menu);
-                 }
+                if (id_item == 1) {
+                    //"Ajouter à l'échantillion" clicked
+                    addMenuToSample(menuName, menuPrice, menuPhoto, id_menu, id_resto);
+                }
+                if (id_item == 2) {
+                    //"modiier le menu" clicked
+                    //Allow user to edit menu name, menu price and menu ingrendients
+                    showEditMenuDialog(menuName, menuIngredient, menuPrice, menuPhoto, id_menu, id_resto);
+                }
+                if (id_item == 3) {
+                    //"supprimer menu" clicked
+                    warring(menuPhoto, id_menu);
+                }
                 return false;
             }
         });
 
         //show popup menu
         popupMenu.show();
+    }
+
+    private void showChoiceDialog(final String id_resto) {
+        String[] options = {"Appeler", "Envoyer un email"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        callRestaurant(id_resto);
+                        break;
+                    case 1:
+                        sendEmailToRestaurant(id_resto);
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    private void callRestaurant(String id_resto) {
+        FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Intent callResto = new Intent(Intent.ACTION_CALL);
+                        callResto.setData(Uri.parse("tel:" + documentSnapshot.getString("phone_resto")));
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.CALL_PHONE}, 1996);
+                            return;
+                        }
+                        context.startActivity(callResto);
+                    }
+                });
+    }
+
+    private void sendEmailToRestaurant(String id_resto) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialog_sending_email);
+
+
+        //init views
+        Button button_annler = dialog.findViewById(R.id.tv_annuler_emailDialog);
+        final Button button_creer = dialog.findViewById(R.id.tv_valider_emailDialog);
+        button_annler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        final EditText editTextSubject = dialog.findViewById(R.id.editText_subject_emailDialog);
+        final EditText editTextMessage = dialog.findViewById(R.id.editText_messageContent_emailDialog);
+        if (editTextSubject.getText().toString().isEmpty()) {
+            editTextSubject.setError("Veillez entrer l'objet du mail !");
+        }else if (editTextMessage.getText().toString().isEmpty()){
+            editTextMessage.setError("Veillez entrée votre message !");
+        }else {
+            FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                final Intent sendEmail = new Intent(Intent.ACTION_SEND);
+                                sendEmail.setType("message/rfc822");
+                                sendEmail.putExtra(Intent.EXTRA_EMAIL, new String[]{documentSnapshot.getString("email_resto")});
+                                sendEmail.putExtra(Intent.EXTRA_SUBJECT, editTextSubject.getText().toString());
+                                sendEmail.putExtra(Intent.EXTRA_TEXT, editTextMessage.getText().toString());
+
+                                button_creer.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        context.startActivity(Intent.createChooser(sendEmail, "Envoie de l'email..."));
+                                    }
+                                });
+                            }
+                        }
+                    });
+        }
+
+        dialog.show();
     }
 
     private void addMenuToSample(final String menuName, final String menuPrice, final String menuPhoto, final String id_menu, final String id_resto) {
@@ -272,7 +357,7 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
         //create dialog
         final Dialog dialog = new Dialog(context);
         //set dialog content
-        dialog.setContentView(R.layout.edit_menu_resto);
+        dialog.setContentView(R.layout.dialog_edit_menu_resto);
         dialog.setCanceledOnTouchOutside(false);
         //init content views
         final EditText editText_menuName = dialog.findViewById(R.id.et_menuName_editDialog);

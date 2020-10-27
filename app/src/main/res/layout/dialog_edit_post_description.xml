@@ -14,7 +14,7 @@
         android:text="Modification de la description"
         android:textSize="17dp"
         android:layout_margin="10dp"
-        android:textColor="@color/black"
+        android:textColor="?attr/black"
         android:textAllCaps="true"
         android:textStyle="bold"
         android:gravity="center"/>

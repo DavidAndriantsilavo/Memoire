@@ -52,10 +52,11 @@ import java.util.Map;
 
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class RestoRegisterActivity extends AppCompatActivity implements LocationListener {
+public class RestoRegisterActivity extends AppMode implements LocationListener {
 
     private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
     private ImageView restoLogo_imageView;

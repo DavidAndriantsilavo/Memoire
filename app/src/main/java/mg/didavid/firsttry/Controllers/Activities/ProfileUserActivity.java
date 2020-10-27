@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
@@ -73,8 +74,9 @@ import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class ProfileUserActivity extends AppCompatActivity {
+public class ProfileUserActivity extends AppMode {
 
     TextView textView_displayLastname, textView_email;
     String user_name, value_name;
@@ -113,6 +115,15 @@ public class ProfileUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar_userProile);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Mon profil");
+        }
 
         //recuperation des vues
         textView_displayLastname = findViewById(R.id.texteView_lastname_profile);

@@ -3,8 +3,8 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -73,8 +73,9 @@ import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurComments;
 import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class PostDetailsActivity extends AppCompatActivity {
+public class PostDetailsActivity extends AppMode {
 
     //to get details of the post and user
     String myName_temp, myName, myPseudo, myUid = FirebaseAuth.getInstance().getCurrentUser().getUid()
@@ -132,6 +133,13 @@ public class PostDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
+
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar_postDetails);
+        if (toolbar != null){
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+        }
 
         //init views
         //post details views
@@ -466,7 +474,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     private void showRatingDialog(final String id_resto) {
         //create dialog
         final Dialog ratingDialog = new Dialog(this);
-        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setContentView(R.layout.dialog_rating);
         ratingDialog.setCanceledOnTouchOutside(false);
 
         //init dialog views
@@ -540,7 +548,7 @@ public class PostDetailsActivity extends AppCompatActivity {
     private void editPostDescription(final String post_id, final String post_description) {
         //custom dialog
         final Dialog dialog = new Dialog(PostDetailsActivity.this);
-        dialog.setContentView(R.layout.edit_post_description);
+        dialog.setContentView(R.layout.dialog_edit_post_description);
         //set the custom dialog components
         final EditText editText_description = dialog.findViewById(R.id.et_postDescription);
         editText_description.setText(post_description);

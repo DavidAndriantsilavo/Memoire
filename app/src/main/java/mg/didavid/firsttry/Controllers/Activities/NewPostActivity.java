@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -68,10 +69,11 @@ import java.util.Map;
 
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class NewPostActivity extends AppCompatActivity implements LocationListener {
+public class NewPostActivity extends AppMode implements LocationListener {
 
     FirebaseAuth mCurrentUser;
 
@@ -119,6 +121,17 @@ public class NewPostActivity extends AppCompatActivity implements LocationListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
+
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar_newPost);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Nouvelle publication");
+        }else {
+            Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
+        }
 
         checkConnexion();
 

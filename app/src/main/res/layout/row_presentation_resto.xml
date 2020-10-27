@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="?attr/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -54,7 +54,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Restaurant name"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/black"
                     android:textStyle="bold"
                     android:textSize="20sp"/>
 
@@ -77,9 +77,9 @@
                         android:layout_height="wrap_content"
                         android:text="Speciality"
                         android:textSize="16dp"
+                        android:textColor="?attr/black"
                         android:layout_marginStart="10dp"
-                        android:layout_gravity="center"
-                        android:textColor="@color/black"/>
+                        android:layout_gravity="center"/>
 
                 </LinearLayout>
 
@@ -98,7 +98,7 @@
                         android:textSize="16dp"
                         android:layout_marginStart="10dp"
                         android:layout_gravity="center"
-                        android:textColor="@color/black"/>
+                        android:textColor="?attr/black"/>
 
                     <RatingBar
                         android:id="@+id/ratingBar_restoFragment"
@@ -110,6 +110,7 @@
                         android:isIndicator="true"
                         style="?android:attr/ratingBarStyleSmall"
                         android:layout_gravity="center"
+                        android:background="?attr/grey"
                         android:layout_marginHorizontal="10dp"/>
 
                     <TextView
@@ -117,6 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="300 votes"
+                        android:textColor="?attr/black"
                         android:textStyle="italic"
                         android:layout_gravity="center"/>
 
@@ -140,14 +142,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Echantillons de menu"
-            android:textColor="@color/black"
+            android:textColor="?attr/black"
             android:layout_marginStart="10dp"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_restoPresentation_restoFragment"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                />
+                android:background="?attr/grey"
+                android:layout_marginHorizontal="5dp"/>
 
     </LinearLayout>
 
