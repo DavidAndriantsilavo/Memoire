@@ -37,6 +37,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.squareup.picasso.Picasso;
 
@@ -50,6 +51,7 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
 
     private Context context;
     private List<ModelRestoSampleMenu> menuList;
+    private CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
 
     public AdapterListMenu(Context context, List<ModelRestoSampleMenu> menuList) {
         this.context = context;
@@ -235,20 +237,25 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
     }
 
     private void addMenuToSample(final String menuName, final String menuPrice, final String menuPhoto, final String id_menu, final String id_resto) {
-        final CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
         collectionReference_sampleMenu.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (!queryDocumentSnapshots.isEmpty()) {
                             int countSampleMenu = 0;
+                            boolean isMenuExist = false;
                             for (DocumentSnapshot ds : queryDocumentSnapshots.getDocuments()){
                                 String id_resto2 = ds.getString("id_resto");
+                                String id_menu2 = ds.getString("id_menu");
                                 if (id_resto2.equals(id_resto)) {
                                     countSampleMenu ++;
                                 }
+                                if (id_menu2.equals(id_menu)) {
+                                    isMenuExist = true;
+                                    Toast.makeText(context, "Ce menu est déjà dans l'échantillon.", Toast.LENGTH_LONG).show();
+                                }
                             }
-                            if (countSampleMenu < 6) {
+                            if (countSampleMenu < 6 && !isMenuExist) {
                                 ModelRestoSampleMenu modelRestoSampleMenu = new ModelRestoSampleMenu(id_resto, id_menu, "", menuPhoto, menuName, menuPrice);
                                 final String timestamp = String.valueOf(System.currentTimeMillis());
                                 //store data
@@ -389,13 +396,16 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
 
                 ModelRestoSampleMenu modelRestoSampleMenu = new ModelRestoSampleMenu(id_resto, id_menu, menuIngredient1, menuPhoto, menuName1, menuPrice1);
                 //update data
-                FirebaseFirestore.getInstance().collection("Menu_list").document(id_menu).set(modelRestoSampleMenu)
+                FirebaseFirestore.getInstance().collection("Menu_list").document(id_menu).set(modelRestoSampleMenu, SetOptions.merge())
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Toast.makeText(context, "Menu modifié avec succès", Toast.LENGTH_SHORT).show();
                             }
                         });
+                collectionReference_sampleMenu.document(id_menu).set(modelRestoSampleMenu, SetOptions.merge());
+
+                dialog.dismiss();
             }
         });
 

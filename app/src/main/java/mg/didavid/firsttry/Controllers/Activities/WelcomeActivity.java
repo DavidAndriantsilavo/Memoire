@@ -80,7 +80,7 @@ public class WelcomeActivity extends AppMode {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
-    private String profileImage_Uri = "NULL";
+    private String profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
     private final String TAG= "MainActivity";
 
     private String[] separated_name;
@@ -122,6 +122,9 @@ public class WelcomeActivity extends AppMode {
         button_send = findViewById(R.id.button_send);
         addProfileImage = findViewById(R.id.linearLayout_add_profileImage_welcome);
         profileImage_imageView = findViewById(R.id.imageView_profileImage_welcome);
+
+        //set default profile picture
+
 
         storageReference = FirebaseStorage.getInstance().getReference();
 

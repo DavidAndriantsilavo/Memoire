@@ -102,7 +102,7 @@ public class OtherRestoProfileActivity extends AppMode {
         textView_showAllMenu = findViewById(R.id.textView_showListMene_otherRestoProfile);
         imageButton_fleche = findViewById(R.id.flecheBtn_OtherRestoProfile);
         btn_noter = findViewById(R.id.btn_rate_otherRestoProfile);
-        btn_commander = findViewById(R.id.btn_rate_otherRestoProfile);
+        btn_commander = findViewById(R.id.btn_commander_otherRestoProfile);
         ratingBar = findViewById(R.id.ratingBar_otherRestoProfile);
 
         //linear layout for recyclerView
@@ -311,6 +311,7 @@ public class OtherRestoProfileActivity extends AppMode {
                                         });
                             }
                         });
+                ratingDialog.dismiss();
             }
         });
 

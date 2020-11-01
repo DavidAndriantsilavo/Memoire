@@ -305,6 +305,17 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 context.startActivity(intent);
             }
         });
+
+        holder.pComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //start PostDetailsActivity
+                Intent intent = new Intent(context, PostDetailsActivity.class);
+                intent.putExtra("post_id", post_id);
+                intent.putExtra("user_id", user_id);
+                context.startActivity(intent);
+            }
+        });
         if ((myLocatoin != null && myLocatoin.isEmpty()) || myLocatoin == null){
             holder.locationbtn.setVisibility(View.GONE);
         }else {
