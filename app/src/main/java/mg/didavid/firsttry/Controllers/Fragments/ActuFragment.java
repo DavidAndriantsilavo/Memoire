@@ -116,31 +116,20 @@ public class ActuFragment extends Fragment {
 
     private void listenDocumentChanges() {
         //listen if there some data added or deleted, then reload post
-        collectionPosts.addSnapshotListener(new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot snapshots,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w("TAG", "listen:error", e);
-                    return;
-                }
-
-                for (DocumentChange dc : snapshots.getDocumentChanges()) {
-                    switch (dc.getType()) {
-                        case ADDED:
-                            Log.d("TAG", "New POST ");
-                            break;
-                        case MODIFIED:
-                            Log.d("TAG", "Modified POST");
-                            break;
-                        case REMOVED:
-                            Log.d("TAG", "Removed POST");
-                            break;
+        collectionPosts.whereEqualTo("user_id", user.getUid())
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        for (DocumentChange documentChange : value.getDocumentChanges()) {
+                            switch (documentChange.getType()) {
+                                case REMOVED:
+                                case ADDED:
+                                    loadPosts();
+                                    break;
+                            }
+                        }
                     }
-                }
-
-            }
-        });
+                });
     }
 
     //inflate option menu
@@ -290,7 +279,7 @@ public class ActuFragment extends Fragment {
     }
 
     private void logOut() {
-        progressDialog_logout.show();
+        progressDialog_logout.cancel();
         FirebaseAuth.getInstance().signOut();
         GoogleSignIn.getClient(
                 getContext(),

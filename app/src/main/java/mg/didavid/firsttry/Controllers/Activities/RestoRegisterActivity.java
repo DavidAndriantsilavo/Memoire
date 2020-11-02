@@ -54,10 +54,11 @@ import java.util.Map;
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class RestoRegisterActivity extends AppCompatActivity implements LocationListener {
+public class RestoRegisterActivity extends AppMode implements LocationListener {
 
     private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
     private ImageView restoLogo_imageView;
@@ -615,6 +616,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                     restoLocalisation_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_button_icon_dark, 0, 0, 0);
                     restoLocalisation_button.setBackground(null);
                     restoLocalisation_button.setCompoundDrawablePadding(10);
+
                 }
                 Log.d(TAG, "FT : GPS enabled");
             }
@@ -623,10 +625,9 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     @Override
     public void onLocationChanged(Location location) {
-        latitude = location.getLatitude();
-        longitude = location.getLongitude();
-
-        Toast.makeText(RestoRegisterActivity.this, "latitude : " + latitude + "\nlongitude : " + longitude, Toast.LENGTH_LONG).show();
+            /*locationResto.put("latitude", location.getLatitude());
+            locationResto.put("longitude", location.getLongitude());
+            Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "longitude" + locationResto.get("longitude"), Toast.LENGTH_LONG).show();*/
     }
 
     /**

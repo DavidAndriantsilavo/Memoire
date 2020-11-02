@@ -32,8 +32,9 @@ import mg.didavid.firsttry.Controllers.Adapteurs.AdapteurUserList;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class UserListActivity extends AppCompatActivity implements AdapteurUserList.OnUserListner {
+public class UserListActivity extends AppMode implements AdapteurUserList.OnUserListner {
 
     Context context = this;
 

@@ -11,9 +11,10 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
-public class ShowImageActivity extends AppCompatActivity {
+public class ShowImageActivity extends AppMode {
 
     ImageView showImage;
     @Override

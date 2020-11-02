@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -44,8 +45,9 @@ import java.io.File;
 
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class AddMenuToListActivity extends AppCompatActivity {
+public class AddMenuToListActivity extends AppMode {
 
     String menuName, menuPrice, menuPhoto, menuIngredient;
     ImageView imageView_menuImage;
@@ -70,6 +72,15 @@ public class AddMenuToListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_menu_to_list);
+
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar_addMenu);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Ajout de menu");
+        }
 
         //init view
         imageView_menuImage = findViewById(R.id.imageView_menuPhoto_addListMenu);

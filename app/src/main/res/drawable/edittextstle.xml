@@ -8,6 +8,6 @@
         android:width="1dp"
         android:color="@color/browser_actions_divider_color"/>
     <corners android:radius="20dp"/>
-    <solid android:color="#EDEDED"/>
+    <solid android:color="?attr/grey"/>
 
 </shape>

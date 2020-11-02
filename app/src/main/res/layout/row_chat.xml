@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:maxWidth="230dp"
         android:padding="10dp"
-        android:textColor="@color/black"
+        android:textColor="?attr/black"
         android:background="@drawable/chat_sent"
         android:text="un simple message envoyé atakhdkshdflqhdfjqd dlqjhdfqlkbxc jerkkjeaezea kdhqksdjq"
         android:gravity="start"

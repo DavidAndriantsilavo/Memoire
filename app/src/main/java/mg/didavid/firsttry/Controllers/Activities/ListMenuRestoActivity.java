@@ -37,8 +37,9 @@ import mg.didavid.firsttry.Controllers.Adapteurs.AdapterListMenu;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterSampleMenu;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class ListMenuRestoActivity extends AppCompatActivity {
+public class ListMenuRestoActivity extends AppMode {
 
     private RecyclerView recyclerView;
     private List<ModelRestoSampleMenu> modelRestoSampleMenuList;

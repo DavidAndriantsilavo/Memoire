@@ -128,7 +128,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private boolean mServicesIsGood = false;
 
     private AlertDialog alert = null;
-//    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
+    //    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
     private ArrayList<MarkerOptions> userMarkerOptionsList = new ArrayList<MarkerOptions>();
 
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -321,13 +321,13 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             public void onClick(View v) {
                 if(clickedUserMarker != null) {
                     UserLocation userLocation = clickedUserMarker.getUserLocation();
-                     if(userLocation.getUser_id() == currentUser.getUser_id()){
-                         startActivity(new Intent(getActivity(), ProfileUserActivity.class));
-                     }else{
-                         Intent intent = new Intent(getActivity(), OtherUsersProfileActivity.class);
-                         intent.putExtra("user_id", userLocation.getUser_id());
-                         startActivity(intent);
-                     }
+                    if(userLocation.getUser_id() == currentUser.getUser_id()){
+                        startActivity(new Intent(getActivity(), ProfileUserActivity.class));
+                    }else{
+                        Intent intent = new Intent(getActivity(), OtherUsersProfileActivity.class);
+                        intent.putExtra("user_id", userLocation.getUser_id());
+                        startActivity(intent);
+                    }
                 }
             }
         });
@@ -482,8 +482,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                     marker.remove();
 
                                     Log.d(TAG, "drag : add marker " + favoriteLocation.getTitle() + " at : " + favoriteMarkerCollection.getMarkers().size());
-                                    }
                                 }
+                            }
                         }
                     });
         }
@@ -553,23 +553,23 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     @Override
                     public void onInfoWindowLongClick(final Marker marker) {
                         userReference.document(currentUser.getUser_id())
-                                    .collection("FavoriteCollection")
-                                    .document(marker.getTitle())
-                                    .delete()
-                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
+                                .collection("FavoriteCollection")
+                                .document(marker.getTitle())
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
 
-                                            favoriteMarkerCollection.remove(marker);
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                        favoriteMarkerCollection.remove(marker);
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     }
                 });
             }
@@ -646,15 +646,15 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                             linearLayoutCustomViewResto.setVisibility(View.GONE);
                         }
 
-                            clickedUserMarker = (ClusterMarkerUser) item;
-                            UserLocation userLocation = clickedUserMarker.getUserLocation();
+                        clickedUserMarker = (ClusterMarkerUser) item;
+                        UserLocation userLocation = clickedUserMarker.getUserLocation();
 
-                            if(userLocation.getUser_id() == currentUser.getUser_id()){
-                                button_direction.setVisibility(View.GONE);
-                                button_message.setVisibility(View.GONE);
-                            }else{
-                                button_direction.setVisibility(View.VISIBLE);
-                                button_message.setVisibility(View.VISIBLE);
+                        if(userLocation.getUser_id() == currentUser.getUser_id()){
+                            button_direction.setVisibility(View.GONE);
+                            button_message.setVisibility(View.GONE);
+                        }else{
+                            button_direction.setVisibility(View.VISIBLE);
+                            button_message.setVisibility(View.VISIBLE);
 
 //                                PolylineOptions polylineOptions = new PolylineOptions()
 //                                        .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
@@ -663,11 +663,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 //                                        .endCap(new RoundCap());
 //
 //                                Polyline polyline = mGoogleMap.addPolyline(polylineOptions);
-                            }
+                        }
 
-                            textView_name.setText(userLocation.getName());
+                        textView_name.setText(userLocation.getName());
 
-                            Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
+                        Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
 
                         if (clickedUserMarker.equals(lastClickedUserMarker)) {
                             if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {

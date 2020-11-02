@@ -174,8 +174,10 @@ public class RestoFragment extends Fragment {
                                     if (modelRestos.get(i).getId_resto().contains(user_id)) {
                                         //the currentUser have already one restaurant account so, hide menu add restaurant account and show menu view profile
                                         menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
+                                        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
                                         textView_aboutSinginResto.setVisibility(View.GONE);
                                         userHasRestoAccount[0] = true;
+                                        break;
                                     }else {
                                         //current currentUser doesn't have resto account, allow him to add new resto account
                                         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);

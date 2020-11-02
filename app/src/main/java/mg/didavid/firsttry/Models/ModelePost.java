@@ -1,12 +1,15 @@
 package mg.didavid.firsttry.Models;
 
+import java.util.HashMap;
+
 public class ModelePost {
     //spécifications du posteur
     private String user_id, name, pseudo, post_kiff, comment_count, profile_image, post_id, post_description, post_image1, post_image2, post_image3, post_time;
+    private HashMap<String, Object> user_location;
 
     public ModelePost(){ }
 
-    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String comment_count, String profile_image, String post_id, String post_description, String post_image1, String post_image2, String post_image3, String post_time) {
+    public ModelePost(String user_id, String name, String pseudo, String post_kiff, String comment_count, String profile_image, String post_id, String post_description, String post_image1, String post_image2, String post_image3, String post_time, HashMap<String, Object> user_location) {
         this.user_id = user_id;
         this.name = name;
         this.pseudo = pseudo;
@@ -19,6 +22,15 @@ public class ModelePost {
         this.post_image2 = post_image2;
         this.post_image3 = post_image3;
         this.post_time = post_time;
+        this.user_location = user_location;
+    }
+
+    public HashMap<String, Object> getUser_location() {
+        return user_location;
+    }
+
+    public void setUser_location(HashMap<String, Object> user_location) {
+        this.user_location = user_location;
     }
 
     public String getUser_id() {

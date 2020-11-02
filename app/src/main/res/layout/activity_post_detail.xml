@@ -4,20 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controllers.Activities.PostDetailsActivity">
+    tools:context=".Controllers.Activities.PostDetailsActivity"
+    android:background="?attr/browser_actions_divider_color">
+
+    <include
+        android:id="@+id/toolbar_postDetails"
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"/>
 
     <!--field that we write comment-->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/relativeLayout_comment">
+        android:layout_above="@+id/relativeLayout_comment"
+        android:layout_below="@+id/toolbar_postDetails">
 
             <!--details of the post-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:background="@color/white">
+                android:background="?attr/white">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -67,32 +76,36 @@
                                 android:layout_height="wrap_content"
                                 android:clickable="true"
                                 android:text="Nom"
-                                android:textColor="@color/black"
-                                android:textSize="18dp" />
+                                android:textSize="18sp"
+                                android:focusable="true"
+                                android:textColor="?attr/black"/>
 
                             <TextView
                                 android:id="@+id/texteView_pseudo_postDetails"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Pseudo"
-                                android:textSize="15dp"/>
+                                android:textSize="15dp"
+                                android:textColor="?attr/black"/>
 
                             <RatingBar
                                 android:id="@+id/ratingBar_postDetails"
+                                style="?android:attr/ratingBarStyleSmall"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:background="?attr/grey"
+                                android:isIndicator="true"
                                 android:numStars="5"
                                 android:rating="3.5"
-                                android:stepSize="0.1"
-                                android:isIndicator="true"
-                                style="?android:attr/ratingBarStyleSmall"/>
+                                android:stepSize="0.1" />
 
                             <TextView
                                 android:id="@+id/textView_temps_comment"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="25 min"
-                                android:textSize="12dp" />
+                                android:textSize="12dp"
+                                android:textColor="?attr/black" />
 
                         </LinearLayout>
 
@@ -110,7 +123,7 @@
                         android:layout_height="1.5dp"
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="5dp"
-                        android:background="@color/browser_actions_divider_color" />
+                        android:background="?attr/browser_actions_divider_color" />
 
                     <TextView
                         android:id="@+id/textView_descriptionPost_comment"
@@ -119,7 +132,7 @@
                         android:layout_marginBottom="10dp"
                         android:autoLink="all"
                         android:text="Déscription du post"
-                        android:textColor="@color/black" />
+                        android:textColor="?attr/black" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -190,7 +203,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1.5dp"
-                        android:background="@color/browser_actions_divider_color" />
+                        android:background="?attr/browser_actions_divider_color" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -221,11 +234,11 @@
                             android:layout_height="35dp"
                             android:layout_weight="1"
                             android:background="@drawable/rounded_grey_button"
-                            android:drawableStart="@drawable/ic_partager_icon_dark"
+                            android:drawableStart="@drawable/ic_map_marker_icon_dark"
                             android:drawablePadding="5dp"
                             android:layout_marginHorizontal="5dp"
                             android:paddingStart="50dp"
-                            android:text="Partager"
+                            android:text="Voir lieu"
                             android:textAlignment="viewStart"
                             android:textAllCaps="false"
                             android:textSize="13dp" />
@@ -236,7 +249,8 @@
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="10dp"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        android:background="?attr/browser_actions_divider_color"/>
 
                 </LinearLayout>
 
@@ -248,7 +262,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:background="@color/white"
+        android:background="?attr/white"
         android:layout_alignParentBottom="true">
         <View
             android:id="@+id/view_post"

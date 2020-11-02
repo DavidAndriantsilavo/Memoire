@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="?attr/white">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -43,7 +43,7 @@
             android:text="User name"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@color/black"/>
+            android:textColor="?attr/black"/>
 
         <ImageButton
             android:id="@+id/moreActions_comment"
@@ -51,8 +51,8 @@
             android:layout_height="wrap_content"
             android:padding="5dp"
             android:src="@drawable/ic_more_action_image_button_icon_dark"
-            android:layout_alignParentRight="true"
-            android:background="@color/white"/>
+            android:background="@null"
+            android:layout_alignParentRight="true"/>
 
         <LinearLayout
             android:id="@+id/linearLayout_comment"
@@ -67,7 +67,8 @@
                 android:id="@+id/texteView_pseudo_commentContent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pseudo"/>
+                android:text="Pseudo"
+                android:textColor="?attr/black"/>
 
             <RatingBar
                 android:id="@+id/ratingBar_comment"
@@ -77,7 +78,8 @@
                 android:rating="3.5"
                 android:stepSize="0.1"
                 android:isIndicator="true"
-                style="?android:attr/ratingBarStyleSmall"/>
+                style="?android:attr/ratingBarStyleSmall"
+                android:background="?attr/grey"/>
 
         </LinearLayout>
 
@@ -89,7 +91,7 @@
             android:layout_toEndOf="@id/cardView_imageProfile"
             android:text="This is post comment"
             android:layout_below="@id/linearLayout_comment"
-            android:textColor="@color/black"
+            android:textColor="?attr/black"
             android:layout_marginTop="5dp"/>
 
         <ImageView
@@ -109,6 +111,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="28/06/2020 07:05"
+            android:textColor="?attr/black"
             android:layout_below="@id/imageView_commentImage_comment"
             android:layout_toEndOf="@id/cardView_imageProfile"
             android:layout_marginTop="5dp"/>
@@ -116,7 +119,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1.5dp"
-            android:background="@color/browser_actions_divider_color"
+            android:background="?attr/browser_actions_divider_color"
             android:layout_below="@id/textView_commentTime_comment"
             android:layout_toEndOf="@id/cardView_imageProfile"
             android:layout_marginVertical="5dp"/>

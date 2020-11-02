@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_marginVertical="7dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/black"
+        android:text="Email"
+        android:textSize="18dp"
+        android:gravity="center_horizontal"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="A :"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+
+    <TextView
+        android:id="@+id/textView_emailReceiver_emailDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="7dp"
+        android:gravity="start"
+        android:paddingHorizontal="10dp"
+        android:text="Reciever"
+        android:textSize="16dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Objet :"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+    <EditText
+        android:id="@+id/editText_subject_emailDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="150dp"
+        android:gravity="start"
+        android:layout_marginHorizontal="7dp"
+        android:paddingHorizontal="10dp"
+        android:hint="Votre commande"
+        android:inputType="textCapSentences"
+        tools:ignore="TextFields" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Message :"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+    <EditText
+        android:id="@+id/editText_messageContent_emailDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp"
+        android:gravity="start"
+        android:layout_marginHorizontal="7dp"
+        android:paddingHorizontal="10dp"
+        android:hint="Votre message"
+        android:inputType="textCapSentences|textMultiLine"
+        tools:ignore="TextFields" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="15dp"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/tv_annuler_emailDialog"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="40dp"
+            android:background="@drawable/rounded_grey_button"
+            android:clickable="true"
+            android:text="Annuler"
+            android:textAllCaps="false" />
+
+        <Button
+            android:id="@+id/tv_valider_emailDialog"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_primary_button"
+            android:text="Envoyer"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -8,7 +8,7 @@
     app:cardCornerRadius="5dp"
     app:cardElevation="3dp"
     app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="?attr/white">
     
     <LinearLayout
         android:layout_width="match_parent"
@@ -59,14 +59,15 @@
                     android:text="Nom"
                     android:textSize="18dp"
                     android:clickable="true"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/black"/>
 
                 <TextView
                     android:id="@+id/texteView_pseudo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Pseudo"
-                    android:textSize="15dp"/>
+                    android:textSize="15dp"
+                    android:textColor="?attr/black"/>
 
                 <RatingBar
                     android:id="@+id/ratingBar_newPost"
@@ -83,7 +84,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="25 min"
-                    android:textSize="12dp"/>
+                    android:textSize="12dp"
+                    android:textColor="?attr/black"/>
 
             </LinearLayout>
 
@@ -99,7 +101,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1.5dp"
-            android:background="@color/browser_actions_divider_color"
+            android:background="?attr/browser_actions_divider_color"
             android:layout_marginBottom="5dp"
             android:layout_marginTop="10dp"/>
 
@@ -108,7 +110,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Déscription du post"
-            android:textColor="@color/black"
+            android:textColor="?attr/black"
             android:autoLink="all"/>
 
         <LinearLayout
@@ -125,7 +127,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:background="@color/white"
+                android:background="?attr/white"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="1"
                 android:layout_marginBottom="3dp"
@@ -143,7 +145,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:background="@color/white"
+                    android:background="?attr/white"
                     android:layout_gravity="center_horizontal"
                     android:layout_weight="1"
                     tools:ignore="NestedWeights"
@@ -154,7 +156,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:background="@color/white"
+                    android:background="?attr/white"
                     android:layout_gravity="center_horizontal"
                     android:layout_weight="1"
                     android:layout_margin="3dp"/>
@@ -187,7 +189,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1.5dp"
-            android:background="@color/browser_actions_divider_color"/>
+            android:background="?attr/browser_actions_divider_color"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -226,15 +228,15 @@
                 android:textAlignment="viewStart"
                 android:background="@drawable/rounded_grey_button"/>
             <Button
-                android:id="@+id/button_partager_actu"
+                android:id="@+id/button_location_actu"
                 android:layout_width="wrap_content"
                 android:layout_height="35dp"
                 android:layout_weight="1"
                 android:layout_marginHorizontal="2dp"
                 android:layout_marginVertical="10dp"
-                android:text="Partager"
+                android:text="Voir Lieu"
                 android:textAllCaps="false"
-                android:drawableStart="@drawable/ic_partager_icon_dark"
+                android:drawableStart="@drawable/ic_map_marker_icon_dark"
                 android:drawablePadding="5dp"
                 android:textSize="13dp"
                 android:paddingStart="20dp"

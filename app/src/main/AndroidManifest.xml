@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:name=".Models.UserSingleton"
@@ -30,13 +31,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".Controllers.Activities.MainActivity" />
         </activity>
-        <activity android:name=".Controllers.Activities.ChatActivity" />
-        <activity
-            android:name=".Controllers.Activities.AddMenuToListActivity"
-            android:label="Ajoute de menu"
+
+        <activity android:name=".Controllers.Activities.ChatActivity"/>
+        <activity android:name=".Controllers.Activities.AddMenuToListActivity"
             android:parentActivityName=".Controllers.Activities.MainActivity"
-            android:theme="@style/WithActionBarTheme"
-            android:windowSoftInputMode="stateHidden|adjustResize" />
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
+
         <activity android:name=".Controllers.Activities.ListMenuRestoActivity" />
         <activity android:name=".Controllers.Activities.OtherRestoProfileActivity" />
         <activity android:name=".Controllers.Activities.ProfileRestoActivity" />
@@ -45,12 +45,10 @@
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".Controllers.Activities.ShowWhoKiffAvtivity"
-            android:parentActivityName=".Controllers.Activities.MainActivity"
-            android:theme="@style/WithActionBarTheme" />
+            android:parentActivityName=".Controllers.Activities.MainActivity"/>
         <activity
             android:name=".Controllers.Activities.PostDetailsActivity"
             android:parentActivityName=".Controllers.Activities.MainActivity"
-            android:theme="@style/WithActionBarTheme"
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -60,9 +58,7 @@
         <activity android:name=".Controllers.Activities.OtherUsersProfileActivity" />
         <activity
             android:name=".Controllers.Activities.NewPostActivity"
-            android:label="Nouvelle publication"
             android:parentActivityName=".Controllers.Activities.MainActivity"
-            android:theme="@style/WithActionBarTheme"
             android:windowSoftInputMode="stateHidden|adjustResize">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -73,12 +69,7 @@
             android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".Controllers.Activities.ProfileUserActivity"
-            android:label="Profile"
-            android:parentActivityName=".Controllers.Activities.MainActivity"
-            android:theme="@style/WithActionBarTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".Controllers.Activities.MainActivity" />
+            android:parentActivityName=".Controllers.Activities.MainActivity">
         </activity>
 
         <meta-data
