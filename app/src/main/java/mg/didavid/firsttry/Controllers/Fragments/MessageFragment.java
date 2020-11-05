@@ -67,8 +67,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_message, container, false);
 
-        currentUser = ((UserSingleton)getActivity().getApplicationContext()).getUser();
-
         adapteursMessage = new AdapteurMessage();
 
         //init progressDialog
@@ -87,63 +85,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         recyclerView.setLayoutManager(linearLayoutManager);
         //init post list
         chatroomList = new ArrayList<>();
-
-        //start the listner of new message
-        ChildEventListener childEventListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
-
-                // A new comment has been added, add it to the displayed list
-                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
-
-                loadChatrooms();
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
-
-                // A comment has changed, use the key to determine if we are displaying this
-                // comment and if so displayed the changed comment.
-                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
-                loadChatrooms();
-
-                // ...
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
-
-                // A comment has changed, use the key to determine if we are displaying this
-                // comment and if so remove it.
-                String commentKey = dataSnapshot.getKey();
-
-                // ...
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
-
-                // A comment has changed position, use the key to determine if we are
-                // displaying this comment and if so move it.
-                Comment movedComment = dataSnapshot.getValue(Comment.class);
-                String commentKey = dataSnapshot.getKey();
-
-                // ...
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.w(TAG, "postComments:onCancelled", databaseError.toException());
-                Toast.makeText(getContext(), "Failed to load comments.",
-                        Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        mChatroomReference.child(currentUser.getUser_id()).addChildEventListener(childEventListener);
 
         return view;
     }
@@ -255,6 +196,70 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         startActivity(logOut);
 
         getActivity().finish();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+
+        //start the listner of new message
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new comment has been added, add it to the displayed list
+                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
+
+                loadChatrooms();
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so displayed the changed comment.
+                ModeleChatroom chatroom = dataSnapshot.getValue(ModeleChatroom.class);
+                loadChatrooms();
+
+                // ...
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so remove it.
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
+
+                // A comment has changed position, use the key to determine if we are
+                // displaying this comment and if so move it.
+                Comment movedComment = dataSnapshot.getValue(Comment.class);
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "postComments:onCancelled", databaseError.toException());
+                Toast.makeText(getContext(), "Failed to load comments.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        mChatroomReference.child(currentUser.getUser_id()).addChildEventListener(childEventListener);
     }
 
     @Override

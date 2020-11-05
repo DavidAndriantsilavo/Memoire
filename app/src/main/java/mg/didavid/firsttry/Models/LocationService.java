@@ -35,9 +35,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class LocationService extends Service {
+
+    private User user;
+
+    private Map<String, Object> childUpdates;
 
     private static final String TAG = "LocationService";
 
@@ -59,6 +65,10 @@ public class LocationService extends Service {
         super.onCreate();
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        user = ((UserSingleton)(getApplicationContext())).getUser();
+
+        childUpdates = new HashMap<>();
 
         if (Build.VERSION.SDK_INT >= 26) {
             String CHANNEL_ID = "my_channel_01";
@@ -113,17 +123,7 @@ public class LocationService extends Service {
 
                             GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
 
-                            //SET THE USERLOCATION OBJECT
-                            User user = ((UserSingleton)(getApplicationContext())).getUser();
-                            UserLocation userLocation = new UserLocation();
-
                             if(user != null){
-                                userLocation.setLatitude(geoPoint.getLatitude());
-                                userLocation.setLongitude(geoPoint.getLongitude());
-                                userLocation.setName(user.getName());
-                                userLocation.setUser_id(user.getUser_id());
-                                userLocation.setProfile_image((user.getProfile_image()));
-
                                 TimeZone timezone = TimeZone.getTimeZone("GMT+03:00"); //MADAGASCAR TIMEZONE
                                 Calendar c = Calendar.getInstance(timezone);
                                 String time = String.format("%02d", c.get(Calendar.YEAR)) + "-" +
@@ -132,19 +132,24 @@ public class LocationService extends Service {
                                         String.format("%02d" , c.get(Calendar.HOUR_OF_DAY))+":"+
                                         String.format("%02d" , c.get(Calendar.MINUTE))+":"+
                                         String.format("%02d" , c.get(Calendar.SECOND));
-                                userLocation.setTimestamp(time);
+
+                                childUpdates.put("latitude", geoPoint.getLatitude());
+                                childUpdates.put("longitude", geoPoint.getLongitude());
+                                childUpdates.put("timestamp", time);
                             }
-                            saveUserLocation(userLocation);
+                            saveUserLocation(childUpdates);
                         }
                     }
                 },
                 Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
     }
 
-    private void saveUserLocation(final UserLocation userLocation){
+    private void saveUserLocation(final Map<String, Object> updates){
 
         try{
-            mUserLocationReference.child(FirebaseAuth.getInstance().getUid()).setValue(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+            mUserLocationReference.child(user.getUser_id())
+                    .updateChildren(updates)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if(task.isSuccessful()){

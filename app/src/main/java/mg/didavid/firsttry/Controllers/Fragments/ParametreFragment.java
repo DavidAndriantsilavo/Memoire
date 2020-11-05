@@ -6,12 +6,13 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,34 +25,48 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
 import mg.didavid.firsttry.Controllers.Activities.UserListActivity;
+import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 import mg.didavid.firsttry.Views.AppMode;
 
+import static android.content.Context.MODE_PRIVATE;
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class ParametreFragment extends Fragment {
-    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    User currentUser = new User();
+
     private ProgressDialog progressDialog_logout;
 
     private LinearLayout defaultRay, changeLanguage, userListe, userOnline, myFavoritePlaces, about, help, developersContacts;
     private Button btn_logout;
     private Switch switchPosition, switchNightMode;
 
-    public static int defaultRadius = 10;
+    private DatabaseReference mUserPreferencesReference = FirebaseDatabase.getInstance().getReference().child("userPreferences");
+    private DatabaseReference mUserLocationReference = FirebaseDatabase.getInstance().getReference().child("userLocation");
+
+    public static int defaultRadius = 0;
+
+    SharedPreferences preferences;
 
     public static ParametreFragment newInstance() {
         return (new ParametreFragment());
@@ -60,6 +75,9 @@ public class ParametreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_parametres, container, false);
+
+        preferences = getActivity().getPreferences(MODE_PRIVATE);
+
         //init view
         defaultRay = view.findViewById(R.id.linearLayout_defaultRay_parametre);
         changeLanguage = view.findViewById(R.id.linearLayout_changeLanguage_parametre);
@@ -85,13 +103,19 @@ public class ParametreFragment extends Fragment {
                 showDialog();
             }
         });
+
+        switchPosition.setChecked(getActivity().getPreferences(MODE_PRIVATE).getBoolean("shareMyPosition", true));
         switchPosition.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    FirebaseDatabase.getInstance().getReference().child("userLocation").child(user.getUid()).child("seeMyPosition").setValue(true);
+                    mUserLocationReference.child(currentUser.getUser_id()).child("seeMyPosition").setValue(true);
+                    mUserPreferencesReference.child(currentUser.getUser_id()).child("seeMyPosition").setValue(true);
+                    preferences.edit().putBoolean("shareMyPosition", true).apply();
                 }else {
-                    FirebaseDatabase.getInstance().getReference().child("userLocation").child(user.getUid()).child("seeMyPosition").setValue(false);
+                    mUserLocationReference.child(currentUser.getUser_id()).child("seeMyPosition").setValue(false);
+                    mUserPreferencesReference.child(currentUser.getUser_id()).child("seeMyPosition").setValue(false);
+                    preferences.edit().putBoolean("shareMyPosition", false).apply();
                 }
             }
         });
@@ -188,6 +212,7 @@ public class ParametreFragment extends Fragment {
             }
         });
 
+        defaultRadius = getActivity().getPreferences(MODE_PRIVATE).getInt("radius", defaultRadius);
         seekBar.setProgress(defaultRadius);
         editText_defaultRadius.setText("" + (defaultRadius * 100));
 
@@ -239,7 +264,22 @@ public class ParametreFragment extends Fragment {
 
     private void setDefaultRadius(int parseInt) {
         defaultRadius = parseInt / 100;
-        Toast.makeText(getContext(), "" + defaultRadius, Toast.LENGTH_SHORT).show();
+
+        preferences.edit().putInt("radius", defaultRadius).apply();
+
+        mUserPreferencesReference.child(currentUser.getUser_id()).child("radius").setValue(defaultRadius).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful()){
+                    //Task was successful, data written!
+                    Log.d(TAG, "radius changed");
+                }else{
+
+                    //Log the error message
+                    Log.e(TAG, "radius error" + task.getException().getLocalizedMessage() );
+                }
+            }
+        });
     }
 
     public static int getDefaultRadius() {
@@ -250,6 +290,13 @@ public class ParametreFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true); // to show menu option in fragment
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
     }
 
     @Override
@@ -273,7 +320,7 @@ public class ParametreFragment extends Fragment {
     }
 
     private void avertissement() {
-        if(user!=null)
+        if(currentUser!=null)
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());

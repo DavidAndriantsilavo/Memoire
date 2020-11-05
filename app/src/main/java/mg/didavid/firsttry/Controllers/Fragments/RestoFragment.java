@@ -40,11 +40,13 @@ import mg.didavid.firsttry.Controllers.Activities.RestoRegisterActivity;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterRestoPresentation;
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
+import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 
 public class RestoFragment extends Fragment {
 
-    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    private User currentUser;
 
     private RecyclerView recyclerView_restoFragment;
     private AdapterRestoPresentation adapterRestoPresentation;
@@ -68,8 +70,6 @@ public class RestoFragment extends Fragment {
         recyclerView_restoFragment = view.findViewById(R.id.restoRecyclerview);
         recyclerView_restoFragment.setHasFixedSize(true);
         recyclerView_restoFragment.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-
-        user_id = user.getUid();
 
         setData();
 
@@ -149,6 +149,15 @@ public class RestoFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         setHasOptionsMenu(true); // to show menu option in fragment
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+
+        user_id = currentUser.getUser_id();
     }
 
     @Override

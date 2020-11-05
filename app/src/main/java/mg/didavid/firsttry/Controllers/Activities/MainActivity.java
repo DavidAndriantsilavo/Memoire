@@ -17,6 +17,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -29,6 +31,7 @@ import android.view.View;
 
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -39,6 +42,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -47,23 +55,29 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.Map;
+
 import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
 import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
 import mg.didavid.firsttry.Controllers.Fragments.MessageFragment;
 import mg.didavid.firsttry.Controllers.Fragments.ParametreFragment;
 import mg.didavid.firsttry.Controllers.Fragments.RestoFragment;
+import mg.didavid.firsttry.Models.ClusterMarkerUser;
 import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
 import mg.didavid.firsttry.Views.AppMode;
+
+import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class MainActivity extends AppMode {
 
     public BottomNavigationView navigationView;
 
-    FirebaseUser FirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference userCollectionReference = db.collection("Users");
+    private DatabaseReference mUserPreferencesReference = FirebaseDatabase.getInstance().getReference().child("userPreferences");
 
     FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -113,7 +127,37 @@ public class MainActivity extends AppMode {
                     }
                 }
             });
+
+            //Get the stored preferences from RTDB
+            mUserPreferencesReference.child(firebaseUser.getUid())
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            SharedPreferences preferences =getPreferences(MODE_PRIVATE);
+                            Map<String, Object> preference = (Map<String, Object>) dataSnapshot.getValue();
+                            preferences.edit().putBoolean("shareMyPosition", (boolean)preference.get("seeMyPosition")).apply();
+                            preferences.edit().putInt("radius", safeLongToInt((long)preference.get("radius"))).apply();
+
+                            Log.d(TAG, "onDataChange: preferences set : " + preference.get("seeMyPosition")
+                                    + " " + preference.get("radius"));
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Log.e(TAG, "%s" + error);
+                        }
+                    });
         }
+    }
+
+    //Convert LONG into INT
+    public static int safeLongToInt(long l) {
+        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException
+                    (l + " cannot be cast to int without changing its value.");
+        }
+        return (int) l;
     }
 
     Runnable mStatusChecker = new Runnable() {
