@@ -745,7 +745,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             @Override
             public void run() {
                 updateOtherLocation();
-//                updateUserLocation();
                 otherHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
@@ -843,10 +842,13 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
                                 mClusterMarkersUser.add(i[0], clusterMarkerUser);
                                 otherUserLocationList.add(i[0], userLocation);
+                                i[0]++;
 
-                                if(Math.round(lastKnownLocation.distanceTo(ohterLocation)) < seekBarProgress*100){
-                                    mClusterManagerUser.addItem(clusterMarkerUser);
-                                    startOtherUserLocationsRunnable();
+                                if(lastKnownLocation != null) {
+                                    if (Math.round(lastKnownLocation.distanceTo(ohterLocation)) < seekBarProgress * 100) {
+                                        mClusterManagerUser.addItem(clusterMarkerUser);
+                                        startOtherUserLocationsRunnable();
+                                    }
                                 }
                             }
                         }
@@ -929,17 +931,19 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     ClusterMarkerUser markerUser;
 
                     if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
-                        try {
-                            markerUser = mClusterMarkersUser.get(i);
-                            markerUser.setPosition(otherPosition);
-                            mClusterMarkersUser.set(i, markerUser);
-                            i++;
+                        if(userLocation.isSeeMyPosition()){
+                            try {
+                                markerUser = mClusterMarkersUser.get(i);
+                                markerUser.setPosition(otherPosition);
+                                mClusterMarkersUser.set(i, markerUser);
+                                i++;
 
-                            mClusterManagerUser.cluster();
+                                mClusterManagerUser.cluster();
 
-                            Log.d(TAG, " marker : other position updated" + userLocation.getName());
-                        }catch (Exception e){
-                            Log.e(TAG, "%s" + e);
+                                Log.d(TAG, " marker : other position updated" + userLocation.getName());
+                            }catch (Exception e){
+                                Log.e(TAG, "%s" + e);
+                            }
                         }
                     }
 

@@ -41,6 +41,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -176,7 +178,8 @@ public class WelcomeActivity extends AppMode {
 
                     }
 
-                    final User user = new User(email, user_id, display_name, phone, finalPassword, sexe, pseudo, profileImage_Uri);
+                    final User user = new User(user_id, display_name, sexe,
+                            pseudo, email, phone, finalPassword, profileImage_Uri);
                     storeUserData(user);
                 }
             }
@@ -275,9 +278,12 @@ public class WelcomeActivity extends AppMode {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(WelcomeActivity.this);
+                                    createPreferences(user.getUser_id());
+
+                                    final AlertDialog.Builder builder = new AlertDialog.Builder(WelcomeActivity.this);
                                     builder.setMessage("Votre compte a été créé avec succes");
                                     builder.setCancelable(false);
+                                    final AlertDialog alert = builder.create();
 
                                     builder.setPositiveButton(
                                             "Continuer",
@@ -285,12 +291,10 @@ public class WelcomeActivity extends AppMode {
                                                 public void onClick(DialogInterface dialog, int id) {
                                                     Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
                                                     startActivity(intent);
-
+                                                    alert.cancel();
                                                     finish();
                                                 }
-                                            });
-                                    AlertDialog alert = builder.create();
-                                    alert.show();
+                                            }).show();
                                 }else{
                                     //Something went wrong
                                     Log.e(TAG, "onComplete: Error: " + task.getException().getLocalizedMessage() );
@@ -305,6 +309,13 @@ public class WelcomeActivity extends AppMode {
                 Toast.makeText(WelcomeActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void createPreferences(String id){
+        DatabaseReference mUserPreferencesReference = FirebaseDatabase.getInstance().getReference().child("userPreferences");
+
+        mUserPreferencesReference.child(id).child("seeMyPosition").setValue(true);
+        mUserPreferencesReference.child(id).child("radius").setValue(0);
     }
 
     /**********************************************************************************************************************************************************

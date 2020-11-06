@@ -133,14 +133,15 @@ public class MainActivity extends AppMode {
                     .addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            SharedPreferences preferences =getPreferences(MODE_PRIVATE);
-                            Map<String, Object> preference = (Map<String, Object>) dataSnapshot.getValue();
-                            preferences.edit().putBoolean("shareMyPosition", (boolean)preference.get("seeMyPosition")).apply();
-                            preferences.edit().putInt("radius", safeLongToInt((long)preference.get("radius"))).apply();
+                            if(dataSnapshot.exists()){
+                                SharedPreferences preferences =getPreferences(MODE_PRIVATE);
+                                Map<String, Object> preference = (Map<String, Object>) dataSnapshot.getValue();
+                                preferences.edit().putBoolean("shareMyPosition", (boolean)preference.get("seeMyPosition")).apply();
+                                preferences.edit().putInt("radius", safeLongToInt((long)preference.get("radius"))).apply();
 
-                            Log.d(TAG, "onDataChange: preferences set : " + preference.get("seeMyPosition")
-                                    + " " + preference.get("radius"));
-
+                                Log.d(TAG, "onDataChange: preferences set : " + preference.get("seeMyPosition")
+                                        + " " + preference.get("radius"));
+                            }
                         }
 
                         @Override
