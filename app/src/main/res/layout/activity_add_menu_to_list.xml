@@ -6,13 +6,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Controllers.Activities.AddMenuToListActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="?attr/browser_actions_divider_color">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal">
+
+        <include
+            android:id="@+id/toolbar_addMenu"
+            layout="@layout/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"/>
 
         <ImageView
             android:id="@+id/imageView_menuPhoto_addListMenu"
@@ -27,11 +35,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:background="@drawable/rounded_white_button"
             android:text="Ajouter une image"
+            android:textColor="?attr/black"
             android:textAllCaps="false"
-            android:textColor="@color/black"
-            android:layout_marginHorizontal="30dp"/>
+            android:layout_marginHorizontal="30dp"
+            android:background="@drawable/rounded_white_button"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -44,7 +52,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Nom du menu :"
-                android:textColor="@color/black"/>
+                android:textColor="?attr/black"/>
 
             <EditText
                 android:id="@+id/editText_menuName_addListMenu"
@@ -57,7 +65,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ingredients :"
-                android:textColor="@color/black"/>
+                android:textColor="?attr/black"/>
 
             <EditText
                 android:id="@+id/editText_menuIngredient_addListMenu"
@@ -77,7 +85,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Prix :"
-                android:textColor="@color/black"/>
+                android:textColor="?attr/black"/>
 
             <EditText
                 android:id="@+id/editText_menuPrice_addListMenu"
@@ -96,8 +104,8 @@
             android:background="@drawable/rounded_primary_button"
             android:text="Poster"
             android:textSize="18dp"
+            android:textColor="?attr/black"
             android:textAllCaps="false"
-            android:textColor="@color/white"
             android:layout_marginHorizontal="30dp"/>
     </LinearLayout>
 

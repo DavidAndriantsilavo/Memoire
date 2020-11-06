@@ -20,11 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import org.w3c.dom.Comment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +58,7 @@ public class ChatActivity extends AppCompatActivity {
     ImageButton imageButton_send;
 
     final private String TAG = "userList";
-    private String otherUserId, otherUserName, chatroomId;
+    private String otherUserId, otherUserName, otherUserProfilePicture, chatroomId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,17 +112,17 @@ public class ChatActivity extends AppCompatActivity {
 
                         editText_messageContent.setText("");
 
-                        messageList.add( message);
-
-                        adapateurChat.notifyItemInserted(messageList.size());
-
-                        recyclerView.smoothScrollToPosition(messageList.size()-1);
+//                        messageList.add( message);
+//
+//                        adapateurChat.notifyItemInserted(messageList.size());
+//
+//                        recyclerView.smoothScrollToPosition(messageList.size()-1);
 
                         updateLastMessage(message);
                     }else
 
                         //Log the error message
-                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage() );
+                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage());
                 }
             });
 
@@ -147,10 +150,11 @@ public class ChatActivity extends AppCompatActivity {
 
         //if extras came from userListActivity
 
-        if(getIntent().hasExtra("other_user_id") && getIntent().hasExtra("other_user_name")){
+        if(getIntent().hasExtra("other_user_id") && getIntent().hasExtra("other_user_name") && getIntent().hasExtra("other_user_profile_picture")){
             //EXTRA FROM USERLISTACTIVITY
             otherUserId = getIntent().getStringExtra("other_user_id");
             otherUserName = getIntent().getStringExtra("other_user_name");
+            otherUserProfilePicture = getIntent().getStringExtra("other_user_profile_picture");
 
             Log.d(TAG, " chatroom : get intent extra user_name : " + otherUserName);
 
@@ -172,7 +176,7 @@ public class ChatActivity extends AppCompatActivity {
 
                                 Log.d(TAG, " chatroom : get chatroom id : " + chatroomId);
 
-                                showMessage(chatroomId);
+                                configureAdapter();
                             }
                         }
                     }else{
@@ -180,11 +184,11 @@ public class ChatActivity extends AppCompatActivity {
 
                         final String other_user_id = otherUserId;
                         final String other_user_name = otherUserName;
+                        final String other_user_profile_picture = otherUserProfilePicture;
                         final String room_id = currentUser.getUser_id() + "_" + other_user_id;
                         final String last_message = "";
                         final String last_message_timestamp = String.valueOf(System.currentTimeMillis());
-
-                        final ModeleChatroom chatroom = new ModeleChatroom(other_user_id, other_user_name, room_id, last_message, last_message_timestamp);
+                        final ModeleChatroom chatroom = new ModeleChatroom(other_user_id, other_user_name, other_user_profile_picture, room_id, last_message, last_message_timestamp);
 
                         chatroomId = room_id;
 
@@ -217,11 +221,11 @@ public class ChatActivity extends AppCompatActivity {
             //EXTRA FROM MESSAGEFRAGMENT (CHATROOM LIST°
             chatroomId = getIntent().getStringExtra("chatroom_id");
             otherUserId = getIntent().getStringExtra("other_user_id");
-            otherUserName = otherUserId = getIntent().getStringExtra("other_user_name");
+            otherUserName = getIntent().getStringExtra("other_user_name");
 
             Log.d(TAG, " chatroom : get intent extra chatroom_id : " + chatroomId);
 
-            showMessage(chatroomId);
+            configureAdapter();
         }
     }
 
@@ -230,6 +234,8 @@ public class ChatActivity extends AppCompatActivity {
     private void createRoomForOtherUser(ModeleChatroom chatroom){
         chatroom.setOther_user_id(currentUser.getUser_id());
         chatroom.setOther_user_name(currentUser.getName());
+        chatroom.setOther_user_profile_picture(currentUser.getProfile_image());
+
         mChatroomReference.child(otherUserId).child(chatroomId).setValue(chatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -237,7 +243,7 @@ public class ChatActivity extends AppCompatActivity {
                     //Task was successful, data written!
                     Log.d(TAG, "chatroom : chatroom created into otherUser");
 
-                    showMessage(chatroomId);
+                    configureAdapter();
 
                 }else
                     //Log the error message
@@ -249,25 +255,86 @@ public class ChatActivity extends AppCompatActivity {
     private void showMessage(String chatroomId){
 
         configureToolbar(otherUserName);
-        mMessageReference.child(chatroomId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    //Getting User object from dataSnapshot
-                    if(data.exists()){
-                        Message message = data.getValue(Message.class);
+//        mMessageReference.child(chatroomId).addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot data : dataSnapshot.getChildren()) {
+//                    //Getting User object from dataSnapshot
+//                    if(data.exists()){
+//                        Message message = data.getValue(Message.class);
+//
+//                        messageList.add(message);
+//                    }
+//                }
+//                configureAdapter();
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.e(TAG, "%s" + error);
+//            }
+//        });
 
-                        messageList.add(message);
-                    }
-                }
-                configureAdapter();
+        //start the listner of new message
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new comment has been added, add it to the displayed list
+                Message message = dataSnapshot.getValue(Message.class);
+                messageList.add( message);
+
+                adapateurChat.notifyItemInserted(messageList.size());
+
+                recyclerView.smoothScrollToPosition(messageList.size()-1);
+                // ...
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, "%s" + error);
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildChanged:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so displayed the changed comment.
+                Comment newComment = dataSnapshot.getValue(Comment.class);
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
             }
-        });
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+
+                // A comment has changed, use the key to determine if we are displaying this
+                // comment and if so remove it.
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d(TAG, "onChildMoved:" + dataSnapshot.getKey());
+
+                // A comment has changed position, use the key to determine if we are
+                // displaying this comment and if so move it.
+                Comment movedComment = dataSnapshot.getValue(Comment.class);
+                String commentKey = dataSnapshot.getKey();
+
+                // ...
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "postComments:onCancelled", databaseError.toException());
+                Toast.makeText(context, "Failed to load comments.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        mMessageReference.child(chatroomId).addChildEventListener(childEventListener);
     }
 
     private void configureAdapter(){
@@ -275,6 +342,9 @@ public class ChatActivity extends AppCompatActivity {
         adapateurChat = new AdapteurChat(context, messageList);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapateurChat);
+
+        showMessage(chatroomId);
+
     }
 
     private void configureToolbar(String name){

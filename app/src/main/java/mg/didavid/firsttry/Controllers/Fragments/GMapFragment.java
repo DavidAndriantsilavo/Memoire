@@ -17,6 +17,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,15 +26,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -45,7 +52,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -53,6 +59,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -60,7 +68,15 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.maps.android.clustering.ClusterItem;
+import com.google.maps.android.clustering.ClusterManager;
+import com.google.maps.android.clustering.algo.GridBasedAlgorithm;
+import com.google.maps.android.collections.MarkerManager;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -70,20 +86,33 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
+import mg.didavid.firsttry.Controllers.Activities.NewAppointmentActivity;
+import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.LoginActivity;
 import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
+import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
+import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
+import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileUserActivity;
+import mg.didavid.firsttry.Controllers.Adapteurs.AdapterMapSearch;
+import mg.didavid.firsttry.Models.ClusterMarkerRestaurant;
+import mg.didavid.firsttry.Models.ClusterMarkerUser;
+import mg.didavid.firsttry.Models.FavoriteLocation;
 import mg.didavid.firsttry.Models.LocationService;
+import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Utils.ClusterManagerRendererRestaurant;
+import mg.didavid.firsttry.Utils.ClusterManagerRendererUser;
+import mg.didavid.firsttry.Utils.FavoriteDialog;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
 
-public class GMapFragment extends Fragment implements OnMapReadyCallback{
+public class GMapFragment extends Fragment implements OnMapReadyCallback, AdapterMapSearch.OnMapSearchListner, FavoriteDialog.FavoriteDialogListner {
 
     //private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int PERMISSIONS_REQUEST_ENABLE_GPS = 8001;
@@ -99,16 +128,22 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private boolean mServicesIsGood = false;
 
     private AlertDialog alert = null;
-    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
+    //    private ArrayList<Marker> otherMarkerList = new ArrayList<Marker>();
+    private ArrayList<MarkerOptions> userMarkerOptionsList = new ArrayList<MarkerOptions>();
 
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
 
-    private Handler mHandler = new Handler();
+    private CollectionReference restoReference = FirebaseFirestore.getInstance().collection("Resto");
+    private CollectionReference userReference = FirebaseFirestore.getInstance().collection("Users");
+
+    private Handler otherHandler = new Handler();
+    private Handler userHandler = new Handler();
+
     private Runnable mOtherRunnable, mUserRunnable;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
 
-    User user = new User();
+    User currentUser = new User();
 
     ProgressDialog progressDialog_logout;
 
@@ -125,18 +160,40 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     private UserLocation mUserLocation;
 
     private View mCustomDefaultMarkerView, mCustomClickedMarkerView;
-    private ImageView imageView_marker, imageView_profile_picture;
-    private TextView textView_name;
-    private Button button_profile, button_directions, button_message;
-    private Marker lastClickedMarker, userMarker;
+    private ImageView imageView_marker, imageView_profile_picture, imageView_logoResto;
+    private TextView textView_name, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount ;
+    private ImageButton imageButton_appointment;
+    private Button button_profile, button_direction, button_message;
+    private ClusterMarkerUser userMarker;
     private SeekBar seekBar_distance;
     private int seekBarProgress, distanceRadius, currentDistance;
-
-    private Bitmap lastBitmap = null;
-    private Bitmap currentBitmap = null;
+    private View linearLayoutCustomViewUser, linearLayoutCustomViewResto;
+    private RatingBar ratingBar_restoRating;
 
     private HashMap<String, Bitmap> markerBitmap = new HashMap<String, Bitmap>();
 
+    private ClusterManager mClusterManagerRestaurant, mClusterManagerUser;
+    private ClusterManagerRendererRestaurant mClusterManagerRendererRestaurant;
+    private ClusterManagerRendererUser mClusterManagerRendererUser;
+    private ArrayList<ClusterMarkerRestaurant> mClusterMarkersRestaurant = new ArrayList<>();
+    private ArrayList<ClusterMarkerUser> mClusterMarkersUser = new ArrayList<>();
+    MarkerManager markerManager;
+    ClusterMarkerUser clickedUserMarker, lastClickedUserMarker;
+    ClusterMarkerRestaurant clickedRestoMarker, lastClickedRestoMarker;
+
+    Bundle bundleRestaurantPosition;
+
+    RecyclerView recyclerView;
+    ArrayList<ModelResto> allRestoList;
+    ArrayList<Object> queryList;
+    ArrayList<UserLocation> otherUserLocationList;
+    AdapterMapSearch adapterMapSearch;
+
+    SearchView searchView;
+    MenuItem item_search;
+    String currentSearchQuery = "";
+
+    private MarkerManager.Collection favoriteMarkerCollection;
 
     @Override
     public void onDetach() {
@@ -159,17 +216,30 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
         imageView_marker = mCustomDefaultMarkerView.findViewById(R.id.imageView_marker);
 
-        Log.d(TAG, "FT : OnCreateView!!");
+        //init the search recyclerview
+        adapterMapSearch = new AdapterMapSearch();
+        recyclerView = v.findViewById(R.id.recyclerView_map_search);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setReverseLayout(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        allRestoList = new ArrayList<>();
+        queryList = new ArrayList<>();
+        otherUserLocationList = new ArrayList<>();
+
+        setAdapter(queryList);
 
         //init progressDialog
         progressDialog_logout = new ProgressDialog(getContext());
         progressDialog_logout.setMessage("Déconnexion...");
+        //////////////////////////
 
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
         }
-        user = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+
+        currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
         mMapView = (MapView) v.findViewById(R.id.map);
@@ -190,94 +260,142 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         mGoogleMap.getUiSettings().setCompassEnabled(true);
         mGoogleMap.getUiSettings().setMapToolbarEnabled(false);
 
-        getOtherPosition();
+        //get the restaurant location bundle from RestoFragment
+        bundleRestaurantPosition = this.getArguments();
+
+        if(bundleRestaurantPosition != null){
+            Log.d(TAG, "resto : got bundle");
+
+            Double restoLatitude = bundleRestaurantPosition.getDouble("restoLatitude");
+            Double restoLongitude = bundleRestaurantPosition.getDouble("restoLongitude");
+
+            if(restoLatitude != null && restoLongitude != null){
+                Log.d(TAG, "resto : got bundle restoLocation " + restoLatitude + " " + restoLongitude);
+                LatLng restoPosition = new LatLng(restoLatitude, restoLongitude);
+
+                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        restoPosition, DEFAULT_ZOOM));
+
+            }
+        }
+        ///////////////////////////////////////////////
 
         seekBar_distance = getView().findViewById(R.id.seekBar_distance);
         seekBar_distance.setProgress(seekBarProgress);
 
-        final View linearLayoutCustomView = getView().findViewById(R.id.linearLayoutCustomView);
-        textView_name = linearLayoutCustomView.findViewById(R.id.textView_name);
-        imageView_profile_picture = linearLayoutCustomView.findViewById(R.id.imageView_profile_picture);
-        button_profile = linearLayoutCustomView.findViewById(R.id.button_profile);
-        button_directions = linearLayoutCustomView.findViewById(R.id.button_directions);
-        button_message = linearLayoutCustomView.findViewById(R.id.button_message);
+        linearLayoutCustomViewUser = getView().findViewById(R.id.linearLayoutCustomViewUser);
+        textView_name = linearLayoutCustomViewUser.findViewById(R.id.textView_name);
+        imageView_profile_picture = linearLayoutCustomViewUser.findViewById(R.id.imageView_profile_picture);
+        button_profile = linearLayoutCustomViewUser.findViewById(R.id.button_profile);
+        button_direction = linearLayoutCustomViewUser.findViewById(R.id.button_direction);
+        button_message = linearLayoutCustomViewUser.findViewById(R.id.button_message);
 
-        //markerListner to listen for click event on marker
-        mGoogleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+        linearLayoutCustomViewResto = getView().findViewById(R.id.linearLayoutCustomViewResto);
+        textView_restoName = linearLayoutCustomViewResto.findViewById(R.id.textView_restoName);
+        textView_restoSpeciality = linearLayoutCustomViewResto.findViewById(R.id.textView_restoSpeciality);
+        textView_restoRating = linearLayoutCustomViewResto.findViewById(R.id.textView_restoRating);
+        textView_restoRatingCount = linearLayoutCustomViewResto.findViewById(R.id.textView_restoRatingCount);
+        ratingBar_restoRating = linearLayoutCustomViewResto.findViewById(R.id.ratingBar_restoRating);
+        imageView_logoResto = linearLayoutCustomViewResto.findViewById(R.id.imageView_logoResto);
+        imageButton_appointment = linearLayoutCustomViewResto.findViewById(R.id.imageButton_appointment);
+
+        button_message.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onMarkerClick(final Marker marker) {
-                Log.d("GoogleMap", " click");
+            public void onClick(View v) {
+                if(clickedUserMarker != null) {
+                    UserLocation userLocation = clickedUserMarker.getUserLocation();
 
-                if(marker.getTag() != null) {
-                    button_directions.setVisibility(View.VISIBLE);
-                    button_message.setVisibility(View.VISIBLE);
-
-                    UserLocation clickedUser = (UserLocation) marker.getTag();
-                    textView_name.setText(clickedUser.getName());
-                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
-
-                    Picasso.get().load(clickedUser.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                        @Override
-                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-//                            currentBitmap = bitmap.copy(bitmap.getConfig(), true);
-//
-//                            Canvas canvasBmp2 = new Canvas( currentBitmap );
-//                            canvasBmp2.drawBitmap(bitmap, 0, 0, null);
-
-                            if (marker.equals(lastClickedMarker)) {
-                                if (linearLayoutCustomView.getVisibility() == View.VISIBLE) {
-                                    linearLayoutCustomView.setVisibility(View.GONE);
-                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
-                                } else {
-                                    linearLayoutCustomView.setVisibility(View.VISIBLE);
-                                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                                }
-
-                            } else {
-                                if (lastClickedMarker != null && lastBitmap != null) {
-                                    //UserLocation lastClickedUser = (UserLocation) lastClickedMarker.getTag();
-                                    lastClickedMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, lastBitmap)));
-                                }
-
-                                lastClickedMarker = marker;
-                                lastBitmap = bitmap;
-
-                                linearLayoutCustomView.setVisibility(View.VISIBLE);
-                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
-                            }
-                        }
-
-                        @Override
-                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                        }
-
-                        @Override
-                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-                        }
-                    });
+                    if(userLocation.getUser_id() != currentUser.getUser_id()){
+                        Intent intent = new Intent(getActivity(), ChatActivity.class);
+                        intent.putExtra("other_user_id", userLocation.getUser_id());
+                        intent.putExtra("other_user_name", userLocation.getName());
+                        intent.putExtra("other_user_profile_picture", userLocation.getProfile_image());
+                        startActivity(intent);
+                    }
                 }
-
-                return false;
             }
         });
 
-        //click event listner on MAP
+        button_profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(clickedUserMarker != null) {
+                    UserLocation userLocation = clickedUserMarker.getUserLocation();
+                    if(userLocation.getUser_id() == currentUser.getUser_id()){
+                        startActivity(new Intent(getActivity(), ProfileUserActivity.class));
+                    }else{
+                        Intent intent = new Intent(getActivity(), OtherUsersProfileActivity.class);
+                        intent.putExtra("user_id", userLocation.getUser_id());
+                        startActivity(intent);
+                    }
+                }
+            }
+        });
+
+        linearLayoutCustomViewResto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(clickedRestoMarker != null){
+                    ModelResto resto = clickedRestoMarker.getResto();
+                    if (resto.getId_resto().equals("resto_" + currentUser.getUser_id())) {
+                        //send currentUser to his resto profile
+                        startActivity(new Intent(getActivity(), ProfileRestoActivity.class));
+                    }else {
+                        //send currentUser to other resto profile
+                        Intent intent = new Intent(getActivity(), OtherRestoProfileActivity.class);
+                        intent.putExtra("id_resto", resto.getId_resto());
+                        startActivity(intent);
+                    }
+                }
+            }
+        });
+
+        imageButton_appointment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Toast.makeText(getActivity(), "Appointment", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), NewAppointmentActivity.class);
+                intent.putExtra("restaurant", clickedRestoMarker.getResto());
+                startActivity(intent);
+            }
+        });
+
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
             public void onMapClick(LatLng arg0)
             {
                 Log.d(TAG, "test : map clicked");
-                if (linearLayoutCustomView.getVisibility() == View.VISIBLE){
-                    linearLayoutCustomView.setVisibility(View.GONE);
-                }
+                linearLayoutCustomViewUser.setVisibility(View.GONE);
+                linearLayoutCustomViewResto.setVisibility(View.GONE);
+                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+
+                searchView.setQuery("", false);
+                searchView.setIconified(true);
+//                if(otherMarkerList.size() > 0){
+//                    for(int i=0; i < otherMarkerList.size(); i++){
+//                        otherMarkerList.get(i).setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+//                    }
+//                }
+            }
+
+
+        });
+
+        mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                FavoriteDialog favoriteDialog = new FavoriteDialog(latLng);
+                favoriteDialog.setTargetFragment(GMapFragment.this, 1);
+                favoriteDialog.show(getFragmentManager(), "favorite dialog");
             }
         });
 
         if(mServicesIsGood) {
             updateLocationUI();
             checkSeekBarDistance();
+            initialiseClusters();
+            showFavoriteMarker();
         }
     }
 
@@ -305,6 +423,286 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
     // [END maps_current_place_update_location_ui]
+
+    //creata a new favorite location and put marker on it
+    //and save into the database
+    @Override
+    public void getMarkerOptions(final String title, final String description, final LatLng latLng) {
+        FavoriteLocation favoriteLocation = new FavoriteLocation(latLng.latitude, latLng.longitude, title, description);
+
+        userReference.document(currentUser.getUser_id())
+                .collection("FavoriteCollection")
+                .document(title)
+                .set(favoriteLocation)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            MarkerOptions markerOptions = new MarkerOptions()
+                                    .position(latLng)
+                                    .title(title)
+                                    .snippet(description)
+                                    .draggable(true);
+
+                            favoriteMarkerCollection.addMarker(markerOptions);
+
+                            Toast.makeText(getActivity(), "Location ajoutée", Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(getActivity(), "Une erreur s'est produite!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    //get and show saved favorite markers
+    private void showFavoriteMarker(){
+        if(mGoogleMap != null){
+            userReference.document(currentUser.getUser_id())
+                    .collection("FavoriteCollection")
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            if (!queryDocumentSnapshots.isEmpty()) {
+                                favoriteMarkerCollection.clear();
+
+                                for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                    FavoriteLocation favoriteLocation = documentSnapshot.toObject(FavoriteLocation.class);
+
+                                    MarkerOptions markerOptions = new MarkerOptions()
+                                            .position(new LatLng(favoriteLocation.getLatitude(), favoriteLocation.getLongitude()))
+                                            .title(favoriteLocation.getTitle())
+                                            .snippet(favoriteLocation.getDescription())
+                                            .draggable(true);
+
+                                    Marker marker = mGoogleMap.addMarker(markerOptions);
+
+                                    favoriteMarkerCollection.addMarker(markerOptions);
+
+                                    marker.remove();
+
+                                    Log.d(TAG, "drag : add marker " + favoriteLocation.getTitle() + " at : " + favoriteMarkerCollection.getMarkers().size());
+                                }
+                            }
+                        }
+                    });
+        }
+    }
+
+    //Initialise the cluster managers for Restaurants and Users and set the rendrers, and clickListners
+    private void initialiseClusters(){
+        markerManager = new MarkerManager(mGoogleMap);
+
+        if(mGoogleMap != null) {
+            if (mClusterManagerRestaurant == null) {
+                mClusterManagerRestaurant = new ClusterManager<ClusterMarkerRestaurant>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
+                mClusterManagerRestaurant.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerRestaurant>());
+            }
+
+            if (mClusterManagerUser == null) {
+                mClusterManagerUser = new ClusterManager<ClusterMarkerUser>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
+                mClusterManagerUser.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerUser>());
+
+                mGoogleMap.setOnMarkerDragListener(mClusterManagerUser.getMarkerManager());
+                mGoogleMap.setOnMarkerClickListener(mClusterManagerUser.getMarkerManager());
+                favoriteMarkerCollection = mClusterManagerUser.getMarkerManager().newCollection();
+
+                favoriteMarkerCollection.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+                    @Override
+                    public void onMarkerDragStart(Marker marker) {
+                        Toast.makeText(getActivity(), "Repositionnez le marqueur", Toast.LENGTH_SHORT).show();
+
+                        Log.d(TAG, "onMarkerDragStart: START");
+                    }
+
+                    @Override
+                    public void onMarkerDrag(Marker marker) {
+
+                    }
+
+                    @Override
+                    public void onMarkerDragEnd(Marker marker) {
+                        userReference.document(currentUser.getUser_id())
+                                .collection("FavoriteCollection")
+                                .document(marker.getTitle())
+                                .update("latitude", marker.getPosition().latitude,
+                                        "longitude", marker.getPosition().longitude);
+
+                        Log.d(TAG, "onMarkerDragEnd: END");
+                    }
+                });
+
+                favoriteMarkerCollection.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+                    @Override
+                    public boolean onMarkerClick(Marker marker) {
+                        Log.d(TAG, "onMarkerClick: dragclick on : " + marker.getId());
+
+                        if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewUser.setVisibility(View.GONE);
+                        }
+
+                        if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewResto.setVisibility(View.GONE);
+                        }
+
+                        return false;
+                    }
+                });
+
+                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+                    @Override
+                    public void onInfoWindowLongClick(final Marker marker) {
+                        userReference.document(currentUser.getUser_id())
+                                .collection("FavoriteCollection")
+                                .document(marker.getTitle())
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
+
+                                        favoriteMarkerCollection.remove(marker);
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                });
+            }
+
+            if (mClusterManagerRendererRestaurant == null) {
+                mClusterManagerRendererRestaurant = new ClusterManagerRendererRestaurant(
+                        getActivity(),
+                        mGoogleMap,
+                        mClusterManagerRestaurant
+                );
+                mClusterManagerRestaurant.setRenderer(mClusterManagerRendererRestaurant);
+                getRestaurantLocation();
+
+                mClusterManagerRestaurant.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener() {
+                    @Override
+                    public boolean onClusterItemClick(ClusterItem item) {
+                        Log.d(TAG, " marker : click on restaurant " + item.getTitle());
+
+                        if(linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewUser.setVisibility(View.GONE);
+                        }
+
+                        clickedRestoMarker = (ClusterMarkerRestaurant) item;
+                        ModelResto clickedResto = clickedRestoMarker.getResto();
+
+                        //Set the data for the clicked Restaurant
+                        textView_restoName.setText(clickedResto.getName_resto());
+                        textView_restoSpeciality.setText(clickedResto.getSpeciality_resto());
+                        textView_restoRating.setText(clickedResto.getRating_resto());
+                        ratingBar_restoRating.setRating(Float.parseFloat(clickedResto.getRating_resto()));
+                        textView_restoRatingCount.setText(clickedResto.getNbrRating_resto());
+                        Picasso.get().load(clickedResto.getLogo_resto()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_logoResto);
+
+                        if (clickedRestoMarker.equals(lastClickedRestoMarker)) {
+                            if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
+                                linearLayoutCustomViewResto.setVisibility(View.GONE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+//
+                            } else {
+                                linearLayoutCustomViewResto.setVisibility(View.VISIBLE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+                            }
+
+                        } else {
+
+                            lastClickedRestoMarker = clickedRestoMarker;
+
+                            linearLayoutCustomViewResto.setVisibility(View.VISIBLE);
+                            mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+//                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+                        }
+
+                        return false;
+                    }
+                });
+
+
+            }
+
+            if (mClusterManagerRendererUser == null) {
+                mClusterManagerRendererUser = new ClusterManagerRendererUser(
+                        getActivity(),
+                        mGoogleMap,
+                        mClusterManagerUser
+                );
+                mClusterManagerUser.setRenderer(mClusterManagerRendererUser);
+                getOtherLocation();
+
+                mClusterManagerUser.setOnClusterItemClickListener(new ClusterManager.OnClusterItemClickListener() {
+                    @Override
+                    public boolean onClusterItemClick(ClusterItem item) {
+                        Log.d(TAG, " marker : click on currentUser " + item.getTitle());
+                        if(linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                            linearLayoutCustomViewResto.setVisibility(View.GONE);
+                        }
+
+                        clickedUserMarker = (ClusterMarkerUser) item;
+                        UserLocation userLocation = clickedUserMarker.getUserLocation();
+
+                        if(userLocation.getUser_id() == currentUser.getUser_id()){
+                            button_direction.setVisibility(View.GONE);
+                            button_message.setVisibility(View.GONE);
+                        }else{
+                            button_direction.setVisibility(View.VISIBLE);
+                            button_message.setVisibility(View.VISIBLE);
+
+//                                PolylineOptions polylineOptions = new PolylineOptions()
+//                                        .add(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()))
+//                                        .add(new LatLng(userLocation.getLatitude(), userLocation.getLongitude()))
+//                                        .color(Color.BLUE)
+//                                        .endCap(new RoundCap());
+//
+//                                Polyline polyline = mGoogleMap.addPolyline(polylineOptions);
+                        }
+
+                        textView_name.setText(userLocation.getName());
+
+                        Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
+
+                        if (clickedUserMarker.equals(lastClickedUserMarker)) {
+                            if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {
+                                linearLayoutCustomViewUser.setVisibility(View.GONE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(true);
+//                                            clickedUser.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)));
+                            } else {
+                                linearLayoutCustomViewUser.setVisibility(View.VISIBLE);
+                                mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+//                                            marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+                            }
+
+                        } else {
+
+                            lastClickedUserMarker = clickedUserMarker;
+
+                            linearLayoutCustomViewUser.setVisibility(View.VISIBLE);
+                            mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+//                                        clickedUserMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomClickedMarkerView, bitmap)));
+                        }
+
+                        return false;
+                    }
+                });
+            }
+
+//            mGoogleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+//                @Override
+//                public void onCameraChange(CameraPosition cameraPosition) {
+//                    mClusterManagerRestaurant.onCameraIdle();
+//                    mClusterManagerUser.onCameraIdle();
+//                }
+//            });
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //START REALTIME SERVICES - UPDATE USER'S LOCATION TO FIREBASE AND RETRIEVING OTHERS' LOCATIONS
@@ -341,56 +739,83 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
     private void startOtherUserLocationsRunnable(){
-        Log.d(TAG, "startOtherUserLocationsRunnable: starting runnable for retrieving updated locations.");
-        mHandler.postDelayed(mOtherRunnable = new Runnable() {
+        Log.d(TAG, "self: starting runnable for retrieving updated other_locations.");
+        otherHandler.postDelayed(mOtherRunnable = new Runnable() {
             @Override
             public void run() {
                 updateOtherLocation();
-                mHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
+//                updateUserLocation();
+                otherHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
     }
 
     //STOP THE SERVICE
     private void stopOtherLocationUpdates(){
-        mHandler.removeCallbacks(mOtherRunnable);
+        otherHandler.removeCallbacks(mOtherRunnable);
     }
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
-    private void startUserLocationsRunnable(final Marker marker){
-        Log.d(TAG, "startOtherUserLocationsRunnable: starting runnable for retrieving updated locations.");
-        mHandler.postDelayed(mUserRunnable = new Runnable() {
+    private void startUserLocationsRunnable(){
+        Log.d(TAG, "self: starting runnable for retrieving updated self_locations.");
+        userHandler.postDelayed(mUserRunnable = new Runnable() {
             @Override
             public void run() {
-                Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Location> task) {
-                                if (task.isSuccessful()) {
-                                    // Set the map's camera position to the current location of the device.
-                                    lastKnownLocation = task.getResult();
-
-                                    LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                    distanceCircle.setCenter(userPosition);
-                                    marker.setPosition(userPosition);
-                                }
-                            }
-                        });
-                                    mHandler.postDelayed(mOtherRunnable, LOCATION_UPDATE_INTERVAL);
+                updateUserLocation();
+                userHandler.postDelayed(mUserRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
     }
 
     //STOP THE SERVICE
     private void stopUserLocationUpdates(){
-        mHandler.removeCallbacks(mUserRunnable);
+        userHandler.removeCallbacks(mUserRunnable);
     }
 
     //CHECK THE SEEKBAR CHANGE STATE
     // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
     //IF NOT STOP THE RUNNABLE AND CLEAR THE MARKERS AND THE LIST
+    private void getRestaurantLocation(){
+        restoReference.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                final ModelResto resto = documentSnapshot.toObject(ModelResto.class);
 
-    private void getOtherPosition(){
+                                Double latitude = resto.getLatitude();
+                                Double longitude = resto.getLongitude();
+
+                                final LatLng restoPosition = new LatLng(latitude, longitude);
+
+                                ClusterMarkerRestaurant clusterMarkerRestaurant = new ClusterMarkerRestaurant(
+                                        restoPosition,
+                                        "",
+                                        "",
+                                        resto
+                                );
+
+                                mClusterManagerRestaurant.addItem(clusterMarkerRestaurant);
+                                mClusterMarkersRestaurant.add(clusterMarkerRestaurant);
+                                allRestoList.add(resto);
+                            }
+
+                            mClusterManagerRestaurant.cluster();
+                            Log.d(TAG, " search : resto size" + allRestoList.size());
+                        }
+                    }
+
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+    private void getOtherLocation(){
         mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -402,43 +827,63 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
 
                     if(userLocation != null){
                         final LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                        final Marker[] marker = new Marker[1];
-                        String url = userLocation.getProfile_image();
+//                        final Marker[] marker = new Marker[1];
+//                        String url = userLocation.getProfile_image();
+//
+//                        if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
+//                            Log.d(TAG, " test : onDataChange: " + userLocation.getName());
+//
+//                            Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                @Override
+//                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//
+//                                    MarkerOptions markerOptions = new MarkerOptions()
+//                                            .position(otherPosition)
+//                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap)))
+//                                            .visible(false);
+//
+//                                    marker[0] = mGoogleMap.addMarker(markerOptions);
+//                                    marker[0].setTag(userLocation);
+//
+////                                    marker[0].setVisible(false);
+//
+//                                    userMarkerOptionsList.add(markerOptions);
+//
+//                                    otherMarkerList.add(i[0], marker[0]);
+//
+//                                    markerBitmap.put(userLocation.getUser_id(), bitmap);
+//                                    i[0]++;
+//                                }
+//
+//                                @Override
+//                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                }
+//
+//                                @Override
+//                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                }
+//                            });
+//                        }
 
-                        if(!userLocation.getUser_id().equals(user.getUser_id())){
-                            Log.d(TAG, " test : onDataChange: " + userLocation.getName());
+                        if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
+                            ClusterMarkerUser clusterMarkerUser = new ClusterMarkerUser(
+                                    otherPosition,
+                                    "",
+                                    "",
+                                    userLocation
+                            );
 
-                            Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
-                                @Override
-                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-
-                                    marker[0] = mGoogleMap.addMarker(new MarkerOptions()
-                                            .position(otherPosition)
-                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
-                                    marker[0].setTag(userLocation);
-
-                                    marker[0].setVisible(false);
-
-                                    Log.d(TAG, "test : add marker " + i[0] +1);
-                                    otherMarkerList.add(i[0], marker[0]);
-
-                                    markerBitmap.put(userLocation.getUser_id(), bitmap);
-                                    i[0]++;
-                                }
-
-                                @Override
-                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
-
-                                }
-
-                                @Override
-                                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                                }
-                            });
+//                            mClusterManagerUser.addItem(clusterMarkerUser);
+                            mClusterMarkersUser.add(i[0], clusterMarkerUser);
+                            otherUserLocationList.add(i[0], userLocation);
                         }
                     }
                 }
-                Log.d(TAG, " test : All position get");
+
+                mClusterManagerUser.cluster();
+
+                Log.d(TAG, " search : otherList size" + otherUserLocationList.size());
             }
 
             @Override
@@ -453,25 +898,42 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         seekBar_distance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                distanceRadius = seekBarProgress*100;
-
                 seekBarProgress = progress;
+
+                distanceRadius = seekBarProgress*100;
                 distanceCircle.setRadius(distanceRadius);
 
-                for(int i = 0; i < otherMarkerList.size(); i++){
-                    Marker marker = otherMarkerList.get(i);
+//                for(int i = 0; i < otherMarkerList.size(); i++){
+//                    Marker marker = otherMarkerList.get(i);
+//
+//                    Location location = new Location("otherLocation");
+//                    location.setLatitude(marker.getPosition().latitude);
+//                    location.setLongitude(marker.getPosition().longitude);
+//
+//                    currentDistance = Math.round(lastKnownLocation.distanceTo(location));
+//
+//                    if(currentDistance < distanceRadius){
+//                        marker.setVisible(true);
+//                    }else {
+//                        marker.setVisible(false);
+//                    }
+//                }
+
+                for(int i = 0; i < mClusterMarkersUser.size(); i++){
+                    ClusterMarkerUser markerUser = mClusterMarkersUser.get(i);
 
                     Location location = new Location("otherLocation");
-                    location.setLatitude(marker.getPosition().latitude);
-                    location.setLongitude(marker.getPosition().longitude);
+                    location.setLatitude(markerUser.getPosition().latitude);
+                    location.setLongitude(markerUser.getPosition().longitude);
 
                     currentDistance = Math.round(lastKnownLocation.distanceTo(location));
 
                     if(currentDistance < distanceRadius){
-                        marker.setVisible(true);
+                        mClusterManagerUser.addItem(markerUser);
                     }else {
-                        marker.setVisible(false);
+                        mClusterManagerUser.removeItem(markerUser);
                     }
+                    mClusterManagerUser.cluster();
                 }
             }
 
@@ -486,7 +948,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 if(seekBarProgress == 0){
                     stopOtherLocationUpdates();
                 }else {
-                    if(!otherMarkerList.isEmpty()){
+                    if(!mClusterMarkersUser.isEmpty()){
                         startOtherUserLocationsRunnable();
                     }
 
@@ -505,17 +967,23 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                     //Getting User object from dataSnapshot
                     UserLocation userLocation = data.getValue(UserLocation.class);
                     LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
-                    Marker marker;
-                    try {
-                        marker = otherMarkerList.get(i);
-                        marker.setPosition(otherPosition);
-                        otherMarkerList.set(i, marker);
-                        i++;
+                    ClusterMarkerUser markerUser;
 
-                        Log.d(TAG, " test : other position updated");
-                    }catch (Exception e){
-                        Log.e(TAG, "%s" + e);
+                    if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
+                        try {
+                            markerUser = mClusterMarkersUser.get(i);
+                            markerUser.setPosition(otherPosition);
+                            mClusterMarkersUser.set(i, markerUser);
+                            i++;
+
+                            mClusterManagerUser.cluster();
+
+                            Log.d(TAG, " marker : other position updated" + userLocation.getName());
+                        }catch (Exception e){
+                            Log.e(TAG, "%s" + e);
+                        }
                     }
+
                 }
             }
             @Override
@@ -523,6 +991,50 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                 Log.e(TAG, "%s" + error);
             }
         });
+    }
+
+    private void updateUserLocation(){
+        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+        locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    lastKnownLocation = task.getResult();
+
+                    LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    distanceCircle.setCenter(userPosition);
+                    userMarker.setPosition(userPosition);
+
+//                    Log.d(TAG, "self: set currentUser marker position");
+                }
+            }
+        });
+
+//        mUserLocationReference.child(currentUser.getUser_id()).addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot data : dataSnapshot.getChildren()) {
+//                    //Getting User object from dataSnapshot
+//                    UserLocation userLocation = data.getValue(UserLocation.class);
+//
+//                    Log.d(TAG, "self: " + data.getValue());
+//                    LatLng userPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
+//                    try {
+//                        distanceCircle.setCenter(userPosition);
+//                        userMarker.setPosition(userPosition);
+//
+//                        Log.d(TAG, "self: set marker position");
+//                    }catch (Exception e){
+//                        Log.e(TAG, "%s" + e);
+//                    }
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError error) {
+//                Log.e(TAG, "%s" + error);
+//            }
+//        });
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -564,12 +1076,16 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                             if (lastKnownLocation != null) {
 
                                 GeoPoint geoPoint = new GeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                                mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                                Log.d(TAG, "FT : Location updated!!");
 
-                                String url = user.getProfile_image();
+                                if(bundleRestaurantPosition == null){
+                                    mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                            new LatLng(lastKnownLocation.getLatitude(),
+                                                    lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                }
+
+
+                                String url = currentUser.getProfile_image();
+
                                 final LatLng myPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
 
                                 Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
@@ -577,16 +1093,21 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                                         // Todo: Do something with your bitmap here
 
-                                        userMarker = mGoogleMap.addMarker(new MarkerOptions()
-                                                .position(myPosition)
-                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
-                                        userMarker.setTag(mUserLocation);
+                                        userMarker = new ClusterMarkerUser(
+                                                myPosition,
+                                                "",
+                                                "",
+                                                mUserLocation
+                                        );
 
-                                        Log.d(TAG, "FT : add marker");
+                                        mClusterManagerUser.addItem(userMarker);
+                                        mClusterManagerUser.cluster();
 
-                                        markerBitmap.put(user.getUser_id(), bitmap);
+                                        Log.d(TAG, "self : add marker");
 
-                                        startUserLocationsRunnable(userMarker);
+                                        markerBitmap.put(currentUser.getUser_id(), bitmap);
+
+                                        startUserLocationsRunnable();
                                     }
 
                                     @Override
@@ -599,6 +1120,65 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                     }
                                 });
 
+//                                if(!url.equals("NULL")){
+//                                    Log.d(TAG, "self : test non null");
+//
+//                                    Picasso.get().load(url).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                        @Override
+//                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                            // Todo: Do something with your bitmap here
+//
+//                                            userMarker = mGoogleMap.addMarker(new MarkerOptions()
+//                                                    .position(myPosition)
+//                                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
+//                                            userMarker.setTag(mUserLocation);
+//
+//                                            Log.d(TAG, "self : add marker");
+//
+//                                            markerBitmap.put(currentUser.getUser_id(), bitmap);
+//
+//                                            startUserLocationsRunnable(userMarker);
+//                                        }
+//
+//                                        @Override
+//                                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                        }
+//                                    });
+//                                }else{
+//                                    Log.d(TAG, "self : test null");
+//
+//                                    Picasso.get().load(R.drawable.ic_image_profile_icon_dark).resize(100, 100).transform(new CropCircleTransformation()).into(new Target() {
+//                                        @Override
+//                                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+//                                            // Todo: Do something with your bitmap here
+//
+//                                            userMarker = mGoogleMap.addMarker(new MarkerOptions()
+//                                                    .position(myPosition)
+//                                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(mCustomDefaultMarkerView, bitmap))));
+//                                            userMarker.setTag(mUserLocation);
+//
+//                                            Log.d(TAG, "self : add marker");
+//
+//                                            markerBitmap.put(currentUser.getUser_id(), bitmap);
+//
+//                                            startUserLocationsRunnable(userMarker);
+//                                        }
+//
+//                                        @Override
+//                                        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+//
+//                                        }
+//
+//                                        @Override
+//                                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+//                                        }
+//                                    });
+//                                }
 
                                 mUserLocation.setLatitude(geoPoint.getLatitude());
                                 mUserLocation.setLongitude(geoPoint.getLongitude());
@@ -606,7 +1186,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
                                 distanceCircle = mGoogleMap.addCircle(new CircleOptions()
                                         .center(new LatLng(lastKnownLocation.getLatitude(),
                                                 lastKnownLocation.getLongitude()))
-                                        .radius(seekBarProgress)
+                                        .radius(seekBarProgress*100)
                                         .strokeWidth(1)
                                         .strokeColor(Color.GREEN)
                                         .fillColor(Color.argb(128, 255, 0, 0))
@@ -726,7 +1306,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
 
         if(available == ConnectionResult.SUCCESS){
-            //everything is fine and the user can make map requests
+            //everything is fine and the currentUser can make map requests
             Log.d(TAG, "FT : isServicesOK: Google Play Services is working");
             return true;
         }
@@ -854,7 +1434,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         stopOtherLocationUpdates();
         Log.d(TAG, "FT : OnDestroyView");
 
-        otherMarkerList.clear();
+        mClusterMarkersUser.clear();
+        userMarkerOptionsList.clear();
         stopUserLocationUpdates();
     }
 
@@ -874,13 +1455,88 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         mMapView.onLowMemory();
     }
 
+    //Configure the recyclerView's adapter
+    public void setAdapter(ArrayList list){
+        adapterMapSearch = new AdapterMapSearch(getActivity(), list, this);
+        recyclerView.setAdapter(adapterMapSearch);
+    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
-        menu.findItem(R.id.menu_search_button).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
+
+//        mClusterMarkersRestaurant;
+
+        item_search =  menu.findItem(R.id.menu_search_button);
+        searchView = (SearchView) MenuItemCompat.getActionView(item_search);
+
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!currentSearchQuery.equals("")){
+                    searchView.setQuery(currentSearchQuery, false);
+                }
+
+                if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                    linearLayoutCustomViewUser.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //called when currentUser press search button
+                if (!TextUtils.isEmpty(query)){
+                    searchQuery(query);
+
+                    setAdapter(queryList);
+                }else {
+                    setAdapter(queryList);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                //called as and when currentUser press any lettre
+                queryList.clear();
+
+                if (!TextUtils.isEmpty(query)){
+                    searchQuery(query);
+
+                    setAdapter(queryList);
+                }else {
+                    setAdapter(queryList);
+                }
+                return false;
+            }
+        });
     }
+
+    private void searchQuery(String query)
+    {
+        if(!allRestoList.isEmpty()){
+            ModelResto resto;
+            for (int i = 0; i < allRestoList.size(); i++) {
+                resto = allRestoList.get(i);
+                if (resto.getName_resto().toLowerCase().contains(query.toLowerCase())) {
+                    queryList.add(resto);
+                }
+            }
+        }
+        if(!otherUserLocationList.isEmpty()){
+            UserLocation userLocation;
+            for (int i = 0; i < otherUserLocationList.size(); i++) {
+                userLocation = otherUserLocationList.get(i);
+                if (userLocation.getName().toLowerCase().contains(query.toLowerCase())) {
+                    queryList.add(userLocation);
+                }
+            }
+        }
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -900,7 +1556,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     private void avertissement() {
-        if(user!=null)
+        if(currentUser !=null)
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -944,5 +1600,38 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback{
         startActivity(logOut);
 
         getActivity().finish();
+    }
+
+    //Handle clcik on restaurant search results
+    @Override
+    public void onMapSearchClick(int position) {
+
+        Object object = queryList.get(position);
+        Double searchLatitude = lastKnownLocation.getLatitude(),
+                searchLongitude = lastKnownLocation.getLongitude();
+
+        if(object instanceof ModelResto){
+            searchLatitude = ((ModelResto) object).getLatitude();
+            searchLongitude = ((ModelResto) object).getLongitude();
+        }else if(object instanceof UserLocation){
+            searchLatitude = ((UserLocation) object).getLatitude();
+            searchLongitude = ((UserLocation) object).getLongitude();
+        }
+
+        if (mLocationPermissionGranted){
+            if(!queryList.isEmpty()){
+                if(searchLatitude != null && searchLongitude != null){
+                    Log.d(TAG, "resto : got bundle restoLocation " + searchLatitude + " " + searchLongitude);
+                    LatLng restoPosition = new LatLng(searchLatitude, searchLongitude);
+
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            restoPosition, DEFAULT_ZOOM));
+                }
+            }
+        }
+
+        currentSearchQuery = searchView.getQuery().toString();
+        searchView.setQuery("",false);
+        searchView.setIconified(true);
     }
 }

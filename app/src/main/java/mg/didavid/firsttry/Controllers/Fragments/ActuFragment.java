@@ -116,37 +116,20 @@ public class ActuFragment extends Fragment {
 
     private void listenDocumentChanges() {
         //listen if there some data added or deleted, then reload post
-        collectionPosts.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-        @Override
-        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-            if (!queryDocumentSnapshots.isEmpty()) {
-                    List<ModelePost> modelePosts2 = queryDocumentSnapshots.toObjects(ModelePost.class);
-                    int size = modelePosts2.size();
-                    for (int i = 0; i < size; i++) {
-                        String user_name = modelePosts2.get(i).getName();
-                        collectionPosts.whereEqualTo("name", user_name)
-                                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                        for (DocumentChange documentChange : value.getDocumentChanges()) {
-                                            switch (documentChange.getType()) {
-                                                case REMOVED:
-                                                case ADDED:
-                                                    loadPosts();
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                });
+        collectionPosts.whereEqualTo("user_id", user.getUid())
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        for (DocumentChange documentChange : value.getDocumentChanges()) {
+                            switch (documentChange.getType()) {
+                                case REMOVED:
+                                case ADDED:
+                                    loadPosts();
+                                    break;
+                            }
+                        }
                     }
-            }
-        }
-    }).addOnFailureListener(new OnFailureListener() {
-        @Override
-        public void onFailure(@NonNull Exception e) {
-            Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-    });
+                });
     }
 
     //inflate option menu
@@ -163,7 +146,7 @@ public class ActuFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
                 }else {
@@ -174,7 +157,7 @@ public class ActuFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
                 }else {
@@ -296,7 +279,7 @@ public class ActuFragment extends Fragment {
     }
 
     private void logOut() {
-        progressDialog_logout.show();
+        progressDialog_logout.cancel();
         FirebaseAuth.getInstance().signOut();
         GoogleSignIn.getClient(
                 getContext(),

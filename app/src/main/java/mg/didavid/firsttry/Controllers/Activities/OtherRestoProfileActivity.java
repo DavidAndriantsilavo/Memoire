@@ -3,22 +3,26 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -58,8 +62,9 @@ import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class OtherRestoProfileActivity extends AppCompatActivity {
+public class OtherRestoProfileActivity extends AppMode {
 
     String resto_name, rating_resto, speciality_resto, id_resto;
 
@@ -69,7 +74,7 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
     TextView textView_showAllMenu;
     ImageButton imageButton_fleche;
     RatingBar ratingBar;
-    Button btn_noter;
+    Button btn_noter, btn_commander;
 
     List<ModelePost> modelePosts_profile;
     AdapteursPost adapteursPost_profile;
@@ -97,6 +102,7 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
         textView_showAllMenu = findViewById(R.id.textView_showListMene_otherRestoProfile);
         imageButton_fleche = findViewById(R.id.flecheBtn_OtherRestoProfile);
         btn_noter = findViewById(R.id.btn_rate_otherRestoProfile);
+        btn_commander = findViewById(R.id.btn_commander_otherRestoProfile);
         ratingBar = findViewById(R.id.ratingBar_otherRestoProfile);
 
         //linear layout for recyclerView
@@ -149,9 +155,18 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
                                     }else {
                                         showRatingDialog(id_resto);
                                     }
+                                }else {
+                                    showRatingDialog(id_resto);
                                 }
                             }
                         });
+            }
+        });
+
+        btn_commander.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showChoiceDialog(id_resto);
             }
         });
 
@@ -159,6 +174,45 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
         checkingRestoInfo();
         loadSampleMenu();
         loadRestoPost();
+    }
+
+    private void showChoiceDialog(final String id_resto) {
+        String[] options = {"Appeler", "Envoyer un email"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        callRestaurant(id_resto);
+                        break;
+                    case 1:
+                        sendEmailToRestaurant(id_resto);
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    private void sendEmailToRestaurant(String id_resto) {
+    }
+
+    private void callRestaurant(String id_resto) {
+        FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Intent callResto = new Intent(Intent.ACTION_CALL);
+                        callResto.setData(Uri.parse("tel:" + documentSnapshot.getString("phone_resto")));
+                        if (ActivityCompat.checkSelfPermission(OtherRestoProfileActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions(OtherRestoProfileActivity.this, new String[] {Manifest.permission.CALL_PHONE}, 1996);
+                            return;
+                        }
+                        startActivity(callResto);
+                    }
+                });
     }
 
     private void loadRestoPost() {
@@ -193,7 +247,7 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
     private void showRatingDialog(final String id_resto) {
         //create dialog
         final Dialog ratingDialog = new Dialog(this);
-        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setContentView(R.layout.dialog_rating);
         ratingDialog.setCanceledOnTouchOutside(false);
 
         //init dialog views
@@ -257,6 +311,7 @@ public class OtherRestoProfileActivity extends AppCompatActivity {
                                         });
                             }
                         });
+                ratingDialog.dismiss();
             }
         });
 

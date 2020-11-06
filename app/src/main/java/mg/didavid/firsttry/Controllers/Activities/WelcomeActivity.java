@@ -63,8 +63,9 @@ import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class WelcomeActivity extends AppCompatActivity {
+public class WelcomeActivity extends AppMode {
 
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     CollectionReference userCollectionReference = db.collection("Users");
@@ -79,7 +80,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
-    private String profileImage_Uri = "NULL";
+    private String profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
     private final String TAG= "MainActivity";
 
     private String[] separated_name;
@@ -121,6 +122,9 @@ public class WelcomeActivity extends AppCompatActivity {
         button_send = findViewById(R.id.button_send);
         addProfileImage = findViewById(R.id.linearLayout_add_profileImage_welcome);
         profileImage_imageView = findViewById(R.id.imageView_profileImage_welcome);
+
+        //set default profile picture
+
 
         storageReference = FirebaseStorage.getInstance().getReference();
 
@@ -164,7 +168,13 @@ public class WelcomeActivity extends AppCompatActivity {
                     sexe = radioButton_selected.getText().toString();
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
-                    profileImage_Uri = imageCompressed_uri.toString();
+
+                    if(imageCompressed_uri != null){
+                        profileImage_Uri = imageCompressed_uri.toString();
+                    }else{
+                        profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
+
+                    }
 
                     final User user = new User(email, user_id, display_name, phone, finalPassword, sexe, pseudo, profileImage_Uri);
                     storeUserData(user);

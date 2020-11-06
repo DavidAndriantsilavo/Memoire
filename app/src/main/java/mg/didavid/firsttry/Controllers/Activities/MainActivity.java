@@ -1,9 +1,13 @@
 package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import androidx.appcompat.widget.Toolbar;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.FragmentTransaction;
 
 
@@ -11,38 +15,37 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.view.Menu;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import android.view.ViewGroup;
+
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationItemView;
+import com.google.android.material.bottomnavigation.BottomNavigationMenu;
+import com.google.android.material.bottomnavigation.BottomNavigationMenuView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.Map;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import mg.didavid.firsttry.Controllers.Fragments.ActuFragment;
 import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
@@ -52,12 +55,11 @@ import mg.didavid.firsttry.Controllers.Fragments.RestoFragment;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppMode {
 
-    BottomNavigationView navigationView;
-
-    ProgressDialog  progressDialog_del_account, progressDialog_logout;
+    public BottomNavigationView navigationView;
 
     FirebaseUser FirebaseUser = FirebaseAuth.getInstance().getCurrentUser();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -69,6 +71,15 @@ public class MainActivity extends AppCompatActivity{
 
     private final String TAG = "MainActivity";
 
+    private int mInterval = 15000; // 15 minutes by default, can be changed later
+    private Handler mHandler;
+
+    int i = 0;
+
+    boolean firstTime = true, haveBadge;
+    int count = 0, countFirstTime = 0;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,13 +88,12 @@ public class MainActivity extends AppCompatActivity{
 
         this.configureToolbar();
 
+        mHandler = new Handler();
+        startRepeatingTask();
+
         navigationView = findViewById(R.id.menu_nav); //associate view with the BottomNavigationView object
         navigationView.setOnNavigationItemSelectedListener(selectedListener); //set BottomNavigationView focus onto the selected item
 
-
-        //init progressDialog
-        progressDialog_logout = new ProgressDialog(this);
-        progressDialog_logout.setMessage("Déconnexion...");
 
         //default view
         accueil();
@@ -106,6 +116,76 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    Runnable mStatusChecker = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                listenerDataChange();
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // the updated method throws an exception
+                mHandler.postDelayed(mStatusChecker, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        mStatusChecker.run();
+    }
+
+    void stopRepeatingTask() {
+        mHandler.removeCallbacks(mStatusChecker);
+    }
+
+    private void listenerDataChange() {
+        final CollectionReference collectionPost = FirebaseFirestore.getInstance().collection("Publications");
+        collectionPost.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w("ErreurDeQuery", "listenerChange", error);
+                    return;
+                }
+                count = value.getDocuments().size();
+                Log.d("count", "********************************************************" + count);
+                if (firstTime) {
+                    countFirstTime = count;
+                    Log.d("countFirstTime", "********************************************************" + countFirstTime);
+                    firstTime = false;
+                }else if (countFirstTime < count){
+                    addBadge(true);
+                    Log.d("newDocs", "add badge : " + countFirstTime + "/" + count);
+                    countFirstTime = count;
+                    Log.d("newDocs", "badge numnber : " + countFirstTime + "/" + count);
+                }
+            }
+        });
+    }
+    private void addBadge(boolean b) {
+        BottomNavigationMenuView menuView = (BottomNavigationMenuView) navigationView.getChildAt(0);
+        BottomNavigationItemView itemView = (BottomNavigationItemView) menuView.getChildAt(0);
+
+
+        if (b) {
+            View notificationBadge = LayoutInflater.from(this).inflate(R.layout.navigation_badge, menuView, false);
+            itemView.addView(notificationBadge);
+            haveBadge = true;
+        }else {
+            //itemView.addView(notificationBadge);
+            View cardView = findViewById(R.id.layoutInflated);
+            ViewGroup parent = (ViewGroup) cardView.getParent();
+            parent.removeView(cardView);
+            Log.d("navigationView", "********** mety");
+            haveBadge = false;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopRepeatingTask();
+    }
+
     private void accueil() {
         navigationView.setSelectedItemId(R.id.fil_d_actu_nav);
         itemActu();
@@ -117,7 +197,6 @@ public class MainActivity extends AppCompatActivity{
                 @Override
                 public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                     switch (item.getItemId()){
-
                         //page GMap
                         case R.id.map_nav:
                             itemGMap();
@@ -126,6 +205,11 @@ public class MainActivity extends AppCompatActivity{
                          //page actu
                         case R.id.fil_d_actu_nav:
                             itemActu();
+                            if (haveBadge) {
+                                addBadge(false);
+                                Log.d("testEnter", "" + i + "/" + countFirstTime + "/" + count);
+                                i++;
+                            }
                             return true;
 
                          //page resto
@@ -234,6 +318,14 @@ public class MainActivity extends AppCompatActivity{
         return isConnected;
     }
 
+//    @Override
+//    public void onAttachFragment(@NonNull Fragment fragment) {
+//        super.onAttachFragment(fragment);
+//
+//        if(fragment instanceof GMapFragment){
+//            navigationView.setSelectedItemId(R.id.map_nav);
+//        }
+//    }
 
     @Override
     public void onBackPressed() {

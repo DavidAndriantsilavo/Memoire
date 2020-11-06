@@ -6,6 +6,24 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="red">@color/red</item>
+        <item name="white">@color/white</item>
+        <item name="black">@color/black</item>
+        <item name="grey">#F1F1F1</item>
+        <item name="browser_actions_divider_color">@color/browser_actions_divider_color</item>
+    </style>
+
+    <!-- Nigh mode -->
+    <style name="NightMode" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#222222</item>
+        <item name="colorPrimaryDark">#000000</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="red">@color/red</item>
+        <item name="white">@color/black</item>
+        <item name="black">@color/white</item>
+        <item name="grey">#5E5E5E</item>
+        <item name="browser_actions_divider_color">#393939</item>
     </style>
 
     <!-- TOOLBAR THEME -->

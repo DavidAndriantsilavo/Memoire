@@ -8,14 +8,14 @@
     <ImageView
         android:layout_width="45dp"
         android:layout_height="60dp"
-        android:src="@drawable/marker_pin" />
+        android:src="@drawable/marker_pin_red" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView_border"
         android:layout_width="45dp"
         android:layout_height="45dp"
         app:cardCornerRadius="22.5dp"
-        app:cardBackgroundColor="@color/colorPrimary"
+        app:cardBackgroundColor="@color/red"
         android:layout_gravity="center"
         app:cardPreventCornerOverlap="false">
 

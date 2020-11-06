@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
@@ -73,8 +74,9 @@ import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class ProfileUserActivity extends AppCompatActivity {
+public class ProfileUserActivity extends AppMode {
 
     TextView textView_displayLastname, textView_email;
     String user_name, value_name;
@@ -84,6 +86,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     ImageView imageView_photoDeProfile;
     FloatingActionButton floatingActionButton_editProfile;
     Button btnAddProfileImage, btnNewPost;
+    private Button button_appointment, button_favorite;
 
     FirebaseFirestore firestore;
     CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
@@ -114,6 +117,15 @@ public class ProfileUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar_userProile);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Mon profil");
+        }
+
         //recuperation des vues
         textView_displayLastname = findViewById(R.id.texteView_lastname_profile);
         textView_email = findViewById(R.id.texteView_email_profile);
@@ -122,10 +134,15 @@ public class ProfileUserActivity extends AppCompatActivity {
         btnAddProfileImage = findViewById(R.id.add_profile_photo_profile);
         profile_recyclerView = findViewById(R.id.recyclerView_post);
         btnNewPost = findViewById(R.id.button_newPost_profile);
+        button_appointment = findViewById(R.id.button_appointment);
+        button_favorite = findViewById(R.id.button_favorite);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
-        progressDialog_del_account.setMessage("Supression de votre compte...");
+        progressDialog_del_account.setTitle("Suppression de votre compte");
+        progressDialog_del_account.setMessage("Cela peut prendre quelques minutes, veuillez patienter !");
+        progressDialog_del_account.setCanceledOnTouchOutside(false);
+        progressDialog_del_account.setCancelable(false);
         progressDialog_logout = new ProgressDialog(this);
         progressDialog_logout.setMessage("Déconnexion...");
         progressDialog_editProfile = new ProgressDialog(this);
@@ -173,7 +190,13 @@ public class ProfileUserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
-                finish();
+            }
+        });
+
+        button_appointment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
             }
         });
 
@@ -792,7 +815,8 @@ public class ProfileUserActivity extends AppCompatActivity {
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(ProfileUserActivity.this);
-            builder.setMessage("Etes-vous sûr de vouloir supprimer votre compte?");
+            builder.setTitle("Attention !!");
+            builder.setMessage("Etes-vous sûr de vouloir supprimer votre compte?\nCela entrainera la suppression de toutes vos données ainsi que ceux de votre restaurant si vous en avez.");
             builder.setCancelable(true);
 
             builder.setPositiveButton(
@@ -800,21 +824,8 @@ public class ProfileUserActivity extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             progressDialog_del_account.show();
-                            user.delete()
-                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<Void> task) {
-                                            if (task.isSuccessful()) {
-                                                Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec succès ...\nOn éspère vous revoire bientôt !", Toast.LENGTH_LONG).show();
 
-                                                logOut();
-                                                progressDialog_del_account.dismiss();
-
-                                                Intent logOut =  new Intent(getApplicationContext(), LoginActivity.class);
-                                                startActivity(logOut);
-                                            }
-                                        }
-                                    });
+                            deleteUsersComments();
                         }
                     });
 
@@ -831,6 +842,215 @@ public class ProfileUserActivity extends AppCompatActivity {
             AlertDialog alert = builder.create();
             alert.show();
         }
+    }
+
+    private boolean deleteUsersComments() {
+        collectionComment.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                if (!documentSnapshot.getString("comment_image").equals("noImage") && documentSnapshot.getString("user_id").contains(user_id)) {
+                                    FirebaseStorage.getInstance().getReferenceFromUrl(documentSnapshot.getString("comment_image")).delete();
+                                }
+                                if (documentSnapshot.getString("user_id").contains(user_id) && documentSnapshot.getString("comment_image").equals("noImage")){
+                                    documentSnapshot.getReference().delete();
+                                }
+                            }
+                        }else {
+                            deleteUsersPosts();
+                        }
+                    }
+                });
+        return true;
+    }
+
+    private boolean deleteUsersPosts() {
+        collectioonPost.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                if (documentSnapshot.getString("user_id").contains(user_id)) {
+                                    String post_id = documentSnapshot.getString("post_id");
+                                    String post_image1 = documentSnapshot.getString("post_image1");
+                                    String post_image2 = documentSnapshot.getString("post_image2");
+                                    String post_image3 = documentSnapshot.getString("post_image3");
+                                    beginDelete(post_id, post_image1, post_image2, post_image3);
+                                }
+                            }
+                        }else {
+                            deleteUsersResto();
+                        }
+                    }
+                });
+        return true;
+    }
+    private void beginDelete(String post_id, String post_image1, String post_image2, String post_image3) {
+        //delete post image
+        deletePostImage(post_image1);
+        deletePostImage(post_image2);
+        deletePostImage(post_image3);
+        //delete post
+        deletePost(post_id);
+    }
+
+    private void deletePostImage(final String post_image) {
+        if (!post_image.equals("noImage")) {
+            //we must delete image stored in Firebase storage
+            //after that deleting post from Firestore
+            StorageReference storagePickReference = FirebaseStorage.getInstance().getReferenceFromUrl(post_image);
+            storagePickReference.delete();
+        }
+    }
+
+    private void deletePost(final String post_id) {
+        //delete data from Firestore
+        DocumentReference documentReference = collectioonPost.document(post_id);
+        documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                //delete post's comment
+                final CollectionReference documentReference1 = FirebaseFirestore.getInstance().collection("Comments");
+                documentReference1.get()
+                        .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                            @Override
+                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                if (!queryDocumentSnapshots.isEmpty()){
+                                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
+                                        if (documentSnapshot.getString("post_id").equals(post_id)){
+                                            String comment_id = documentSnapshot.getString("comment_time");
+                                            documentReference1.document(comment_id).delete();
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                //delete post kiffs
+                FirebaseFirestore.getInstance().collection("Kiffs").document(post_id).delete();
+
+            }
+        });
+    }
+
+    private void deleteUsersResto() {
+        deleteHasRatingRresto();
+    }
+
+    private void deleteHasRatingRresto() {
+        FirebaseFirestore.getInstance().collection("HasRatingResto").document("resto_" + user_id).delete()
+            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    deleteMenuList();
+                }
+            });
+    }
+
+    private void deleteMenuList() {
+        FirebaseFirestore.getInstance().collection("Menu_list").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                if (documentSnapshot.getString("id_resto").contains(user_id)) {
+                                    FirebaseStorage.getInstance().getReferenceFromUrl(documentSnapshot.getString("menuPhoto")).delete();
+                                    documentSnapshot.getReference().delete();
+                                }
+                            }
+                        }else {
+                            deleteSampleMenu();
+                        }
+                        deleteMenuList();
+                    }
+                });
+    }
+
+    private void deleteSampleMenu() {
+        FirebaseFirestore.getInstance().collection("Sample_menu").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                if (documentSnapshot.getString("id_resto").contains(user_id)) {
+                                    documentSnapshot.getReference().delete();
+                                }
+                            }
+                        }else {
+                            deleteResto();
+                        }
+                        deleteSampleMenu();
+                    }
+                });
+    }
+
+    private void deleteResto() {
+        FirebaseFirestore.getInstance().collection("Resto").get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                if (documentSnapshot.getString("id_resto").contains(user_id)) {
+                                    FirebaseStorage.getInstance().getReferenceFromUrl(documentSnapshot.getString("logo_resto")).delete();
+                                    documentSnapshot.getReference().delete();
+                                }
+                            }
+                        }else {
+                            deleteUsersInformations();
+                        }
+                        deleteResto();
+                    }
+                });
+    }
+
+
+    private void deleteUsersInformations() {
+        collectionUsers.document(user_id).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (!documentSnapshot.exists()) {
+                            FirebaseStorage.getInstance().getReferenceFromUrl(documentSnapshot.getString("profile_image")).delete()
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            collectionUsers.document(user_id).delete()
+                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    deleteUser();
+                                                }
+                                            });
+                                        }
+                                    });
+                        }
+                    }
+                });
+    }
+
+    private void deleteUser() {
+        user.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(getApplicationContext(), "Votre compte a été supprimé avec succès ...\nOn éspère vous revoire bientôt !", Toast.LENGTH_LONG).show();
+
+                            logOut();
+                            progressDialog_del_account.dismiss();
+
+                            Intent logOut = new Intent(getApplicationContext(), LoginActivity.class);
+                            startActivity(logOut);
+                            finish();
+                        }
+                    }
+                });
     }
 
     private void avertissement() {
@@ -866,7 +1086,7 @@ public class ProfileUserActivity extends AppCompatActivity {
     }
 
     private void logOut() {
-        progressDialog_logout.show();
+        progressDialog_logout.cancel();
         FirebaseAuth.getInstance().signOut();
         GoogleSignIn.getClient(
                 this,

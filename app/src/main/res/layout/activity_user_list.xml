@@ -4,11 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Controllers.Activities.UserListActivity"
-    android:background="@color/white">
+    android:background="?attr/browser_actions_divider_color">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_userList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="?attr/browser_actions_divider_color" />
 
 </FrameLayout>

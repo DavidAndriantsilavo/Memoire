@@ -8,7 +8,7 @@
     <ImageView
         android:layout_width="45dp"
         android:layout_height="60dp"
-        android:src="@drawable/marker_pin" />
+        android:src="@drawable/marker_pin_black" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView_border"

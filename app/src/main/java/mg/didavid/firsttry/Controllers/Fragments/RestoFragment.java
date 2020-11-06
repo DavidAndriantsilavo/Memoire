@@ -90,16 +90,20 @@ public class RestoFragment extends Fragment {
                                     modelRestoList.clear();
                                     for (DocumentSnapshot ds : value.getDocuments()) {
                                         //get resto informations
+
                                         final ModelResto modelResto = new ModelResto();
+
                                         modelResto.setName_resto(ds.getString("name_resto"));
                                         modelResto.setSpeciality_resto(ds.getString("speciality_resto"));
                                         modelResto.setRating_resto(ds.getString("rating_resto"));
                                         modelResto.setNbrRating_resto(ds.getString("nbrRating_resto"));
                                         modelResto.setLogo_resto(ds.getString("logo_resto"));
-
+                                        modelResto.setLatitude(ds.getDouble("latitude"));
+                                        modelResto.setLongitude(ds.getDouble("longitude"));
                                         final String id_resto = ds.getString("id_resto");
                                         modelResto.setId_resto(id_resto);
                                         final List<ModelRestoSampleMenu> modelRestoSampleMenuList = new ArrayList<>();
+
                                         final CollectionReference collectionReference_sampleMenu = FirebaseFirestore.getInstance().collection("Sample_menu");
                                         collectionReference_sampleMenu.get()
                                                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -120,12 +124,13 @@ public class RestoFragment extends Fragment {
                                                                             modelResto.setSampleMenuList(modelRestoSampleMenuList);
                                                                             modelRestoList.add(modelResto);
                                                                             //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                                                                             recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+
                                                                         } else {
                                                                             modelRestoList.add(modelResto);
                                                                             //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                                                                             recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                         }
                                                                     }
@@ -167,18 +172,20 @@ public class RestoFragment extends Fragment {
                             for (int i = 0; i < size; i++) {
                                 if (!userHasRestoAccount[0]) {
                                     if (modelRestos.get(i).getId_resto().contains(user_id)) {
-                                        //the user have already one restaurant account so, hide menu add restaurant account and show menu view profile
+                                        //the currentUser have already one restaurant account so, hide menu add restaurant account and show menu view profile
                                         menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
+                                        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
                                         textView_aboutSinginResto.setVisibility(View.GONE);
                                         userHasRestoAccount[0] = true;
+                                        break;
                                     }else {
-                                        //current user doesn't have resto account, allow him to add new resto account
+                                        //current currentUser doesn't have resto account, allow him to add new resto account
                                         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
                                     }
                                 }
                             }
                         }else {
-                            //current user doesn't have resto account, allow him to add new resto account
+                            //current currentUser doesn't have resto account, allow him to add new resto account
                             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
                         }
                     }
@@ -191,7 +198,7 @@ public class RestoFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchResto(query);
                 }else {
@@ -202,7 +209,7 @@ public class RestoFragment extends Fragment {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchResto(newText);
                 }else {
@@ -233,7 +240,7 @@ public class RestoFragment extends Fragment {
                     }
                 }
                 //adapter
-                adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList);
+                adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
                 //set adapter to recyclerView
                 recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
             }

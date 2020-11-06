@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".Controllers.Activities.ProfileUserActivity">
+    tools:context=".Controllers.Activities.ProfileUserActivity"
+    android:background="?attr/browser_actions_divider_color">
     
     <ScrollView
         android:layout_width="match_parent"
@@ -13,10 +14,18 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+            <include
+                android:id="@+id/toolbar_userProile"
+                layout="@layout/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"/>
 
             <RelativeLayout
+                android:id="@+id/relativeLayout_pdc_userProfile"
                 android:layout_width="match_parent"
-                android:layout_height="180dp">
+                android:layout_height="180dp"
+                android:layout_below="@+id/toolbar_userProile">
                 <ImageView
                     android:id="@+id/imageView_photoDeCouverture_profile"
                     android:layout_width="match_parent"
@@ -30,7 +39,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="85dp">
+                android:layout_marginTop="85dp"
+                android:layout_below="@+id/toolbar_userProile">
 
                 <RelativeLayout
                     android:id="@+id/relativeLayout_pdp"
@@ -86,9 +96,6 @@
                         </androidx.cardview.widget.CardView>
 
                     </androidx.cardview.widget.CardView>
-
-
-
                 </RelativeLayout>
 
 
@@ -129,30 +136,59 @@
 
             </RelativeLayout>
 
-            <Button
-                android:id="@+id/button_newPost_profile"
+            <LinearLayout
+                android:id="@+id/linearLayout_buttons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="40dp"
-                android:text="Nouvelle publication"
-                android:textSize="14dp"
-                android:drawableStart="@drawable/ic_add__newpost_profile_icon_dark"
-                android:drawablePadding="20dp"
-                android:paddingStart="60dp"
-                android:textAllCaps="false"
-                android:textAlignment="textStart"
-                android:gravity="center"
                 android:layout_below="@+id/relativeLayout_profile"
-                android:layout_marginTop="30dp"
-                android:background="@drawable/rounded_grey_button"
-                tools:ignore="RtlCompat" />
+
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp">
+                <Button
+                    android:id="@+id/button_newPost_profile"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:text="Nouvelle publication"
+                    android:textSize="11sp"
+                    android:textAllCaps="false"
+                    android:gravity="center"
+                    android:background="@drawable/rounded_grey_button"
+                    tools:ignore="RtlCompat"
+                    android:layout_marginRight="10dp"/>
+
+                <Button
+                    android:id="@+id/button_appointment"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_grey_button"
+                    android:textAllCaps="false"
+                    android:gravity="center"
+                    android:textSize="11sp"
+                    android:text="Rendez-vous"
+                    android:layout_marginRight="10dp"/>
+
+                <Button
+                    android:id="@+id/button_favorite"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_grey_button"
+                    android:textAllCaps="false"
+                    android:gravity="center"
+                    android:textSize="11sp"
+                    android:text="Favoris"/>
+            </LinearLayout>
 
             <ScrollView
                 android:id="@+id/scrollView_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/button_newPost_profile"
-                android:layout_marginTop="20dp">
+                android:layout_below="@+id/linearLayout_buttons"
+                android:layout_marginTop="10dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView_post"

@@ -1,14 +1,15 @@
 package mg.didavid.firsttry.Models;
 
 public class ModeleChatroom {
-    String other_user_id, other_user_name, room_id, last_message, last_message_timestamp;
+    String other_user_id, other_user_name, other_user_profile_picture, room_id, last_message, last_message_timestamp;
 
     public ModeleChatroom() {
     }
 
-    public ModeleChatroom(String other_user_id, String other_user_name, String room_id, String last_message, String last_message_timestamp) {
+    public ModeleChatroom(String other_user_id, String other_user_name, String other_user_profile_picture, String room_id, String last_message, String last_message_timestamp) {
         this.other_user_id = other_user_id;
         this.other_user_name = other_user_name;
+        this.other_user_profile_picture = other_user_profile_picture;
         this.room_id = room_id;
         this.last_message = last_message;
         this.last_message_timestamp = last_message_timestamp;
@@ -52,5 +53,13 @@ public class ModeleChatroom {
 
     public void setLast_message_timestamp(String last_message_timestamp) {
         this.last_message_timestamp = last_message_timestamp;
+    }
+
+    public String getOther_user_profile_picture() {
+        return other_user_profile_picture;
+    }
+
+    public void setOther_user_profile_picture(String other_user_profile_picture) {
+        this.other_user_profile_picture = other_user_profile_picture;
     }
 }

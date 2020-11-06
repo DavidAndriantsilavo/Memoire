@@ -1,12 +1,16 @@
 package mg.didavid.firsttry.Controllers.Adapteurs;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.text.format.DateFormat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -39,7 +44,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
-import com.google.firebase.firestore.model.DocumentCollections;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -50,6 +54,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import mg.didavid.firsttry.Controllers.Activities.ChatActivity;
 import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherUsersProfileActivity;
@@ -107,6 +112,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         String post_timeStamp = postList.get(position).getPost_time();
         final String nbrPostKiffs = postList.get(position).getPost_kiff();
         final String nbrPostComments = postList.get(position).getComment_count();
+        HashMap<String, Object> myLocatoin = postList.get(position).getUser_location();
 
         //convert timeStamp to dd/mm/yyyy hh:mm am/pm
         Calendar calendar = Calendar.getInstance(Locale.getDefault());
@@ -286,7 +292,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         holder.moreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreOptions(holder.moreBtn, user_id, mCurrentUserId, post_id, post_image1, post_image2, post_image3, post_description);
+                showMoreOptions(holder.moreBtn, user_id, name, profile_image, mCurrentUserId, post_id, post_image1, post_image2, post_image3, post_description);
             }
         });
 
@@ -300,12 +306,28 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 context.startActivity(intent);
             }
         });
-        holder.partagerBtn.setOnClickListener(new View.OnClickListener() {
+
+        holder.pComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(context, "Partager...\nwill implement later", Toast.LENGTH_SHORT).show();
+                //start PostDetailsActivity
+                Intent intent = new Intent(context, PostDetailsActivity.class);
+                intent.putExtra("post_id", post_id);
+                intent.putExtra("user_id", user_id);
+                context.startActivity(intent);
             }
         });
+        if ((myLocatoin != null && myLocatoin.isEmpty()) || myLocatoin == null){
+            holder.locationbtn.setVisibility(View.GONE);
+        }else {
+            holder.locationbtn.setVisibility(View.VISIBLE);
+            holder.locationbtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(context, "Voir lieu  => Send to map", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
 
         //user name clicked
         holder.uNameTv.setOnClickListener(new View.OnClickListener() {
@@ -449,7 +471,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         });
     }
 
-    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
+    private void showMoreOptions(ImageButton moreBtn, final String user_id, final String name, final String profile_image, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context, moreBtn, Gravity.END);
         //show popup menu in only posts of currently singed-in user
@@ -458,7 +480,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
             popupMenu.getMenu().add(Menu.NONE, 1, 1, "Modifier la publication");
             popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
-        }else {
+        }else if (!user_id.contains("resto")){
             popupMenu.getMenu().add(Menu.NONE, 4, 4, "Envoyer un message");
         }
         popupMenu.getMenu().add(Menu.NONE, 2, 2, "Commenter la publication");
@@ -466,6 +488,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) {
             popupMenu.getMenu().add(Menu.NONE, 6, 6, "Noter ce restaurant");
             popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
+            popupMenu.getMenu().add(Menu.NONE, 4, 4, "Passer une commande");
         }
 
         //item click listener
@@ -513,7 +536,17 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     }
                 }else if (item_id == 4) {
                     //option send message is checked
-                    Toast.makeText(context, "send message...\nwill implement later", Toast.LENGTH_LONG).show();
+
+                    if (user_id.contains("resto")) {
+                        showChoiceDialog(user_id);
+                    }else {
+                        Intent intent = new Intent (context, ChatActivity.class);
+                        intent.putExtra("other_user_id", user_id);
+                        intent.putExtra("other_user_name", name);
+                        intent.putExtra("other_user_profile_picture", profile_image);
+                        context.startActivity(intent);
+                    }
+
                 }else if (item_id == 5) {
                     //voir tous les menus
                     Intent intent = new Intent(context, ListMenuRestoActivity.class);
@@ -532,6 +565,8 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                                         }else {
                                             showRatingDialog(user_id); // here user_id == id_resto
                                         }
+                                    }else {
+                                        showRatingDialog(user_id);
                                     }
                                 }
                             });
@@ -543,10 +578,92 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         popupMenu.show();
     }
 
+    private void showChoiceDialog(final String id_resto) {
+        String[] options = {"Appeler", "Envoyer un email"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        callRestaurant(id_resto);
+                        break;
+                    case 1:
+                        sendEmailToRestaurant(id_resto);
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    private void callRestaurant(String id_resto) {
+        FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Intent callResto = new Intent(Intent.ACTION_CALL);
+                        callResto.setData(Uri.parse("tel:" + documentSnapshot.getString("phone_resto")));
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.CALL_PHONE}, 1996);
+                            return;
+                        }
+                        context.startActivity(callResto);
+                    }
+                });
+    }
+
+    private void sendEmailToRestaurant(String id_resto) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialog_sending_email);
+
+
+        //init views
+        Button button_annler = dialog.findViewById(R.id.tv_annuler_emailDialog);
+        final Button button_creer = dialog.findViewById(R.id.tv_valider_emailDialog);
+        button_annler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        final EditText editTextSubject = dialog.findViewById(R.id.editText_subject_emailDialog);
+        final EditText editTextMessage = dialog.findViewById(R.id.editText_messageContent_emailDialog);
+        if (editTextSubject.getText().toString().isEmpty()) {
+            editTextSubject.setError("Veillez entrer l'objet du mail !");
+        }else if (editTextMessage.getText().toString().isEmpty()){
+            editTextMessage.setError("Veillez entrée votre message !");
+        }else {
+            FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                final Intent sendEmail = new Intent(Intent.ACTION_SEND);
+                                sendEmail.setType("message/rfc822");
+                                sendEmail.putExtra(Intent.EXTRA_EMAIL, new String[]{documentSnapshot.getString("email_resto")});
+                                sendEmail.putExtra(Intent.EXTRA_SUBJECT, editTextSubject.getText().toString());
+                                sendEmail.putExtra(Intent.EXTRA_TEXT, editTextMessage.getText().toString());
+
+                                button_creer.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        context.startActivity(Intent.createChooser(sendEmail, "Envoie de l'email..."));
+                                    }
+                                });
+                            }
+                        }
+                    });
+        }
+
+        dialog.show();
+    }
+
     private void showRatingDialog(final String id_resto) {
         //create dialog
         final Dialog ratingDialog = new Dialog(context);
-        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setContentView(R.layout.dialog_rating);
         ratingDialog.setCanceledOnTouchOutside(false);
 
         //init dialog views
@@ -620,7 +737,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     private void editPostDescription(final String post_id, final String post_description) {
         //custom dialog
         final Dialog dialog = new Dialog(context);
-        dialog.setContentView(R.layout.edit_post_description);
+        dialog.setContentView(R.layout.dialog_edit_post_description);
         //set the custom dialog components
         final EditText editText_description = dialog.findViewById(R.id.et_postDescription);
         editText_description.setText(post_description);
@@ -718,9 +835,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
     }
 
     private void deletePost(final String post_id) {
-        final ProgressDialog progressDialog_delete = new ProgressDialog(context);
-        progressDialog_delete.setMessage("Suppressoin de le publication en cours...");
-        progressDialog_delete.show();
         //delete data from Firestore
         DocumentReference documentReference = collectionReference_post.document(post_id);
         documentReference.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -735,10 +849,9 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                                 if (!queryDocumentSnapshots.isEmpty()){
                                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()){
-                                        if (queryDocumentSnapshots.getDocuments().contains(mCurrentUserId)){
+                                        if (documentSnapshot.getString("post_id").equals(post_id)){
                                             String comment_id = documentSnapshot.getString("comment_time");
                                             documentReference1.document(comment_id).delete();
-                                            progressDialog_delete.dismiss();
                                         }
                                     }
                                 }
@@ -753,7 +866,6 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             @Override
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(context, "Impossible de supprimer la publication !", Toast.LENGTH_SHORT).show();
-                progressDialog_delete.dismiss();
             }
         });
     }
@@ -770,7 +882,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         ImageView uPictureIv, pImageIv1, pImageIv2, pImageIv3;
         TextView uNameTv, pTimeTv, pDescriptionTv, pKiffTv, pComment, pseudo;
         ImageButton moreBtn;
-        Button kiffBtn, commenterBtn, partagerBtn;
+        Button kiffBtn, commenterBtn, locationbtn;
         RatingBar ratingBar;
 
         public MyHolder(@NonNull View itemView) {
@@ -790,7 +902,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             moreBtn = itemView.findViewById(R.id.button_moreAction_actu);
             kiffBtn = itemView.findViewById(R.id.button_kiff_actu);
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
-            partagerBtn = itemView.findViewById(R.id.button_partager_actu);
+            locationbtn = itemView.findViewById(R.id.button_location_actu);
             ratingBar = itemView.findViewById(R.id.ratingBar_newPost);
         }
     }

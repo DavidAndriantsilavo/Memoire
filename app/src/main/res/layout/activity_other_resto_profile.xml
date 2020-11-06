@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".Controllers.Activities.ProfileRestoActivity">
+    tools:context=".Controllers.Activities.ProfileRestoActivity"
+    android:background="?attr/browser_actions_divider_color">
 
     <!-- Importation de notre Toolbar -->
     <include
@@ -120,6 +121,16 @@
                     android:layout_alignParentEnd="true"
                     android:layout_marginRight="15dp"
                     android:text="Noter"
+                    android:textAllCaps="false"
+                    android:background="@drawable/rounded_grey_button"/>
+                <Button
+                    android:id="@+id/btn_commander_otherRestoProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toLeftOf="@+id/btn_rate_otherRestoProfile"
+                    android:layout_marginRight="15dp"
+                    android:text="Commander"
                     android:textAllCaps="false"
                     android:background="@drawable/rounded_grey_button"/>
 

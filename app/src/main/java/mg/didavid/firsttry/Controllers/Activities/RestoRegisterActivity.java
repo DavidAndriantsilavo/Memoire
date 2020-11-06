@@ -48,14 +48,17 @@ import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import mg.didavid.firsttry.Models.ModelResto;
+import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
 import static androidx.constraintlayout.widget.Constraints.TAG;
 
-public class RestoRegisterActivity extends AppCompatActivity implements LocationListener {
+public class RestoRegisterActivity extends AppMode implements LocationListener {
 
     private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
     private ImageView restoLogo_imageView;
@@ -64,7 +67,8 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     private String logoResto, nameResto, passwordResto, confirmPasswordResto, phoneResto, emailResto, culinarySpeciality,
             user_id, user_email, user_pseudo;
-    private Map<String, Object> locationResto = new HashMap<>();
+    private Double latitude, longitude;
+    private List<ModelRestoSampleMenu> sampleMenuList;
 
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int STORAGE_REQUEST_CODE = 200;
@@ -458,7 +462,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
         }
 
         //control location
-        if (locationResto.isEmpty()) {
+        if (latitude == null && longitude == null) {
             popupLocationRestoError();
         }
 
@@ -488,7 +492,7 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     private void singinResto() {
         String id_resto = "resto_" + user_id;
-        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, passwordResto, phoneResto, emailResto, logoResto, "noImage", culinarySpeciality, "0", "0", locationResto);
+        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, passwordResto, phoneResto, emailResto, logoResto, "noImage", culinarySpeciality, "0", "0", latitude, longitude, sampleMenuList);
 
         //store data
         collectionReference_resto.document(id_resto).set(modelResto)
@@ -582,9 +586,10 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
             location = manager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if (location != null) {
                 location_boolean = true;
-                locationResto.put("latitude", location.getLatitude());
-                locationResto.put("longitude", location.getLongitude());
-                Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "\nlongitude : " + locationResto.get("longitude"), Toast.LENGTH_LONG).show();
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+
+                Toast.makeText(RestoRegisterActivity.this, "latitude : " + latitude + "\nlongitude : " + longitude, Toast.LENGTH_LONG).show();
 
                 //change button location
                 restoLocalisation_button.setText("");
@@ -601,15 +606,17 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
                 location = manager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (location != null) {
                     location_boolean = true;
-                    locationResto.put("latitude", location.getLatitude());
-                    locationResto.put("longitude", location.getLongitude());
-                    Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "\nlongitude : " + locationResto.get("longitude"), Toast.LENGTH_LONG).show();
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
+
+                    Toast.makeText(RestoRegisterActivity.this, "latitude : " + latitude + "\nlongitude : " + longitude, Toast.LENGTH_LONG).show();
 
                     //change button location
                     restoLocalisation_button.setText("");
                     restoLocalisation_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_check_button_icon_dark, 0, 0, 0);
                     restoLocalisation_button.setBackground(null);
                     restoLocalisation_button.setCompoundDrawablePadding(10);
+
                 }
                 Log.d(TAG, "FT : GPS enabled");
             }
@@ -618,9 +625,9 @@ public class RestoRegisterActivity extends AppCompatActivity implements Location
 
     @Override
     public void onLocationChanged(Location location) {
-            locationResto.put("latitude", location.getLatitude());
+            /*locationResto.put("latitude", location.getLatitude());
             locationResto.put("longitude", location.getLongitude());
-            Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "longitude" + locationResto.get("longitude"), Toast.LENGTH_LONG).show();
+            Toast.makeText(RestoRegisterActivity.this, "latitude : " + locationResto.get("latitude") + "longitude" + locationResto.get("longitude"), Toast.LENGTH_LONG).show();*/
     }
 
     /**

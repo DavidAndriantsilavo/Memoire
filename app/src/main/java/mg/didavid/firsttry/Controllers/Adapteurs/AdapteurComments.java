@@ -23,7 +23,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,9 +32,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -337,7 +334,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         progressDialog_editCommentContent.setMessage("Chargement...");
         //custom dialog
         final Dialog dialog = new Dialog(context);
-        dialog.setContentView(R.layout.edit_post_description);
+        dialog.setContentView(R.layout.dialog_edit_post_description);
         //set the custom dialog components
         TextView textView = dialog.findViewById(R.id.editText_title);
         textView.setText("MODIFICATION DU COMMENTAIRE");

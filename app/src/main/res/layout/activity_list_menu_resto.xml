@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controllers.Activities.ListMenuRestoActivity">
+    tools:context=".Controllers.Activities.ListMenuRestoActivity"
+    android:background="?attr/browser_actions_divider_color">
 
     <include
         android:id="@+id/toolbar_menuList"
@@ -28,6 +29,7 @@
                 android:id="@+id/textView_indication_menuList"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="?attr/black"
                 android:text="\t\tAjouter une liste de menu pour les afficher ici. Tout utilisateur peut voir ce contenu. Puis séléctionner un menu pour l'ajouter comme échantillion. Vous pouver ajouter jusqu'à 5 échantillons de menu pour les mettre en avant dans la liste des restaurants. Toute personne qui visiteront l'onglet 'Resto' et aussi votre profile peut voir vos échantillons/"
                 android:layout_margin="10dp"/>
 

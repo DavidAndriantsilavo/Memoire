@@ -31,7 +31,6 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -186,7 +185,7 @@ public class LoginActivity extends AppCompatActivity {
     private void createAccountWithPseudoAndPassword() {
         //custom dialog
         final Dialog dialog = new Dialog(LoginActivity.this);
-        dialog.setContentView(R.layout.register_dialog);
+        dialog.setContentView(R.layout.dialog_register);
         dialog.setTitle("Création de compte");
 
         //set the custom dialog components

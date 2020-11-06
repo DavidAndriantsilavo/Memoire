@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controllers.Fragments.RestoFragment">
+    tools:context=".Controllers.Fragments.RestoFragment"
+    android:background="?attr/browser_actions_divider_color">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -18,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="\t\tVous pouvez voir sur cet onglet toute la liste des restaurants qui sont inscrient dans Map'Lenda."
-            android:textColor="@color/black"
+            android:textColor="?attr/black"
             android:layout_marginHorizontal="10dp"
             android:layout_marginTop="10dp"/>
 
@@ -27,7 +28,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="\t\tVous pouvez aussi créer un compte restaurant pour votre restaurant. Vous devez avoir un compte utilisateur pour pouvoir créer un compte restaurant. Et vous ne pouvez créer qu'un seul compte restaurant par utilisateur."
-                android:textColor="@color/black"
+                android:textColor="?attr/black"
                 android:layout_marginHorizontal="10dp"
                 android:layout_marginBottom="10dp"/>
 

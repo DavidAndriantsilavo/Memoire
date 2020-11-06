@@ -1,8 +1,16 @@
 package mg.didavid.firsttry.Controllers.Adapteurs;
 
+import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
@@ -18,10 +27,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -33,19 +47,24 @@ import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mg.didavid.firsttry.Controllers.Activities.ListMenuRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.OtherRestoProfileActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
+import mg.didavid.firsttry.Controllers.Fragments.GMapFragment;
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
 
+import static androidx.constraintlayout.widget.Constraints.TAG;
+
 public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoPresentation.MyHolder> {
 
     private Context context;
     private List<ModelResto> modelRestoList;
+    private FragmentManager fragmentManager;
 
     private AdapterSampleMenu adapterSampleMenu;
     private List<ModelRestoSampleMenu> modelRestoSampleMenus;
@@ -55,9 +74,11 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
 
     private CollectionReference collectionReference_hasRatingResto = FirebaseFirestore.getInstance().collection("HasRatingResto");
 
-    public AdapterRestoPresentation(Context context, List<ModelResto> modelRestoList) {
+    public AdapterRestoPresentation(Context context, List<ModelResto> modelRestoList, FragmentManager fragmentManager) {
         this.context = context;
         this.modelRestoList = modelRestoList;
+        this.fragmentManager = fragmentManager;
+
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             mCurrentUser_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
             mCurrentResto_id = "resto_" + mCurrentUser_id;
@@ -76,13 +97,19 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
         //we just take resto id, resto name, resto culinary speciality, the rating of the resto and its logo
-        ModelResto modelResto = modelRestoList.get(position);
+        final ModelResto modelResto = modelRestoList.get(position);
+
         String restoName = modelResto.getName_resto();
         final String restoId = modelResto.getId_resto();
         String restoSpeciality = modelResto.getSpeciality_resto();
         float restoRating = Float.parseFloat(modelResto.getRating_resto());
         String restoNbrRatign = modelResto.getNbrRating_resto();
         String restoLogo = modelResto.getLogo_resto();
+
+        final Double restoLatitude = modelResto.getLatitude();
+        final Double restoLongitude = modelResto.getLongitude();
+
+        Log.d(TAG, "resto: got name  : " + restoName + ", latitude : " + restoLatitude + ", longitude : " + restoLongitude);
 
         //sample menu definition
         modelRestoSampleMenus = modelResto.getSampleMenuList();
@@ -93,7 +120,7 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         holder.textView_restoName.setText(restoName);
         holder.textView_restSpeciality.setText(restoSpeciality);
         holder.ratingBar_restoRating.setRating(restoRating);
-        holder.textView_ratingResto.setText(String.valueOf(restoRating));
+        holder.textView_ratingResto.setText(String.valueOf((float) Math.round(restoRating * 10) / 10));
         if (restoNbrRatign.equals("0")) {
             holder.textView_restoRatingNumber.setVisibility(View.GONE);
         }else if (restoNbrRatign.equals("1")){
@@ -112,7 +139,7 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         holder.imageButton_moreAction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showMoreActions(holder.imageButton_moreAction, restoId);
+                showMoreActions(holder.imageButton_moreAction, restoId, restoLatitude, restoLongitude);
             }
         });
 
@@ -131,16 +158,17 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
 
     }
 
-    private void showMoreActions(ImageButton imageButton_moreAction, final String restoId) {
+    private void showMoreActions(ImageButton imageButton_moreAction, final String restoId, final Double restoLatitude, final Double restoLongitude) {
+
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(context,imageButton_moreAction, Gravity.END);
         //add items im menu
         popupMenu.getMenu().add(Menu.NONE, 0, 0, "Voir tous les menus");
-        popupMenu.getMenu().add(Menu.NONE, 1, 0, "Voir profile");
-        popupMenu.getMenu().add(Menu.NONE, 2, 0, "Passer une commande");
-        popupMenu.getMenu().add(Menu.NONE, 3, 0, "Voir lieu");
+        popupMenu.getMenu().add(Menu.NONE, 1, 1, "Voir profile");
+        popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir lieu");
         if (!restoId.contains(mCurrentResto_id)) {
-            popupMenu.getMenu().add(Menu.NONE, 4, 0, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 4, 4, "Noter ce restaurant");
+            popupMenu.getMenu().add(Menu.NONE, 2, 2, "Passer une commande");
         }
 
         //button clicked
@@ -158,9 +186,17 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
                     sendUserToRestoProfile(restoId);
                 }else if (item_id == 2) {
                     //passer une commande
-                    Toast.makeText(context, "passer une commande", Toast.LENGTH_SHORT).show();
+                    showChoiceDialog(restoId);
                 }else if (item_id == 3) {
                     //voir lieu
+                    Bundle bundleRestaurantPosition = new Bundle();
+                    bundleRestaurantPosition.putDouble("restoLatitude", restoLatitude);
+                    bundleRestaurantPosition.putDouble("restoLongitude", restoLongitude);
+
+                    GMapFragment gMapFramgent = new GMapFragment();
+                    gMapFramgent.setArguments(bundleRestaurantPosition);
+                    fragmentManager.beginTransaction().replace(R.id.content_nav, gMapFramgent).commit();
+
                     Toast.makeText(context, "voir lieu", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 4) {
                     //raitng selected
@@ -175,6 +211,8 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
                                         }else {
                                             showRatingDialog(restoId);
                                         }
+                                    }else {
+                                        showRatingDialog(restoId);
                                     }
                                 }
                             });
@@ -186,10 +224,92 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
         popupMenu.show();
     }
 
+    private void showChoiceDialog(final String id_resto) {
+        String[] options = {"Appeler", "Envoyer un email"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        callRestaurant(id_resto);
+                        break;
+                    case 1:
+                        sendEmailToRestaurant(id_resto);
+                        break;
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    private void callRestaurant(String id_resto) {
+        FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        Intent callResto = new Intent(Intent.ACTION_CALL);
+                        callResto.setData(Uri.parse("tel:" + documentSnapshot.getString("phone_resto")));
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                            ActivityCompat.requestPermissions((Activity) context, new String[] {Manifest.permission.CALL_PHONE}, 1996);
+                            return;
+                        }
+                        context.startActivity(callResto);
+                    }
+                });
+    }
+
+    private void sendEmailToRestaurant(String id_resto) {
+        final Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialog_sending_email);
+
+
+        //init views
+        Button button_annler = dialog.findViewById(R.id.tv_annuler_emailDialog);
+        final Button button_creer = dialog.findViewById(R.id.tv_valider_emailDialog);
+        button_annler.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        final EditText editTextSubject = dialog.findViewById(R.id.editText_subject_emailDialog);
+        final EditText editTextMessage = dialog.findViewById(R.id.editText_messageContent_emailDialog);
+        if (editTextSubject.getText().toString().isEmpty()) {
+            editTextSubject.setError("Veillez entrer l'objet du mail !");
+        }else if (editTextMessage.getText().toString().isEmpty()){
+            editTextMessage.setError("Veillez entrée votre message !");
+        }else {
+            FirebaseFirestore.getInstance().collection("Resto").document(id_resto).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                final Intent sendEmail = new Intent(Intent.ACTION_SEND);
+                                sendEmail.setType("message/rfc822");
+                                sendEmail.putExtra(Intent.EXTRA_EMAIL, new String[]{documentSnapshot.getString("email_resto")});
+                                sendEmail.putExtra(Intent.EXTRA_SUBJECT, editTextSubject.getText().toString());
+                                sendEmail.putExtra(Intent.EXTRA_TEXT, editTextMessage.getText().toString());
+
+                                button_creer.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        context.startActivity(Intent.createChooser(sendEmail, "Envoie de l'email..."));
+                                    }
+                                });
+                            }
+                        }
+                    });
+        }
+
+        dialog.show();
+    }
+
     private void showRatingDialog(final String id_resto) {
         //create dialog
         final Dialog ratingDialog = new Dialog(context);
-        ratingDialog.setContentView(R.layout.rating_dialog);
+        ratingDialog.setContentView(R.layout.dialog_rating);
         ratingDialog.setCanceledOnTouchOutside(false);
 
         //init dialog views

@@ -4,12 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <com.google.android.gms.maps.MapView
-            android:id="@+id/map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            android:tag="mapFragment"/>
+    <com.google.android.gms.maps.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:tag="mapFragment"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_map_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white" />
 
     <SeekBar
         android:id="@+id/seekBar_distance"
@@ -24,15 +30,13 @@
         android:translationX="110dp"/>
 
     <LinearLayout
-            android:id="@+id/linearLayoutCustomView"
+            android:id="@+id/linearLayoutCustomViewUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:orientation="horizontal"
-            android:layout_margin="10dp"
             android:visibility="gone"
-
-            android:background="@color/white">
+            android:background="#99FFFFFF">
 
             <ImageView
                 android:id="@+id/imageView_profile_picture"
@@ -56,7 +60,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:paddingRight="10dp">
 
                     <Button
                         android:id="@+id/button_profile"
@@ -69,11 +74,11 @@
                         android:textAllCaps="false"/>
 
                     <Button
-                        android:id="@+id/button_directions"
+                        android:id="@+id/button_direction"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Directions"
+                        android:text="Direction"
                         android:layout_marginLeft="10dp"
                         android:textSize="10sp"
                         android:textAllCaps="false"/>
@@ -90,5 +95,116 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayoutCustomViewResto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom|center_horizontal"
+        android:background="#99FFFFFF"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/imageView_logoResto"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_weight="2.3"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_image_profile_icon_dark"
+            android:layout_gravity="center_vertical"
+            android:paddingLeft="5dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="6.7"
+            android:orientation="vertical"
+            android:paddingLeft="10dp">
+            <TextView
+                android:id="@+id/textView_restoName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Restaurant name"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:textSize="20sp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginVertical="4dp">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:src="@drawable/ic_culinary_speciality_icon_dark"
+                    android:background="@drawable/black_background"/>
+
+                <TextView
+                    android:id="@+id/textView_restoSpeciality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Speciality"
+                    android:textSize="14sp"
+                    android:layout_marginStart="10dp"
+                    android:layout_gravity="center"
+                    android:textColor="@color/black"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginVertical="4dp"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/textView_restoRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Note"
+                    android:textSize="14sp"
+                    android:layout_gravity="center"
+                    android:textColor="@color/black"/>
+
+                <RatingBar
+                    android:id="@+id/ratingBar_restoRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:numStars="5"
+                    android:rating="3.5"
+                    android:stepSize="0.1"
+                    android:isIndicator="true"
+                    style="?android:attr/ratingBarStyleSmall"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="5dp"/>
+
+                <TextView
+                    android:id="@+id/textView_restoRatingCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="300"
+                    android:textStyle="italic"
+                    android:layout_gravity="center"
+                    android:textSize="10sp"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/imageButton_appointment"
+            android:layout_width="0dp"
+            android:layout_height="25dp"
+            android:layout_weight="1"
+            android:src="@drawable/marker_plus_black"
+            android:background="#00FFFFFF"
+            android:scaleType="fitCenter"
+            android:layout_margin="5dp"/>
+    </LinearLayout>
 
 </FrameLayout>

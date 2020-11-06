@@ -51,8 +51,9 @@ import java.util.List;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Views.AppMode;
 
-public class OtherUsersProfileActivity extends AppCompatActivity {
+public class OtherUsersProfileActivity extends AppMode {
 
     TextView textView_displayLastname, textView_email;
 

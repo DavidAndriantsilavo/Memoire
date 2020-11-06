@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorPrimary" format="color"/>
+    <attr name="colorPrimaryDark" format="color"/>
+    <attr name="colorAccent" format="color"/>
+    <attr name="red" format="color"/>
+    <attr name="white" format="color"/>
+    <attr name="black" format="color"/>
+    <attr name="grey" format="color"/>
+    <attr name="browser_actions_divider_color" format="color"/>
+</resources>

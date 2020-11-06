@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/round_widget_white">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Modification du menu"
+        android:textSize="17dp"
+        android:layout_margin="10dp"
+        android:textColor="?attr/black"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nom du menu"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+    <EditText
+        android:id="@+id/et_menuName_editDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:layout_marginHorizontal="7dp"
+        android:paddingHorizontal="10dp"
+        android:text="Menu name"
+        android:inputType="textCapSentences"
+        android:lines="1"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ingredients"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+    <EditText
+        android:id="@+id/et_menuIngredient_editDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="150dp"
+        android:gravity="start"
+        android:layout_marginHorizontal="7dp"
+        android:paddingHorizontal="10dp"
+        android:text="Menu ingredients"
+        android:inputType="textCapSentences|textMultiLine"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Prix"
+        android:textColor="?attr/black"
+        android:layout_marginStart="20sp"/>
+    <EditText
+        android:id="@+id/et_menuPrice_editDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp"
+        android:gravity="start"
+        android:layout_marginHorizontal="7dp"
+        android:paddingHorizontal="10dp"
+        android:text="Menu price"
+        android:inputType="numberDecimal"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginRight="15dp">
+        <TextView
+            android:clickable="true"
+            android:id="@+id/tv_annuler_editDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Annuler"
+            android:textSize="16dp"
+            android:textColor="@color/colorAccent"
+            android:layout_weight="1"
+            android:gravity="end"/>
+        <TextView
+            android:clickable="true"
+            android:id="@+id/tv_valider_editDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Valider"
+            android:textSize="16dp"
+            android:textColor="@color/colorAccent"
+            android:layout_weight="1"
+            android:gravity="end"/>
+    </LinearLayout>
+
+</LinearLayout>
