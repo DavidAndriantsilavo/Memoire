@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -90,6 +91,7 @@ public class RestoFragment extends Fragment {
                                     modelRestoList.clear();
                                     for (DocumentSnapshot ds : value.getDocuments()) {
                                         //get resto informations
+                                        Log.d("RestoSize", "***************************************************" + value.size());
 
                                         final ModelResto modelResto = new ModelResto();
 

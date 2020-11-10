@@ -176,7 +176,7 @@ public class WelcomeActivity extends AppMode {
 
                     }
 
-                    final User user = new User(email, user_id, display_name, phone, finalPassword, sexe, pseudo, profileImage_Uri);
+                    final User user = new User(user_id, display_name, sexe, pseudo, email, phone, finalPassword, profileImage_Uri);
                     storeUserData(user);
                 }
             }
@@ -195,6 +195,14 @@ public class WelcomeActivity extends AppMode {
         addProfileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showImagePicDialog();
+            }
+        });
+
+        //ImageView that content profile image is clicked
+        profileImage_imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 showImagePicDialog();
             }
         });
