@@ -71,7 +71,7 @@ public class MainActivity extends AppMode {
 
     private final String TAG = "MainActivity";
 
-    private int mInterval = 15000; // 15 segondes by default, can be changed later
+    private int mInterval = 1500000; // 15 segondes by default, can be changed later
     private Handler mHandler;
 
     int i = 0;

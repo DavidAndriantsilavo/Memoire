@@ -23,7 +23,4 @@
         android:title="Profile">
     </item>
 
-    <item
-        android:id="@+id/menu_logout_profil"
-        android:title="Se déconnecter"/>
 </menu>

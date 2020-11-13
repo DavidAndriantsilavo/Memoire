@@ -173,7 +173,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorPrimaryDark"
-                android:text="1M kiffs"
                 android:layout_weight="1"/>
 
             <TextView
@@ -181,7 +180,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorPrimaryDark"
-                android:text="123 comments"
                 android:layout_weight="1"
                 android:gravity="end"/>
         </LinearLayout>

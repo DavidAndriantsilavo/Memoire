@@ -188,14 +188,12 @@
                             android:id="@+id/texteView_kiffs_comment"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="1M Kiffs"
                             android:textColor="@color/colorPrimaryDark"
                             android:layout_weight="1"/>
                         <TextView
                             android:id="@+id/texteView_commentsNbr_comment"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="500 commentaires"
                             android:textColor="@color/colorPrimaryDark"
                             android:layout_weight="1"
                             android:gravity="end"/>

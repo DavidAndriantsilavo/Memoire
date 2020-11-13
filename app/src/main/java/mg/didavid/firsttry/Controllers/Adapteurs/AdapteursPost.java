@@ -120,7 +120,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             calendar.setTimeInMillis(Long.parseLong(post_timeStamp));
         }catch (Exception e){
         }
-        final String pTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+        final String pTemps = DateFormat.format("dd MMM yyyy - HH:mm", calendar).toString();
 
         DocumentReference documentReference_post = FirebaseFirestore.getInstance().collection("Publications").document(post_id);
         documentReference_post.addSnapshotListener(new EventListener<DocumentSnapshot>() {
