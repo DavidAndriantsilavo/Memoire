@@ -206,7 +206,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                 holder.ratingBar.setRating(Float.parseFloat(pseudo));
             }else {
                 holder.ratingBar.setVisibility(View.GONE);
-                holder.pseudo.setVisibility(View.VISIBLE);
+                //holder.pseudo.setVisibility(View.VISIBLE);
                 holder.pseudo.setText(pseudo);
             }
             holder.pTimeTv.setText(pTemps);
@@ -479,9 +479,11 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
             popupMenu.getMenu().add(Menu.NONE, 1, 1, "Modifier la publication");
-            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
         }else if (!user_id.contains("resto")){
             popupMenu.getMenu().add(Menu.NONE, 4, 4, "Envoyer un message");
+        }
+        if (user_id.equals("resto_" + mCurrentUserId)) {
+            popupMenu.getMenu().add(Menu.NONE, 5, 5, "Voir tous les menus");
         }
         popupMenu.getMenu().add(Menu.NONE, 2, 2, "Commenter la publication");
         popupMenu.getMenu().add(Menu.NONE, 3, 3, "Voir le profile");
