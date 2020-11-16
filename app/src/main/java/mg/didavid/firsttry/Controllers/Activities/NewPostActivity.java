@@ -216,6 +216,9 @@ public class NewPostActivity extends AppMode implements LocationListener {
                                         while (!uriTask.isSuccessful()) {
                                             Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
                                             Toast.makeText(NewPostActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
+                                            if (uriTask.isSuccessful()) {
+                                                break;
+                                            }
                                         }
 
                                         //verifier si l'image est téléversée ou pas et que l'url est bien reçu

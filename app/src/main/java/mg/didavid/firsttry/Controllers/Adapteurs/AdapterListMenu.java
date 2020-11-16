@@ -257,7 +257,6 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
                             }
                             if (countSampleMenu < 6 && !isMenuExist) {
                                 ModelRestoSampleMenu modelRestoSampleMenu = new ModelRestoSampleMenu(id_resto, id_menu, "", menuPhoto, menuName, menuPrice);
-                                final String timestamp = String.valueOf(System.currentTimeMillis());
                                 //store data
                                 collectionReference_sampleMenu.document(id_menu).set(modelRestoSampleMenu)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -266,7 +265,8 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
                                                 Toast.makeText(context, "Ecahntillon de menu ajouté avec succès", Toast.LENGTH_LONG).show();
                                             }
                                         });
-                            }else {
+                            }
+                            if (countSampleMenu > 5){
                                 //user has yet 5 sample menu set
                                 showMessageDialog();
                             }

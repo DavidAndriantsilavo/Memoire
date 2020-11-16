@@ -150,11 +150,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
     User currentUser = new User();
 
-    ProgressDialog progressDialog_logout;
 
     public static GMapFragment newInstance() {
         return (new GMapFragment());
     }
+
     MapView mMapView;
     private GoogleMap mGoogleMap;
     private CameraPosition cameraPosition;
@@ -166,7 +166,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
     private View mCustomDefaultMarkerView, mCustomClickedMarkerView;
     private ImageView imageView_marker, imageView_profile_picture, imageView_logoResto;
-    private TextView textView_name, textView_distanceUser, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount, textView_distanceResto ;
+    private TextView textView_name, textView_distanceUser, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount, textView_distanceResto;
     private ImageButton imageButton_appointment, imageButton_favoris;
     private Button button_profile, button_message;
     private ClusterMarkerUser userMarker;
@@ -242,11 +242,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         seekBarProgress = getActivity().getPreferences(MODE_PRIVATE).getInt("radius", seekBarProgress);
         seekBar_distance.setProgress(seekBarProgress);
 
-        //init progressDialog
-        progressDialog_logout = new ProgressDialog(getContext());
-        progressDialog_logout.setMessage("Déconnexion...");
-        //////////////////////////
-
         if (savedInstanceState != null) {
             lastKnownLocation = savedInstanceState.getParcelable(KEY_LOCATION);
             cameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
@@ -272,13 +267,13 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         //get the restaurant location bundle from RestoFragment
         bundleRestaurantPosition = this.getArguments();
 
-        if(bundleRestaurantPosition != null){
+        if (bundleRestaurantPosition != null) {
             Log.d(TAG, "resto : got bundle");
 
             Double restoLatitude = bundleRestaurantPosition.getDouble("restoLatitude");
             Double restoLongitude = bundleRestaurantPosition.getDouble("restoLongitude");
 
-            if(restoLatitude != null && restoLongitude != null){
+            if (restoLatitude != null && restoLongitude != null) {
                 Log.d(TAG, "resto : got bundle restoLocation " + restoLatitude + " " + restoLongitude);
                 LatLng restoPosition = new LatLng(restoLatitude, restoLongitude);
 
@@ -311,10 +306,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         button_message.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(clickedUserMarker != null) {
+                if (clickedUserMarker != null) {
                     UserLocation userLocation = clickedUserMarker.getUserLocation();
 
-                    if(userLocation.getUser_id() != currentUser.getUser_id()){
+                    if (userLocation.getUser_id() != currentUser.getUser_id()) {
                         Intent intent = new Intent(getActivity(), ChatActivity.class);
                         intent.putExtra("other_user_id", userLocation.getUser_id());
                         intent.putExtra("other_user_name", userLocation.getName());
@@ -328,11 +323,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         button_profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(clickedUserMarker != null) {
+                if (clickedUserMarker != null) {
                     UserLocation userLocation = clickedUserMarker.getUserLocation();
-                    if(userLocation.getUser_id() == currentUser.getUser_id()){
+                    if (userLocation.getUser_id() == currentUser.getUser_id()) {
                         startActivity(new Intent(getActivity(), ProfileUserActivity.class));
-                    }else{
+                    } else {
                         Intent intent = new Intent(getActivity(), OtherUsersProfileActivity.class);
                         intent.putExtra("user_id", userLocation.getUser_id());
                         startActivity(intent);
@@ -344,12 +339,12 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         linearLayoutCustomViewResto.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(clickedRestoMarker != null){
+                if (clickedRestoMarker != null) {
                     ModelResto resto = clickedRestoMarker.getResto();
                     if (resto.getId_resto().equals("resto_" + currentUser.getUser_id())) {
                         //send currentUser to his resto profile
                         startActivity(new Intent(getActivity(), ProfileRestoActivity.class));
-                    }else {
+                    } else {
                         //send currentUser to other resto profile
                         Intent intent = new Intent(getActivity(), OtherRestoProfileActivity.class);
                         intent.putExtra("id_resto", resto.getId_resto());
@@ -378,11 +373,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             }
         });
 
-        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
-        {
+        mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
-            public void onMapClick(LatLng arg0)
-            {
+            public void onMapClick(LatLng arg0) {
                 Log.d(TAG, "test : map clicked");
                 linearLayoutCustomViewUser.setVisibility(View.GONE);
                 linearLayoutCustomViewResto.setVisibility(View.GONE);
@@ -409,7 +402,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 //            }
 //        });
 
-        if(checkMapServices()) {
+        if (checkMapServices()) {
             updateLocationUI();
             initialiseClusters();
             showFavoriteMarker();
@@ -436,7 +429,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 getLocationPermission();
                 Log.d(TAG, "FT : UI not updated");
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage());
         }
     }
@@ -455,7 +448,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             MarkerOptions markerOptions = new MarkerOptions()
                                     .position(new LatLng(location.getLatitude(), location.getLongitude()))
                                     .title(title)
@@ -465,7 +458,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                             favoriteMarkerCollection.addMarker(markerOptions);
 
                             Toast.makeText(getActivity(), "Location ajoutée", Toast.LENGTH_SHORT).show();
-                        }else{
+                        } else {
                             Toast.makeText(getActivity(), "Une erreur s'est produite!", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -473,8 +466,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //get and show saved favorite markers
-    private void showFavoriteMarker(){
-        if(mGoogleMap != null){
+    private void showFavoriteMarker() {
+        if (mGoogleMap != null) {
             userReference.document(currentUser.getUser_id())
                     .collection("FavoriteCollection")
                     .get()
@@ -508,10 +501,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //Initialise the cluster managers for Restaurants and Users and set the rendrers, and clickListners
-    private void initialiseClusters(){
+    private void initialiseClusters() {
         markerManager = new MarkerManager(mGoogleMap);
 
-        if(mGoogleMap != null) {
+        if (mGoogleMap != null) {
             if (mClusterManagerRestaurant == null) {
                 mClusterManagerRestaurant = new ClusterManager<ClusterMarkerRestaurant>(getActivity().getApplicationContext(), mGoogleMap, markerManager);
                 mClusterManagerRestaurant.setAlgorithm(new GridBasedAlgorithm<ClusterMarkerRestaurant>());
@@ -557,11 +550,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     public boolean onMarkerClick(Marker marker) {
                         Log.d(TAG, "onMarkerClick: dragclick on : " + marker.getId());
 
-                        if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                        if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {
                             linearLayoutCustomViewUser.setVisibility(View.GONE);
                         }
 
-                        if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                        if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
                             linearLayoutCustomViewResto.setVisibility(View.GONE);
                         }
 
@@ -609,7 +602,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     public boolean onClusterItemClick(ClusterItem item) {
                         Log.d(TAG, " marker : click on restaurant " + item.getTitle());
 
-                        if(linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                        if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {
                             linearLayoutCustomViewUser.setVisibility(View.GONE);
                         }
 
@@ -642,7 +635,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
                             }
 
-                        } else{
+                        } else {
 
                             lastClickedRestoMarker = clickedRestoMarker;
 
@@ -671,17 +664,17 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     @Override
                     public boolean onClusterItemClick(ClusterItem item) {
                         Log.d(TAG, " marker : click on currentUser " + item.getTitle());
-                        if(linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                        if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
                             linearLayoutCustomViewResto.setVisibility(View.GONE);
                         }
 
                         clickedUserMarker = (ClusterMarkerUser) item;
                         UserLocation userLocation = clickedUserMarker.getUserLocation();
 
-                        if(userLocation.getUser_id() == currentUser.getUser_id()){
+                        if (userLocation.getUser_id() == currentUser.getUser_id()) {
                             textView_distanceUser.setVisibility(View.GONE);
                             button_message.setVisibility(View.GONE);
-                        }else{
+                        } else {
                             textView_distanceUser.setVisibility(View.VISIBLE);
                             button_message.setVisibility(View.VISIBLE);
 
@@ -745,15 +738,15 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //START THE SERVICE TO SEND THE CURRENT LOCATION TO REALTIME DATABASE
-    private void startLocationService(){
-        if(!isLocationServiceRunning()){
+    private void startLocationService() {
+        if (!isLocationServiceRunning()) {
             Intent serviceIntent = new Intent(getActivity(), LocationService.class);
 //        this.startService(serviceIntent);
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
                 getActivity().startForegroundService(serviceIntent);
-            }else{
+            } else {
                 getActivity().startService(serviceIntent);
             }
         }
@@ -761,10 +754,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
     //CHECK IF THE REALTIME SERVICE IS RUNNING
     private boolean isLocationServiceRunning() {
-        if(getActivity() != null){
+        if (getActivity() != null) {
             ActivityManager manager = (ActivityManager) getActivity().getSystemService(ACTIVITY_SERVICE);
-            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-                if("mg.didavid.firsttry.Models.LocationService".equals(service.service.getClassName())) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if ("mg.didavid.firsttry.Models.LocationService".equals(service.service.getClassName())) {
                     Log.d(TAG, "isLocationServiceRunning: location service is already running.");
                     return true;
                 }
@@ -776,7 +769,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
-    private void startOtherUserLocationsRunnable(){
+    private void startOtherUserLocationsRunnable() {
         Log.d(TAG, "self: starting runnable for retrieving updated other_locations.");
         otherHandler.postDelayed(mOtherRunnable = new Runnable() {
             @Override
@@ -788,12 +781,12 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //STOP THE SERVICE
-    private void stopOtherLocationUpdates(){
+    private void stopOtherLocationUpdates() {
         otherHandler.removeCallbacks(mOtherRunnable);
     }
 
     //START THE SERVICE TO RETRIEVE OTHER'S LOCATION
-    private void startUserLocationsRunnable(){
+    private void startUserLocationsRunnable() {
         Log.d(TAG, "self: starting runnable for retrieving updated self_locations.");
         userHandler.postDelayed(mUserRunnable = new Runnable() {
             @Override
@@ -805,14 +798,14 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //STOP THE SERVICE
-    private void stopUserLocationUpdates(){
+    private void stopUserLocationUpdates() {
         userHandler.removeCallbacks(mUserRunnable);
     }
 
     //CHECK THE SEEKBAR CHANGE STATE
     // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
     //IF NOT STOP THE RUNNABLE AND CLEAR THE MARKERS AND THE LIST
-    private void getRestaurantLocation(){
+    private void getRestaurantLocation() {
         restoMap = new HashMap<>();
         menuList = new ArrayList<>();
 
@@ -850,7 +843,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -870,13 +863,13 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "" + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
     }
 
-    private void getOtherLocation(){
+    private void getOtherLocation() {
         mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -886,14 +879,14 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     //Getting User object from dataSnapshot
                     final UserLocation userLocation = data.getValue(UserLocation.class);
 
-                    if(userLocation != null){
+                    if (userLocation != null) {
                         final LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
                         Location ohterLocation = new Location("otherLocation");
                         ohterLocation.setLatitude(userLocation.getLatitude());
                         ohterLocation.setLongitude(userLocation.getLongitude());
 
-                        if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
-                            if(userLocation.isSeeMyPosition()){
+                        if (!userLocation.getUser_id().equals(currentUser.getUser_id())) {
+                            if (userLocation.isSeeMyPosition()) {
                                 ClusterMarkerUser clusterMarkerUser = new ClusterMarkerUser(
                                         otherPosition,
                                         "",
@@ -905,7 +898,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 otherUserLocationList.add(i[0], userLocation);
                                 i[0]++;
 
-                                if(lastKnownLocation != null) {
+                                if (lastKnownLocation != null) {
                                     if (Math.round(lastKnownLocation.distanceTo(ohterLocation)) < seekBarProgress * 100) {
                                         mClusterManagerUser.addItem(clusterMarkerUser);
                                         startOtherUserLocationsRunnable();
@@ -929,12 +922,12 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //check the seekBar value and draw a circle relative on it
-    private void seekBarChangeListner(){
+    private void seekBarChangeListner() {
         seekBar_distance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 seekBarProgress = progress;
 
-                distanceRadius = seekBarProgress*100;
+                distanceRadius = seekBarProgress * 100;
                 distanceCircle.setRadius(distanceRadius);
 
                 checkRadiusDistance(distanceRadius);
@@ -947,10 +940,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 Toast.makeText(getActivity(), "Seek bar progress is :" + seekBarProgress,
                         Toast.LENGTH_SHORT).show();
 
-                if(seekBarProgress == 0){
+                if (seekBarProgress == 0) {
                     stopOtherLocationUpdates();
-                }else {
-                    if(!mClusterMarkersUser.isEmpty()){
+                } else {
+                    if (!mClusterMarkersUser.isEmpty()) {
                         startOtherUserLocationsRunnable();
                     }
 
@@ -960,8 +953,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //Check which users are inside the circle
-    private void checkRadiusDistance(int radius){
-        for(int i = 0; i < mClusterMarkersUser.size(); i++){
+    private void checkRadiusDistance(int radius) {
+        for (int i = 0; i < mClusterMarkersUser.size(); i++) {
             ClusterMarkerUser markerUser = mClusterMarkersUser.get(i);
 
             Location location = new Location("otherLocation");
@@ -970,9 +963,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
             currentDistance = Math.round(lastKnownLocation.distanceTo(location));
 
-            if(currentDistance < radius){
+            if (currentDistance < radius) {
                 mClusterManagerUser.addItem(markerUser);
-            }else {
+            } else {
                 mClusterManagerUser.removeItem(markerUser);
             }
             mClusterManagerUser.cluster();
@@ -984,15 +977,15 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         mUserLocationReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int i=0;
+                int i = 0;
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
                     //Getting User object from dataSnapshot
                     UserLocation userLocation = data.getValue(UserLocation.class);
                     LatLng otherPosition = new LatLng(userLocation.getLatitude(), userLocation.getLongitude());
                     ClusterMarkerUser markerUser;
 
-                    if(!userLocation.getUser_id().equals(currentUser.getUser_id())){
-                        if(userLocation.isSeeMyPosition()){
+                    if (!userLocation.getUser_id().equals(currentUser.getUser_id())) {
+                        if (userLocation.isSeeMyPosition()) {
                             try {
                                 markerUser = mClusterMarkersUser.get(i);
                                 markerUser.setPosition(otherPosition);
@@ -1002,7 +995,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 mClusterManagerUser.cluster();
 
                                 Log.d(TAG, " marker : other position updated" + userLocation.getName());
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 Log.e(TAG, "%s" + e);
                             }
                         }
@@ -1010,6 +1003,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "%s" + error);
@@ -1017,7 +1011,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         });
     }
 
-    private void updateUserLocation(){
+    private void updateUserLocation() {
         Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
         locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener<Location>() {
             @Override
@@ -1026,7 +1020,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     // Set the map's camera position to the current location of the device.
                     lastKnownLocation = task.getResult();
 
-                    if(lastKnownLocation != null){
+                    if (lastKnownLocation != null) {
                         LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
                         distanceCircle.setCenter(userPosition);
                         userMarker.setPosition(userPosition);
@@ -1073,12 +1067,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //GET THE USER INFO FROM THE SINGLETON AND INSTANCIATE THE USERLOCATION OBJECT
-    private void setUserLocation(){
-        if(mUserLocation == null)
-        {
+    private void setUserLocation() {
+        if (mUserLocation == null) {
             mUserLocation = new UserLocation();
-            if(((UserSingleton) getActivity().getApplicationContext()).getUser() != null)
-            {
+            if (((UserSingleton) getActivity().getApplicationContext()).getUser() != null) {
                 mUserLocation.setName(currentUser.getName());
                 mUserLocation.setUser_id(currentUser.getUser_id());
                 mUserLocation.setProfile_image(currentUser.getProfile_image());
@@ -1105,7 +1097,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
                                 GeoPoint geoPoint = new GeoPoint(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
 
-                                if(bundleRestaurantPosition == null){
+                                if (bundleRestaurantPosition == null) {
                                     mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                             new LatLng(lastKnownLocation.getLatitude(),
                                                     lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
@@ -1152,7 +1144,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 distanceCircle = mGoogleMap.addCircle(new CircleOptions()
                                         .center(new LatLng(lastKnownLocation.getLatitude(),
                                                 lastKnownLocation.getLongitude()))
-                                        .radius(seekBarProgress*100)
+                                        .radius(seekBarProgress * 100)
                                         .strokeWidth(1)
                                         .strokeColor(Color.GREEN)
                                         .fillColor(Color.argb(128, 255, 0, 0))
@@ -1181,28 +1173,26 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     }
                 });
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
 
     //SAVE THE USER LOCATION INTO REALTIME DATABASE
-    private void saveUserLocation()
-    {
-        if(mUserLocation != null)
-        {
+    private void saveUserLocation() {
+        if (mUserLocation != null) {
             mUserLocationReference.child(mUserLocation.getUser_id()).setValue(mUserLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
+                    if (task.isSuccessful()) {
                         //Task was successful, data written!
                         Log.d(TAG, "FT : userLocation updated");
-                    }else{
+                    } else {
                         //Task was not successful,
                         Toast.makeText(getActivity(), "Something went wrong", Toast.LENGTH_SHORT).show();
 
                         //Log the error message
-                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage() );
+                        Log.e(TAG, "onComplete: ERROR: " + task.getException().getLocalizedMessage());
                     }
                 }
             });
@@ -1217,11 +1207,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //CHECK FOR ALL NEEDED SERVICES
-    private boolean checkMapServices(){
+    private boolean checkMapServices() {
         mServicesIsGood = false;
         Log.d(TAG, "FT : allIsGood NOT OK");
-        if(isServicesOK()){
-            if(isGpsEnabled()){
+        if (isServicesOK()) {
+            if (isGpsEnabled()) {
                 mServicesIsGood = true;
                 Log.d(TAG, "FT : allIsGood OK");
                 return mServicesIsGood;
@@ -1249,39 +1239,36 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //CHECK IF GPS IS ENABLED
-    public boolean isGpsEnabled(){
-        final LocationManager manager = (LocationManager) getActivity().getSystemService( Context.LOCATION_SERVICE );
+    public boolean isGpsEnabled() {
+        final LocationManager manager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Log.d(TAG, "FT : GPS not enabled!");
             buildAlertMessageNoGps();
 
             return false;
-        }
-        else
-        {
+        } else {
             Log.d(TAG, "FT : GPS enabled");
         }
         return true;
     }
 
     // REQUEST FOR GPLAY SERVICES
-    public boolean isServicesOK(){
+    public boolean isServicesOK() {
         Log.d(TAG, "isServicesOK: checking google services version");
 
         int available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getActivity());
 
-        if(available == ConnectionResult.SUCCESS){
+        if (available == ConnectionResult.SUCCESS) {
             //everything is fine and the currentUser can make map requests
             Log.d(TAG, "FT : isServicesOK: Google Play Services is working");
             return true;
-        }
-        else if(GoogleApiAvailability.getInstance().isUserResolvableError(available)){
+        } else if (GoogleApiAvailability.getInstance().isUserResolvableError(available)) {
             //an error occured but we can resolve it
             Log.d(TAG, "FT : isServicesOK: an error occured but we can fix it");
             Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(getActivity(), available, ERROR_DIALOG_REQUEST);
             dialog.show();
-        }else{
+        } else {
             Toast.makeText(getActivity(), "You can't make map requests", Toast.LENGTH_SHORT).show();
         }
         return false;
@@ -1330,10 +1317,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         Log.d(TAG, "onActivityResult: called.");
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ENABLE_GPS: {
-                if(mLocationPermissionGranted) {
+                if (mLocationPermissionGranted) {
                     Log.d(TAG, "FT : GPS request result");
-                }
-                else{
+                } else {
                     getLocationPermission();
                 }
             }
@@ -1345,23 +1331,23 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     // END SERVICES AND PERMISSION REQUESTS
     ////////////////////////////////////////////////////////////////
 
-    //GET THE BITMAP FROM PICASSO AND PUT IT TO THE INFLATED VIEW FOR THE MARKER
-    private Bitmap getMarkerBitmapFromView(View view, Bitmap bitmap) {
-
-        imageView_marker.setImageBitmap(bitmap);
-        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-        view.buildDrawingCache();
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
-                Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(returnedBitmap);
-        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
-        Drawable drawable = view.getBackground();
-        if (drawable != null)
-            drawable.draw(canvas);
-        view.draw(canvas);
-        return returnedBitmap;
-    }
+//    //GET THE BITMAP FROM PICASSO AND PUT IT TO THE INFLATED VIEW FOR THE MARKER
+//    private Bitmap getMarkerBitmapFromView(View view, Bitmap bitmap) {
+//
+//        imageView_marker.setImageBitmap(bitmap);
+//        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+//        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+//        view.buildDrawingCache();
+//        Bitmap returnedBitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(),
+//                Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(returnedBitmap);
+//        canvas.drawColor(Color.WHITE, PorterDuff.Mode.SRC_IN);
+//        Drawable drawable = view.getBackground();
+//        if (drawable != null)
+//            drawable.draw(canvas);
+//        view.draw(canvas);
+//        return returnedBitmap;
+//    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -1380,11 +1366,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
         Log.d(TAG, "FT : OnResume!!");
 
-        if(checkMapServices()) {
+        if (checkMapServices()) {
             if (mLocationPermissionGranted) {
                 updateLocationUI();
-            }
-            else {
+            } else {
                 getLocationPermission();
             }
         }
@@ -1396,8 +1381,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         mMapView.onPause();
         Log.d(TAG, "FT : OnPause");
 
-        if(alert != null)
-        {
+        if (alert != null) {
             alert.dismiss();
         }
     }
@@ -1431,30 +1415,31 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //Configure the recyclerView's adapter
-    public void setSearchAdapter(ArrayList list){
+    public void setSearchAdapter(ArrayList list) {
         adapterMapSearch = new AdapterMapSearch(getActivity(), list, this);
         recyclerView.setAdapter(adapterMapSearch);
     }
 
+    //handle the search
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
 
-        item_search =  menu.findItem(R.id.menu_search_button);
+        item_search = menu.findItem(R.id.menu_search_button);
         searchView = (SearchView) MenuItemCompat.getActionView(item_search);
 
         searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!currentSearchQuery.equals("")){
+                if (!currentSearchQuery.equals("")) {
                     searchView.setQuery(currentSearchQuery, false);
                 }
 
-                if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
+                if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE) {
                     linearLayoutCustomViewUser.setVisibility(View.GONE);
                 }
-                if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
                     linearLayoutCustomViewResto.setVisibility(View.GONE);
                 }
             }
@@ -1464,9 +1449,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             @Override
             public boolean onQueryTextSubmit(String query) {
                 //called when currentUser press search button
-                if (!TextUtils.isEmpty(query)){
+                if (!TextUtils.isEmpty(query)) {
                     searchQuery(query);
-                }else {
+                } else {
                     setSearchAdapter(queryList);
                 }
                 return false;
@@ -1493,9 +1478,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     //search for the menu who includes the query in the ingredients
     //then get the resto proposing that menu
     //The HashSet is used to get a list whithout duplication of items
-    private void searchQuery(String query)
-    {
-        if(!allRestoList.isEmpty() && !menuList.isEmpty()){
+    private void searchQuery(String query) {
+        if (!allRestoList.isEmpty() && !menuList.isEmpty()) {
             ModelResto resto;
             ModelRestoSampleMenu menu;
             HashSet<ModelResto> hash = new HashSet<>();
@@ -1531,9 +1515,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 ////            searchLongitude = ((UserLocation) object).getLongitude();
 ////        }
 
-        if (mLocationPermissionGranted){
-            if(!queryList.isEmpty()){
-                if(searchLatitude != null && searchLongitude != null){
+        if (mLocationPermissionGranted) {
+            if (!queryList.isEmpty()) {
+                if (searchLatitude != null && searchLongitude != null) {
                     Log.d(TAG, "resto : got bundle restoLocation " + searchLatitude + " " + searchLongitude);
                     LatLng restoPosition = new LatLng(searchLatitude, searchLongitude);
 
@@ -1564,7 +1548,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         }
 
         currentSearchQuery = searchView.getQuery().toString();
-        searchView.setQuery("",false);
+        searchView.setQuery("", false);
         searchView.setIconified(true);
     }
 
@@ -1572,9 +1556,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
         switch (item.getItemId()) {
-            case R.id.menu_logout_profil:
-                avertissement();
-                return true;
             case R.id.menu_activity_main_profile:
                 startActivity(new Intent(getContext(), ProfileUserActivity.class));
                 return true;
@@ -1584,52 +1565,4 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         }
         return super.onOptionsItemSelected(item);
     }
-
-    private void avertissement() {
-        if(currentUser !=null)
-        {
-            //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-            builder.setMessage("Vous voulez vous déconnecter?");
-            builder.setCancelable(true);
-
-            builder.setPositiveButton(
-                    "OUI",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            progressDialog_logout.show();
-                            logOut();
-                            dialog.cancel();
-                        }
-                    });
-
-            builder.setNegativeButton(
-                    "NON",
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    });
-
-            progressDialog_logout.dismiss();
-
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-    }
-
-    private void logOut() {
-        progressDialog_logout.show();
-        FirebaseAuth.getInstance().signOut();
-        GoogleSignIn.getClient(
-                getContext(),
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-        ).signOut();
-
-        Intent logOut =  new Intent(getContext(), LoginActivity.class);
-        startActivity(logOut);
-
-        getActivity().finish();
-    }
-
 }

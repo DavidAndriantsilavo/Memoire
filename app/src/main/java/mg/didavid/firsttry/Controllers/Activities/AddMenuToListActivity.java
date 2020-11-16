@@ -93,7 +93,7 @@ public class AddMenuToListActivity extends AppMode {
         user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         progressDialog_sendSampleMenu = new ProgressDialog(this);
-        progressDialog_sendSampleMenu.setMessage("Enreistrement de l'échantillon...");
+        progressDialog_sendSampleMenu.setMessage("Enreistrement du menu...");
         progressDialog_sendSampleMenu.setCanceledOnTouchOutside(false);
         progressDialog_sendSampleMenu.setCancelable(false);
 
@@ -170,7 +170,7 @@ public class AddMenuToListActivity extends AppMode {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(AddMenuToListActivity.this, "Ecahntillon de menu enregister avec succès", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AddMenuToListActivity.this, "Menu de menu enregister avec succès", Toast.LENGTH_LONG).show();
                         progressDialog_sendSampleMenu.dismiss();
                         imageCompressed_uri = null;
                         editText_menuName.setText("");

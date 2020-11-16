@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -68,7 +69,7 @@ public class RestoFragment extends Fragment {
         //set recycler view
         textView_aboutSinginResto = view.findViewById(R.id.textView_aboutRestoRregister_restoFragment);
         recyclerView_restoFragment = view.findViewById(R.id.restoRecyclerview);
-        recyclerView_restoFragment.setHasFixedSize(true);
+        //recyclerView_restoFragment.setHasFixedSize(true);
         recyclerView_restoFragment.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         setData();
@@ -88,8 +89,11 @@ public class RestoFragment extends Fragment {
                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                 if (value != null && !value.isEmpty()) {
                                     modelRestoList.clear();
+                                    int countResto;
                                     for (DocumentSnapshot ds : value.getDocuments()) {
                                         //get resto informations
+                                        countResto = value.size();
+                                        Log.d("RestoSize", "***************************************************" + countResto);
 
                                         final ModelResto modelResto = new ModelResto();
 
@@ -114,6 +118,7 @@ public class RestoFragment extends Fragment {
                                                                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                                                         if (value != null && !value.isEmpty()) {
                                                                             modelRestoSampleMenuList.clear();
+                                                                            Log.d("iditra", "" + modelRestoList.size());
                                                                             List<ModelRestoSampleMenu> restoSampleMenus = value.toObjects(ModelRestoSampleMenu.class);
                                                                             int size = restoSampleMenus.size();
                                                                             for (int i = 0; i < size; i++) {
@@ -122,17 +127,25 @@ public class RestoFragment extends Fragment {
                                                                                 }
                                                                             }
                                                                             modelResto.setSampleMenuList(modelRestoSampleMenuList);
-                                                                            modelRestoList.add(modelResto);
+                                                                                modelRestoList.add(modelResto);
+                                                                            Log.d("iditra", "" + modelRestoList.size());
                                                                             //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
 
-                                                                        } else {
-                                                                            modelRestoList.add(modelResto);
-                                                                            //set adapter to thi recycler view
-                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                         }
+                                                                        if (modelResto.getSampleMenuList().isEmpty()){
+                                                                            Log.d("tafiditra", "affirmatif");
+                                                                            modelRestoList.add(modelResto);
+                                                                            Log.d("iditra", "" + modelRestoList.size());
+                                                                            //set adapter to thi recycler view
+                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
+                                                                        }
+                                                                        Log.d("niditra", "" + modelResto.getName_resto());
+                                                                        //set adapter to thi recycler view
+                                                                        adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                        recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                     }
                                                                 });
                                                     }
@@ -164,7 +177,6 @@ public class RestoFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
 
-        menu.findItem(R.id.menu_logout_profil).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
 

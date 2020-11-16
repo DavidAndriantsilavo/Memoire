@@ -123,7 +123,6 @@ public class ListMenuRestoActivity extends AppMode {
 
         //hide others menu
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-        menu.findItem(R.id.menu_logout_profil).setVisible(false);
         if (id_resto.equals("resto_" + user_id)) {
             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
         }else {
