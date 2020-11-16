@@ -227,9 +227,6 @@ public class WelcomeActivity extends AppMode {
                     if (data.exists()) {
                         Toast.makeText(WelcomeActivity.this, "YOU ARE ALREADY SAVED IN THE DATABASE !!!", Toast.LENGTH_SHORT).show();
 
-                        //USER INSTANCE TO STORE THE USER FROM FIRESTORE IF THE DOCUMENT ALREADY EXISTS
-                        User user = data.toObject(User.class);
-
                         Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
                         startActivity(intent);
 

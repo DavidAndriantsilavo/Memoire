@@ -36,7 +36,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.R;
 
 import static com.google.common.base.Ascii.toLowerCase;
@@ -372,12 +376,9 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in currentUser's information
                                 Log.d(TAG, "signInWithCredential:success");
-                                //FirebaseUser currentUser = mAuth.getInstance().getCurrentUser();
+                                FirebaseUser currentUser = mAuth.getInstance().getCurrentUser();
 
-                                Intent intent =  new Intent(getApplicationContext(), WelcomeActivity.class);
-                                startActivity(intent);
-
-                                finish();
+                                checkUserExists(currentUser);
                             } else {
                                 // If sign in fails, display a message to the currentUser.
                                 Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -385,6 +386,39 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         }
                     });
+        }
+
+        private void checkUserExists(FirebaseUser user){
+            DocumentReference documentReference = FirebaseFirestore.getInstance().collection("Users").document(user.getUid());
+
+            documentReference.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    //Checking request result
+                    if (task.isSuccessful()) {
+                        //Request was successful but it never means that data is found
+                        DocumentSnapshot data = task.getResult();
+                        if (data.exists()) {
+                            Toast.makeText(LoginActivity.this, "YOU ARE ALREADY SAVED IN THE DATABASE !!!", Toast.LENGTH_SHORT).show();
+
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+
+                            finish();
+                        } else {
+                            Intent intent =  new Intent(LoginActivity.this, WelcomeActivity.class);
+                            startActivity(intent);
+
+                            finish();
+                        }
+
+                    } else {
+                        //Request was not successful
+                        //Could be some rules or internet problem
+                        Log.i(TAG, "onComplete: Request unsuccessful, error: " + task.getException().getLocalizedMessage());
+                    }
+                }
+            });
         }
 
     ///////////////////////////////////////////////////

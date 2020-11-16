@@ -140,8 +140,8 @@ public class ParametreFragment extends Fragment {
         userListe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getContext(), UserListActivity.class));
-                getActivity().finish();
+//                startActivity(new Intent(getContext(), UserListActivity.class));
+//                getActivity().finish();
             }
         });
         userOnline.setOnClickListener(new View.OnClickListener() {
@@ -304,7 +304,6 @@ public class ParametreFragment extends Fragment {
         inflater.inflate(R.menu.menu_activity_main, menu);
         menu.findItem(R.id.menu_search_button).setVisible(false);
         menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-        menu.findItem(R.id.menu_logout_profil).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -331,8 +330,8 @@ public class ParametreFragment extends Fragment {
                     "OUI",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            progressDialog_logout.show();
                             logOut();
+                            dialog.cancel();
                         }
                     });
 
@@ -343,8 +342,6 @@ public class ParametreFragment extends Fragment {
                             dialog.cancel();
                         }
                     });
-
-            progressDialog_logout.dismiss();
 
             AlertDialog alert = builder.create();
             alert.show();
@@ -361,6 +358,8 @@ public class ParametreFragment extends Fragment {
 
         Intent logOut =  new Intent(getContext(), LoginActivity.class);
         startActivity(logOut);
+
+        progressDialog_logout.cancel();
 
         getActivity().finish();
     }

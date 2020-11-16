@@ -337,7 +337,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="15dp"
-            android:text="Se déconnecter"
+            android:text="Deconnexion"
             android:textAllCaps="false"
             android:background="@drawable/rounded_grey_button"/>
 

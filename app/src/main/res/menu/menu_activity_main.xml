@@ -13,14 +13,12 @@
         android:id="@+id/menu_activity_main_addNewPost"
         android:icon="@drawable/ic_add_new_post_icon_dark"
         app:showAsAction="always"
-        android:title="New post">
-    </item>
+        android:title="New post"/>
 
     <item
         android:id="@+id/menu_activity_main_profile"
         android:icon="@drawable/ic_account_box_white_24dp"
         app:showAsAction="always"
-        android:title="Profile">
-    </item>
+        android:title="Profile"/>
 
 </menu>
