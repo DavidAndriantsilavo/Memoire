@@ -232,7 +232,7 @@ public class RegisterActivity extends AppMode {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update user's information
+                            // Sign in success, update currentUser's information
                             mCurrentUser = mAuth.getCurrentUser();
                             String Uid = mCurrentUser.getUid();
                             addUser(Uid);

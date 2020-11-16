@@ -262,7 +262,7 @@ public class NewPostActivity extends AppMode implements LocationListener {
             }
             textView_name.setText(nomEtPrenonm);
         } else {
-            //get some info of current user to include in post
+            //get some info of current currentUser to include in post
             uid = user.getUid();
             docRefProfileUser = collectionUsers.document(uid);
             docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {

@@ -11,6 +11,18 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:tag="mapFragment"/>
 
+    <ImageButton
+        android:id="@+id/imageButton_favoris"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_kiff_icon_dark"
+        android:scaleType="fitCenter"
+        android:layout_gravity="right"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="12dp"
+        android:background="#BBFFFFFF"
+        android:padding="7dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_map_search"
         android:layout_width="match_parent"
@@ -74,16 +86,6 @@
                         android:textAllCaps="false"/>
 
                     <Button
-                        android:id="@+id/button_direction"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Direction"
-                        android:layout_marginLeft="10dp"
-                        android:textSize="10sp"
-                        android:textAllCaps="false"/>
-
-                    <Button
                         android:id="@+id/button_message"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -92,6 +94,19 @@
                         android:layout_marginLeft="10dp"
                         android:textSize="10sp"
                         android:textAllCaps="false"/>
+
+                    <TextView
+                        android:id="@+id/textView_distanceUser"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="100m"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="16sp"
+                        android:textAllCaps="false"
+                        android:gravity="center"
+                        android:layout_gravity="center"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
@@ -108,16 +123,16 @@
         <ImageView
             android:id="@+id/imageView_logoResto"
             android:layout_width="0dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:layout_weight="2.3"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_image_profile_icon_dark"
             android:layout_gravity="center_vertical"
             android:paddingLeft="5dp" />
 
         <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="90dp"
             android:layout_weight="6.7"
             android:orientation="vertical"
             android:paddingLeft="10dp">
@@ -196,15 +211,31 @@
             </LinearLayout>
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/imageButton_appointment"
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_height="25dp"
-            android:layout_weight="1"
-            android:src="@drawable/marker_plus_black"
-            android:background="#00FFFFFF"
-            android:scaleType="fitCenter"
-            android:layout_margin="5dp"/>
+            android:layout_height="wrap_content"
+            android:layout_weight="1.2"
+            android:orientation="vertical"
+            android:layout_marginRight="7dp">
+            <ImageButton
+                android:id="@+id/imageButton_appointment"
+                android:layout_width="30dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:src="@drawable/marker_plus_black"
+                android:background="#00FFFFFF"
+                android:scaleType="fitCenter"
+                android:layout_gravity="right"/>
+            <TextView
+                android:id="@+id/textView_distanceResto"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="7779m"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                android:gravity="center|right"/>
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

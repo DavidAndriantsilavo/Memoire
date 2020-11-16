@@ -11,8 +11,10 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -54,6 +56,20 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
 
         currentUser = ((UserSingleton)getApplicationContext()).getUser();
 
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Liste");
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
         //recycler view and its proprieties
         recyclerView = findViewById(R.id.recyclerView_userList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
@@ -70,7 +86,7 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
         queryUSerList = new ArrayList<>();
     }
 
-    //show all user stored in firebase
+    //show all currentUser stored in firebase
     private void showUserList(){
         //path of all post
         final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Users");
@@ -121,8 +137,6 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
         recyclerView.setAdapter(adapteurUserList);
     }
 
-
-
     @Override
     public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
@@ -139,7 +153,7 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchUser(query);
                 }else {
@@ -150,7 +164,7 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
 
             @Override
             public boolean onQueryTextChange(String query) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 queryUSerList.clear();
                 if (!TextUtils.isEmpty(query)){
                     searchUser(query);

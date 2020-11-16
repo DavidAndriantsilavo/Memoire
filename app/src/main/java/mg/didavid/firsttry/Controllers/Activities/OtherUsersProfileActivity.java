@@ -191,7 +191,7 @@ public class OtherUsersProfileActivity extends AppMode {
         return isConnected;
     }
 
-    //check if user has already informations
+    //check if currentUser has already informations
     private void checkingUserInfo() {
         docRefProfileUser = collectionUsers.document(user_id);
         docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -237,7 +237,7 @@ public class OtherUsersProfileActivity extends AppMode {
         });
     }
 
-    //setting user's data from Firestore
+    //setting currentUser's data from Firestore
     private void setData(String lastName, String pseudo, String photoDeProfile) {
         textView_displayLastname.setText(lastName);
         textView_email.setText(pseudo);
@@ -290,7 +290,7 @@ public class OtherUsersProfileActivity extends AppMode {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
                 }else {
@@ -301,7 +301,7 @@ public class OtherUsersProfileActivity extends AppMode {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
                 }else {

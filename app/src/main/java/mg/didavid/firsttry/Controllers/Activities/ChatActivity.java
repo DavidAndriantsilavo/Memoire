@@ -230,7 +230,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-    //duplicate the created new chatroom in the second user's field
+    //duplicate the created new chatroom in the second currentUser's field
     private void createRoomForOtherUser(ModeleChatroom chatroom){
         chatroom.setOther_user_id(currentUser.getUser_id());
         chatroom.setOther_user_name(currentUser.getName());

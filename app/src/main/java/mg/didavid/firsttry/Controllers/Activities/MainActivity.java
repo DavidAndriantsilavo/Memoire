@@ -134,7 +134,7 @@ public class MainActivity extends AppMode {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if(dataSnapshot.exists()){
-                                SharedPreferences preferences =getPreferences(MODE_PRIVATE);
+                                SharedPreferences preferences = getPreferences(MODE_PRIVATE);
                                 Map<String, Object> preference = (Map<String, Object>) dataSnapshot.getValue();
                                 preferences.edit().putBoolean("shareMyPosition", (boolean)preference.get("seeMyPosition")).apply();
                                 preferences.edit().putInt("radius", safeLongToInt((long)preference.get("radius"))).apply();
@@ -315,6 +315,8 @@ public class MainActivity extends AppMode {
     private void configureToolbar(){
         // Get the toolbar view inside the activity layout
         Toolbar toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setTitle("Map'Lenda");
         // Sets the Toolbar
         setSupportActionBar(toolbar);
     }

@@ -9,11 +9,10 @@
 
     <!-- Importation de notre Toolbar -->
     <include
+        android:id="@+id/toolbar"
         layout="@layout/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
-
 
     <FrameLayout
         android:id="@+id/content_nav"

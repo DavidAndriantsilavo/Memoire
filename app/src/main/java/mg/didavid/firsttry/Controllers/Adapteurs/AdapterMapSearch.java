@@ -2,7 +2,6 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,26 +20,23 @@ import java.util.List;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 import mg.didavid.firsttry.Models.ModelResto;
-import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.R;
-
-import static android.graphics.BlendMode.COLOR;
 
 public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHolder>{
 
     final private String TAG = "adapteurUSerList";
 
     Context context;
-    List<Object> objectList;
+    List<ModelResto> restoList;
 
     String mCurrentUserId;
     CollectionReference collectionReference_resto;
 
     private AdapterMapSearch.OnMapSearchListner onMapSearchListner;
 
-    public AdapterMapSearch(Context context, List<Object> objectList, AdapterMapSearch.OnMapSearchListner onMapSearchListner) {
+    public AdapterMapSearch(Context context, List<ModelResto> modelRestoList, AdapterMapSearch.OnMapSearchListner onMapSearchListner) {
         this.context = context;
-        this.objectList = objectList;
+        this.restoList = modelRestoList;
         this.onMapSearchListner = onMapSearchListner;
 
         mCurrentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -67,22 +63,22 @@ public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHo
         String name ="null";
         String picture = "null";
 
-        Object object = objectList.get(position);
+        ModelResto resto = restoList.get(position);
 
         try {
-            if(object instanceof ModelResto){
-                name = ((ModelResto) object).getName_resto();
-                picture = ((ModelResto) object).getLogo_resto();
+                name = resto.getName_resto();
+                picture = resto.getLogo_resto();
 
                 holder.imageView_type.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_culinary_speciality_icon_dark));
                 holder.imageView_type.setBackgroundResource(R.drawable.black_background);
-            }else if(object instanceof UserLocation){
-                name = ((UserLocation) object).getName();
-                picture = ((UserLocation) object).getProfile_image();
 
-                holder.imageView_type.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_image_profile_icon_dark));
-                holder.imageView_type.setBackgroundColor(0xFFFFFF);
-            }
+//            else if(object instanceof UserLocation){
+//                name = ((UserLocation) object).getName();
+//                picture = ((UserLocation) object).getProfile_image();
+//
+//                holder.imageView_type.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_image_profile_icon_dark));
+//                holder.imageView_type.setBackgroundColor(0xFFFFFF);
+//            }
 
             holder.textView_name.setText(name);
             Picasso.get().load(picture).resize(100, 100).transform(new CropCircleTransformation()).into(holder.imageView_picture);
@@ -93,7 +89,7 @@ public class AdapterMapSearch extends RecyclerView.Adapter<AdapterMapSearch.MyHo
 
     @Override
     public int getItemCount() {
-        return objectList.size();
+        return restoList.size();
     }
 
     //view holder class

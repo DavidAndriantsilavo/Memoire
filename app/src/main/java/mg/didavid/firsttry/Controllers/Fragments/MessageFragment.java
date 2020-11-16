@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -53,6 +54,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     RecyclerView recyclerView;
     List<ModeleChatroom> chatroomList;
     AdapteurMessage adapteursMessage;
+    TextView textView_noMessage;
 
     User currentUser;
     ProgressDialog progressDialog_logout;
@@ -66,6 +68,8 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_message, container, false);
+
+        textView_noMessage = view.findViewById(R.id.textView_noMessage);
 
         adapteursMessage = new AdapteurMessage();
 
@@ -115,6 +119,12 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     }
 
     private void configureAdapter(){
+        if(chatroomList.isEmpty()){
+            textView_noMessage.setVisibility(View.VISIBLE);
+        }else{
+            textView_noMessage.setVisibility(View.GONE);
+        }
+
         //adapter
         adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
         //set adapter to recyclerView

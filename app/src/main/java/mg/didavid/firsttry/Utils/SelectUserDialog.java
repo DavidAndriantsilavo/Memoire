@@ -192,7 +192,7 @@ public class SelectUserDialog extends AppCompatDialogFragment implements  Adapte
 //        }
 //
 //        adapterSelectUser = new AdapterSelectUser(context, list, this);
-//        recyclerView_userList.setAdapter(adapterSelectUser);
+//        recyclerView_userList.setSearchAdapter(adapterSelectUser);
 //    }
 
     public interface SelectUserDialogListner{

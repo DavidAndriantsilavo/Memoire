@@ -126,7 +126,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
         progressDialog_registerRestoAccount.setTitle("Création de votre compte restaurant");
         progressDialog_registerRestoAccount.setMessage("Veillez patienter ...");
 
-        //get some user informations
+        //get some currentUser informations
         checkUserInfo();
 
         restoAddLogo_linearLayout.setOnClickListener(new View.OnClickListener() {
@@ -154,7 +154,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
     }
 
     private void checkRestoLocation() {
-        //create an alert dialog for checking user position
+        //create an alert dialog for checking currentUser position
         final AlertDialog.Builder builder = new AlertDialog.Builder(RestoRegisterActivity.this);
         builder.setTitle("Vous êtes dans votre restaurant ?");
         builder.setMessage("Remarque : Vous devez être dans votre restaurant pour facilité sa localisation");
@@ -360,7 +360,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
         if (mCurrentUser != null) {
             user_id = mCurrentUser.getUid();
         }
-        //get user pseudo and user email
+        //get currentUser pseudo and currentUser email
         DocumentReference documentReference_user = FirebaseFirestore.getInstance().collection("Users").document(user_id);
         documentReference_user.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -643,7 +643,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
     }
 
     /**
-     * Called when the provider is enabled by the user.
+     * Called when the provider is enabled by the currentUser.
      *
      * @param provider the name of the location provider associated with this
      *                 update.
@@ -654,7 +654,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
     }
 
     /**
-     * Called when the provider is disabled by the user. If requestLocationUpdates
+     * Called when the provider is disabled by the currentUser. If requestLocationUpdates
      * is called on an already disabled provider, this method is called
      * immediately.
      *

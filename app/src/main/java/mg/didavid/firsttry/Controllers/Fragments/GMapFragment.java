@@ -84,6 +84,7 @@ import com.squareup.picasso.Target;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.TimeZone;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
@@ -101,6 +102,7 @@ import mg.didavid.firsttry.Models.ClusterMarkerUser;
 import mg.didavid.firsttry.Models.FavoriteLocation;
 import mg.didavid.firsttry.Models.LocationService;
 import mg.didavid.firsttry.Models.ModelResto;
+import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
 import mg.didavid.firsttry.Models.User;
 import mg.didavid.firsttry.Models.UserLocation;
 import mg.didavid.firsttry.Models.UserSingleton;
@@ -137,6 +139,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private DatabaseReference mUserLocationReference = mFirebaseDatabase.getReference().child("userLocation");
 
     private CollectionReference restoReference = FirebaseFirestore.getInstance().collection("Resto");
+    private CollectionReference menuReference = FirebaseFirestore.getInstance().collection("Menu_list");
     private CollectionReference userReference = FirebaseFirestore.getInstance().collection("Users");
 
     private Handler otherHandler = new Handler();
@@ -163,9 +166,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
     private View mCustomDefaultMarkerView, mCustomClickedMarkerView;
     private ImageView imageView_marker, imageView_profile_picture, imageView_logoResto;
-    private TextView textView_name, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount ;
-    private ImageButton imageButton_appointment;
-    private Button button_profile, button_direction, button_message;
+    private TextView textView_name, textView_distanceUser, textView_restoName, textView_restoSpeciality, textView_restoRating, textView_restoRatingCount, textView_distanceResto ;
+    private ImageButton imageButton_appointment, imageButton_favoris;
+    private Button button_profile, button_message;
     private ClusterMarkerUser userMarker;
     private SeekBar seekBar_distance;
     private int seekBarProgress = 0, distanceRadius, currentDistance;
@@ -187,7 +190,11 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
     RecyclerView recyclerView;
     ArrayList<ModelResto> allRestoList;
-    ArrayList<Object> queryList;
+    ArrayList<ModelRestoSampleMenu> menuList;
+
+    private HashMap<String, ModelResto> restoMap;
+
+    ArrayList<ModelResto> queryList;
     ArrayList<UserLocation> otherUserLocationList;
     AdapterMapSearch adapterMapSearch;
 
@@ -213,7 +220,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map, container, false);
 
-        mCustomDefaultMarkerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_default_layout, null);
+        mCustomDefaultMarkerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_user_layout, null);
         mCustomClickedMarkerView = ((LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_clicked_layout, null);
 
         imageView_marker = mCustomDefaultMarkerView.findViewById(R.id.imageView_marker);
@@ -229,7 +236,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         queryList = new ArrayList<>();
         otherUserLocationList = new ArrayList<>();
 
-        setAdapter(queryList);
+        setSearchAdapter(queryList);
 
         seekBar_distance = v.findViewById(R.id.seekBar_distance);
         seekBarProgress = getActivity().getPreferences(MODE_PRIVATE).getInt("radius", seekBarProgress);
@@ -284,9 +291,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
         linearLayoutCustomViewUser = getView().findViewById(R.id.linearLayoutCustomViewUser);
         textView_name = linearLayoutCustomViewUser.findViewById(R.id.textView_name);
+        textView_distanceUser = linearLayoutCustomViewUser.findViewById(R.id.textView_distanceUser);
         imageView_profile_picture = linearLayoutCustomViewUser.findViewById(R.id.imageView_profile_picture);
         button_profile = linearLayoutCustomViewUser.findViewById(R.id.button_profile);
-        button_direction = linearLayoutCustomViewUser.findViewById(R.id.button_direction);
         button_message = linearLayoutCustomViewUser.findViewById(R.id.button_message);
 
         linearLayoutCustomViewResto = getView().findViewById(R.id.linearLayoutCustomViewResto);
@@ -294,9 +301,12 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         textView_restoSpeciality = linearLayoutCustomViewResto.findViewById(R.id.textView_restoSpeciality);
         textView_restoRating = linearLayoutCustomViewResto.findViewById(R.id.textView_restoRating);
         textView_restoRatingCount = linearLayoutCustomViewResto.findViewById(R.id.textView_restoRatingCount);
+        textView_distanceResto = linearLayoutCustomViewResto.findViewById(R.id.textView_distanceResto);
         ratingBar_restoRating = linearLayoutCustomViewResto.findViewById(R.id.ratingBar_restoRating);
         imageView_logoResto = linearLayoutCustomViewResto.findViewById(R.id.imageView_logoResto);
         imageButton_appointment = linearLayoutCustomViewResto.findViewById(R.id.imageButton_appointment);
+
+        imageButton_favoris = getView().findViewById(R.id.imageButton_favoris);
 
         button_message.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -359,6 +369,15 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             }
         });
 
+        imageButton_favoris.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FavoriteDialog favoriteDialog = new FavoriteDialog(lastKnownLocation);
+                favoriteDialog.setTargetFragment(GMapFragment.this, 1);
+                favoriteDialog.show(getFragmentManager(), "favorite dialog");
+            }
+        });
+
         mGoogleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
             @Override
@@ -381,14 +400,14 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
         });
 
-        mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-            @Override
-            public void onMapLongClick(LatLng latLng) {
-                FavoriteDialog favoriteDialog = new FavoriteDialog(latLng);
-                favoriteDialog.setTargetFragment(GMapFragment.this, 1);
-                favoriteDialog.show(getFragmentManager(), "favorite dialog");
-            }
-        });
+//        mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+//            @Override
+//            public void onMapLongClick(LatLng latLng) {
+//                FavoriteDialog favoriteDialog = new FavoriteDialog(latLng);
+//                favoriteDialog.setTargetFragment(GMapFragment.this, 1);
+//                favoriteDialog.show(getFragmentManager(), "favorite dialog");
+//            }
+//        });
 
         if(checkMapServices()) {
             updateLocationUI();
@@ -426,8 +445,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     //creata a new favorite location and put marker on it
     //and save into the database
     @Override
-    public void getMarkerOptions(final String title, final String description, final LatLng latLng) {
-        FavoriteLocation favoriteLocation = new FavoriteLocation(latLng.latitude, latLng.longitude, title, description);
+    public void getMarkerOptions(final String title, final String description, final Location location) {
+        FavoriteLocation favoriteLocation = new FavoriteLocation(location.getLatitude(), location.getLongitude(), title, description);
 
         userReference.document(currentUser.getUser_id())
                 .collection("FavoriteCollection")
@@ -438,7 +457,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             MarkerOptions markerOptions = new MarkerOptions()
-                                    .position(latLng)
+                                    .position(new LatLng(location.getLatitude(), location.getLongitude()))
                                     .title(title)
                                     .snippet(description)
                                     .draggable(true);
@@ -504,6 +523,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
 
                 mGoogleMap.setOnMarkerDragListener(mClusterManagerUser.getMarkerManager());
                 mGoogleMap.setOnMarkerClickListener(mClusterManagerUser.getMarkerManager());
+                mGoogleMap.setOnCameraIdleListener(mClusterManagerUser);
+
                 favoriteMarkerCollection = mClusterManagerUser.getMarkerManager().newCollection();
 
                 favoriteMarkerCollection.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
@@ -548,29 +569,30 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     }
                 });
 
-                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
-                    @Override
-                    public void onInfoWindowLongClick(final Marker marker) {
-                        userReference.document(currentUser.getUser_id())
-                                .collection("FavoriteCollection")
-                                .document(marker.getTitle())
-                                .delete()
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
-
-                                        favoriteMarkerCollection.remove(marker);
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                });
+                //LongClick on fav markers
+//                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+//                    @Override
+//                    public void onInfoWindowLongClick(final Marker marker) {
+//                        userReference.document(currentUser.getUser_id())
+//                                .collection("FavoriteCollection")
+//                                .document(marker.getTitle())
+//                                .delete()
+//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                    @Override
+//                                    public void onSuccess(Void aVoid) {
+//                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
+//
+//                                        favoriteMarkerCollection.remove(marker);
+//                                    }
+//                                })
+//                                .addOnFailureListener(new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception e) {
+//                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                    }
+//                });
             }
 
             if (mClusterManagerRendererRestaurant == null) {
@@ -602,6 +624,14 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         textView_restoRatingCount.setText(clickedResto.getNbrRating_resto());
                         Picasso.get().load(clickedResto.getLogo_resto()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_logoResto);
 
+                        Location location = new Location("clickedLocation");
+                        location.setLatitude(clickedResto.getLatitude());
+                        location.setLongitude(clickedResto.getLongitude());
+                        int distance = Math.round(lastKnownLocation.distanceTo(location));
+                        textView_distanceResto.setText(distance + "m");
+
+                        //if click on same marker ==> switch between visible and gone
+                        //else stay visible but change datas
                         if (clickedRestoMarker.equals(lastClickedRestoMarker)) {
                             if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE) {
                                 linearLayoutCustomViewResto.setVisibility(View.GONE);
@@ -612,7 +642,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
                             }
 
-                        } else {
+                        } else{
 
                             lastClickedRestoMarker = clickedRestoMarker;
 
@@ -649,10 +679,10 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         UserLocation userLocation = clickedUserMarker.getUserLocation();
 
                         if(userLocation.getUser_id() == currentUser.getUser_id()){
-                            button_direction.setVisibility(View.GONE);
+                            textView_distanceUser.setVisibility(View.GONE);
                             button_message.setVisibility(View.GONE);
                         }else{
-                            button_direction.setVisibility(View.VISIBLE);
+                            textView_distanceUser.setVisibility(View.VISIBLE);
                             button_message.setVisibility(View.VISIBLE);
 
 //                                PolylineOptions polylineOptions = new PolylineOptions()
@@ -665,6 +695,13 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                         }
 
                         textView_name.setText(userLocation.getName());
+
+                        Location location = new Location("clickedLocation");
+                        location.setLatitude(userLocation.getLatitude());
+                        location.setLongitude(userLocation.getLongitude());
+                        int distance = Math.round(lastKnownLocation.distanceTo(location));
+
+                        textView_distanceUser.setText(distance + "m");
 
                         Picasso.get().load(userLocation.getProfile_image()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_profile_picture);
 
@@ -776,6 +813,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     // IF CHECKED THEN START THE USERLOCATIONRUNNABLE AND SHOW OTHERS ON THE MAP WITH MARKERS
     //IF NOT STOP THE RUNNABLE AND CLEAR THE MARKERS AND THE LIST
     private void getRestaurantLocation(){
+        restoMap = new HashMap<>();
+        menuList = new ArrayList<>();
+
         restoReference.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -799,10 +839,31 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                 mClusterManagerRestaurant.addItem(clusterMarkerRestaurant);
                                 mClusterMarkersRestaurant.add(clusterMarkerRestaurant);
                                 allRestoList.add(resto);
+                                restoMap.put(resto.getId_resto(), resto);
                             }
 
                             mClusterManagerRestaurant.cluster();
                             Log.d(TAG, " search : resto size" + allRestoList.size());
+                        }
+                    }
+
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        //get all menu (à changer car non performant)
+        menuReference.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments()) {
+                                final ModelRestoSampleMenu menu = documentSnapshot.toObject(ModelRestoSampleMenu.class);
+                                menuList.add(menu);
+                            }
                         }
                     }
 
@@ -965,9 +1026,12 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                     // Set the map's camera position to the current location of the device.
                     lastKnownLocation = task.getResult();
 
-                    LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                    distanceCircle.setCenter(userPosition);
-                    userMarker.setPosition(userPosition);
+                    if(lastKnownLocation != null){
+                        LatLng userPosition = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        distanceCircle.setCenter(userPosition);
+                        userMarker.setPosition(userPosition);
+                    }
+
 
 //                    Log.d(TAG, "self: set currentUser marker position");
                 }
@@ -1367,7 +1431,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     }
 
     //Configure the recyclerView's adapter
-    public void setAdapter(ArrayList list){
+    public void setSearchAdapter(ArrayList list){
         adapterMapSearch = new AdapterMapSearch(getActivity(), list, this);
         recyclerView.setAdapter(adapterMapSearch);
     }
@@ -1376,8 +1440,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
-
-//        mClusterMarkersRestaurant;
 
         item_search =  menu.findItem(R.id.menu_search_button);
         searchView = (SearchView) MenuItemCompat.getActionView(item_search);
@@ -1392,6 +1454,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 if (linearLayoutCustomViewUser.getVisibility() == View.VISIBLE){
                     linearLayoutCustomViewUser.setVisibility(View.GONE);
                 }
+                if (linearLayoutCustomViewResto.getVisibility() == View.VISIBLE){
+                    linearLayoutCustomViewResto.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -1401,10 +1466,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchQuery(query);
-
-                    setAdapter(queryList);
                 }else {
-                    setAdapter(queryList);
+                    setSearchAdapter(queryList);
                 }
                 return false;
             }
@@ -1413,41 +1476,97 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             public boolean onQueryTextChange(String query) {
                 //called as and when currentUser press any lettre
                 queryList.clear();
+                setSearchAdapter(queryList);
 
-                if (!TextUtils.isEmpty(query)){
-                    searchQuery(query);
-
-                    setAdapter(queryList);
-                }else {
-                    setAdapter(queryList);
-                }
+//                if (!TextUtils.isEmpty(query)){
+//                    searchQuery(query);
+//
+//                    setSearchAdapter(queryList);
+//                }else {
+//                    setSearchAdapter(queryList);
+//                }
                 return false;
             }
         });
     }
 
+    //search for the menu who includes the query in the ingredients
+    //then get the resto proposing that menu
+    //The HashSet is used to get a list whithout duplication of items
     private void searchQuery(String query)
     {
-        if(!allRestoList.isEmpty()){
+        if(!allRestoList.isEmpty() && !menuList.isEmpty()){
             ModelResto resto;
-            for (int i = 0; i < allRestoList.size(); i++) {
-                resto = allRestoList.get(i);
-                if (resto.getName_resto().toLowerCase().contains(query.toLowerCase())) {
-                    queryList.add(resto);
+            ModelRestoSampleMenu menu;
+            HashSet<ModelResto> hash = new HashSet<>();
+            for (int i = 0; i < menuList.size(); i++) {
+                menu = menuList.get(i);
+                if (menu.getMenuIngredient().toLowerCase().contains(query.toLowerCase())) {
+                    hash.add(restoMap.get(menu.getId_resto()));
                 }
             }
+            queryList.addAll(hash);
+            setSearchAdapter(queryList);
         }
-        if(!otherUserLocationList.isEmpty()){
-            UserLocation userLocation;
-            for (int i = 0; i < otherUserLocationList.size(); i++) {
-                userLocation = otherUserLocationList.get(i);
-                if (userLocation.getName().toLowerCase().contains(query.toLowerCase())) {
-                    queryList.add(userLocation);
-                }
-            }
-        }
+//        if(!otherUserLocationList.isEmpty()){
+//            UserLocation userLocation;
+//            for (int i = 0; i < otherUserLocationList.size(); i++) {
+//                userLocation = otherUserLocationList.get(i);
+//                if (userLocation.getName().toLowerCase().contains(query.toLowerCase())) {
+//                    queryList.add(userLocation);
+//                }
+//            }
+//        }
     }
 
+    //Handle clcik on restaurant search results
+    @Override
+    public void onMapSearchClick(int position) {
+
+        ModelResto resto = queryList.get(position);
+        Double searchLatitude = resto.getLatitude();
+        Double searchLongitude = resto.getLongitude();
+//        else if(object instanceof UserLocation){
+////            searchLatitude = ((UserLocation) object).getLatitude();
+////            searchLongitude = ((UserLocation) object).getLongitude();
+////        }
+
+        if (mLocationPermissionGranted){
+            if(!queryList.isEmpty()){
+                if(searchLatitude != null && searchLongitude != null){
+                    Log.d(TAG, "resto : got bundle restoLocation " + searchLatitude + " " + searchLongitude);
+                    LatLng restoPosition = new LatLng(searchLatitude, searchLongitude);
+
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            restoPosition, DEFAULT_ZOOM));
+
+                    ClusterMarkerRestaurant markerRestaurant = new ClusterMarkerRestaurant(restoPosition, "", "", resto);
+                    clickedRestoMarker = markerRestaurant;
+
+                    linearLayoutCustomViewResto.setVisibility(View.VISIBLE);
+                    mGoogleMap.getUiSettings().setZoomControlsEnabled(false);
+
+                    //Set the data for the clicked Restaurant
+                    textView_restoName.setText(resto.getName_resto());
+                    textView_restoSpeciality.setText(resto.getSpeciality_resto());
+                    textView_restoRating.setText(resto.getRating_resto());
+                    ratingBar_restoRating.setRating(Float.parseFloat(resto.getRating_resto()));
+                    textView_restoRatingCount.setText(resto.getNbrRating_resto());
+                    Picasso.get().load(resto.getLogo_resto()).resize(100, 100).transform(new CropCircleTransformation()).into(imageView_logoResto);
+
+                    Location location = new Location("clickedLocation");
+                    location.setLatitude(searchLatitude);
+                    location.setLongitude(searchLongitude);
+                    int distance = Math.round(lastKnownLocation.distanceTo(location));
+                    textView_distanceResto.setText(distance + "m");
+                }
+            }
+        }
+
+        currentSearchQuery = searchView.getQuery().toString();
+        searchView.setQuery("",false);
+        searchView.setIconified(true);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -1513,36 +1632,4 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         getActivity().finish();
     }
 
-    //Handle clcik on restaurant search results
-    @Override
-    public void onMapSearchClick(int position) {
-
-        Object object = queryList.get(position);
-        Double searchLatitude = lastKnownLocation.getLatitude(),
-                searchLongitude = lastKnownLocation.getLongitude();
-
-        if(object instanceof ModelResto){
-            searchLatitude = ((ModelResto) object).getLatitude();
-            searchLongitude = ((ModelResto) object).getLongitude();
-        }else if(object instanceof UserLocation){
-            searchLatitude = ((UserLocation) object).getLatitude();
-            searchLongitude = ((UserLocation) object).getLongitude();
-        }
-
-        if (mLocationPermissionGranted){
-            if(!queryList.isEmpty()){
-                if(searchLatitude != null && searchLongitude != null){
-                    Log.d(TAG, "resto : got bundle restoLocation " + searchLatitude + " " + searchLongitude);
-                    LatLng restoPosition = new LatLng(searchLatitude, searchLongitude);
-
-                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            restoPosition, DEFAULT_ZOOM));
-                }
-            }
-        }
-
-        currentSearchQuery = searchView.getQuery().toString();
-        searchView.setQuery("",false);
-        searchView.setIconified(true);
-    }
 }

@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -262,7 +263,7 @@ public class ProfileRestoActivity extends AppMode {
     }
 
     private void uploadProfileImageEverywhere(final Map<String, Object> result) {
-        //update profile image of all user's posts
+        //update profile image of all currentUser's posts
         collectioonPost.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -285,7 +286,7 @@ public class ProfileRestoActivity extends AppMode {
                         Toast.makeText(ProfileRestoActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-        //update also profile image of all user's comment on post
+        //update also profile image of all currentUser's comment on post
         collectionComment.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -305,7 +306,7 @@ public class ProfileRestoActivity extends AppMode {
     }
 
     private void uploadUserNameEverywhere(final Map<String, Object> nameChanged_result) {
-        //update also current user name in all his publications
+        //update also current currentUser name in all his publications
         collectioonPost.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -327,7 +328,7 @@ public class ProfileRestoActivity extends AppMode {
                         Toast.makeText(ProfileRestoActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-        //update also current user name on all comments whom he has commented
+        //update also current currentUser name on all comments whom he has commented
         collectionComment.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -458,7 +459,7 @@ public class ProfileRestoActivity extends AppMode {
         return isConnected;
     }
 
-    //check if user has already informations
+    //check if currentUser has already informations
     private void checkingRestoInfo() {
         progressDialog_loadingProfile.show();
         docRefProfileResto.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -518,7 +519,7 @@ public class ProfileRestoActivity extends AppMode {
         });
     }
 
-    //setting user's data from Firestore
+    //setting currentUser's data from Firestore
     private void setData(String resto_name, String speciality_resto, String logo_resto, String coverPhoto_resto, String rating_resto) {
         textView_restoName.setText(resto_name);
         ratingBar.setRating(Float.parseFloat(rating_resto));
@@ -843,7 +844,7 @@ public class ProfileRestoActivity extends AppMode {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     search(query);
                 }else {
@@ -854,7 +855,7 @@ public class ProfileRestoActivity extends AppMode {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     search(newText);
                 }else {
@@ -911,6 +912,12 @@ public class ProfileRestoActivity extends AppMode {
             this.setTitle(name);
             toolbar.setSubtitle(pseudo);
             toolbar.setTitleTextAppearance(this, R.style.toolBarOtherUsers);
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
         }else {
             Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
         }

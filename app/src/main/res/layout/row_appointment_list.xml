@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    android:id="@+id/mainLayout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,7 +11,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="70dp"
         android:orientation="horizontal"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
@@ -18,13 +20,15 @@
 
         <ImageView
             android:id="@+id/imageView_logoResto"
-            android:layout_width="70dp"
+            android:layout_width="0dp"
             android:layout_height="70dp"
+            android:layout_weight="2"
             android:src="@drawable/ic_image_profile_icon_dark" />
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_weight="6"
             android:orientation="vertical"
             android:layout_marginLeft="10dp">
 
@@ -33,13 +37,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="RestoName"
-                android:textSize="18sp"/>
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/textView_date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Le 20/20/2000 à 20:20 "/>
+                    android:text="Le 20/20/2000 à 20:20 "
+                    android:textColor="@color/black"/>
 
                 <TextView
                     android:id="@+id/textView_selectedCount"
@@ -48,6 +55,29 @@
                     android:text="avec 3 personnes"
                     android:textColor="@color/red"/>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layout_responseButtons"
+            android:layout_width="0dp"
+            android:layout_height="70dp"
+            android:layout_weight="1.5"
+            android:orientation="vertical"
+            android:paddingRight="7dp"
+            android:layout_gravity="right"
+            android:gravity="right">
+
+            <Button
+                android:id="@+id/button_accept"
+                android:layout_width="27dp"
+                android:layout_height="27dp"
+                android:background="@drawable/ic_accept_dark"
+                android:layout_marginBottom="6dp" />
+            <Button
+                android:id="@+id/button_decline"
+                android:layout_width="27dp"
+                android:layout_height="27dp"
+                android:background="@drawable/ic_decline_dark"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -59,5 +89,6 @@
         android:textStyle="italic"
         android:textAllCaps="false"
         android:text="ceci n'est qu'un test bakabak babkabkab kbkabakb"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:textColor="@color/black"/>
 </LinearLayout>

@@ -6,6 +6,15 @@
     tools:context=".Controllers.Fragments.MessageFragment"
     android:background="?attr/white">
 
+    <TextView
+        android:id="@+id/textView_noMessage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Vous n'avez aucune discussion !"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="16sp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_message"
         android:layout_width="match_parent"

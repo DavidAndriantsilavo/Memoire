@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -144,7 +145,7 @@ public class OtherRestoProfileActivity extends AppMode {
         btn_noter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //check if user has rating resto yet, if not show rating dialog
+                //check if currentUser has rating resto yet, if not show rating dialog
                 collectionReference_hasRatingResto.document(id_resto).get()
                         .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
@@ -283,7 +284,7 @@ public class OtherRestoProfileActivity extends AppMode {
                                 rating.put("nbrRating_resto", String.valueOf(nbrRatingResto));
                                 documentReference_resto.set(rating, SetOptions.merge());
 
-                                //set user as having rate this restaurant
+                                //set currentUser as having rate this restaurant
                                 HashMap<String, Object> userRating = new HashMap<>();
                                 userRating.put(user.getUid(), "rating");
                                 collectionReference_hasRatingResto.document(id_resto).set(userRating, SetOptions.merge());
@@ -399,7 +400,7 @@ public class OtherRestoProfileActivity extends AppMode {
         return isConnected;
     }
 
-    //check if user has already informations
+    //check if currentUser has already informations
     private void checkingRestoInfo() {
         final ProgressDialog progressDialog_loadingProfile = new ProgressDialog(this);
         progressDialog_loadingProfile.setMessage("Chargement du profile");
@@ -459,7 +460,7 @@ public class OtherRestoProfileActivity extends AppMode {
         });
     }
 
-    //setting user's data from Firestore
+    //setting currentUser's data from Firestore
     private void setData(String resto_name, String speciality_resto, String logo_resto, String coverPhoto_resto, String rating_resto) {
         textView_restoName.setText(resto_name);
         ratingBar.setRating(Float.parseFloat(rating_resto));
@@ -495,7 +496,7 @@ public class OtherRestoProfileActivity extends AppMode {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
                 }else {
@@ -506,7 +507,7 @@ public class OtherRestoProfileActivity extends AppMode {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
                 }else {
@@ -563,6 +564,12 @@ public class OtherRestoProfileActivity extends AppMode {
             this.setTitle(name);
             toolbar.setSubtitle(pseudo);
             toolbar.setTitleTextAppearance(this, R.style.toolBarOtherUsers);
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
         }else {
             Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
         }

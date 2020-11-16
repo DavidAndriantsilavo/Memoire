@@ -1,11 +1,14 @@
 package mg.didavid.firsttry.Controllers.Activities;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterAppointmentList;
@@ -46,9 +50,9 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
         recyclerView = findViewById(R.id.recyclerView_appointmentList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
 
-        //show newest post first, for this load from last
-        linearLayoutManager.setStackFromEnd(true);
-        linearLayoutManager.setReverseLayout(true);
+        //show newest appointment first
+        linearLayoutManager.setStackFromEnd(false);
+        linearLayoutManager.setReverseLayout(false);
         recyclerView.setHasFixedSize(true);
 
         //set Layout to recyclerView
@@ -62,7 +66,7 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
 
         FirebaseFirestore.getInstance()
                 .collectionGroup("AppointmentCollection")
-                .whereArrayContains("selectedUser", currentUser.getUser_id())
+                .whereArrayContains("selectedUserId", currentUser.getUser_id())
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -101,7 +105,23 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
 
     @Override
     public void onUserClick(int position) {
+        ModelAppointment appointment = appointmentList.get(position);
+        ArrayList<String> selectedUserName = appointment.getSelectedUserName();
 
+        Log.d(TAG, "username length: " + selectedUserName.size());
+
+        selectedUserName.remove(currentUser.getName());
+        String text = TextUtils.join("\n \n", selectedUserName);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Liste des utilisateurs")
+                .setMessage(text)
+                .setPositiveButton("Fermer", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
     }
 
     @Override

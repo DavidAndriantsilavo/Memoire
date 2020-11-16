@@ -40,8 +40,21 @@
             android:windowSoftInputMode="stateHidden|adjustResize"/>
 
         <activity android:name=".Controllers.Activities.ListMenuRestoActivity" />
-        <activity android:name=".Controllers.Activities.OtherRestoProfileActivity" />
-        <activity android:name=".Controllers.Activities.ProfileRestoActivity" />
+
+        <activity android:name=".Controllers.Activities.OtherRestoProfileActivity"
+            android:parentActivityName=".Controllers.Activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.MainActivity" />
+        </activity>
+
+        <activity android:name=".Controllers.Activities.ProfileRestoActivity"
+            android:parentActivityName=".Controllers.Activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.MainActivity" />
+        </activity>
+
         <activity
             android:name=".Controllers.Activities.RestoRegisterActivity"
             android:windowSoftInputMode="stateHidden|adjustResize" />
@@ -72,6 +85,9 @@
         <activity
             android:name=".Controllers.Activities.ProfileUserActivity"
             android:parentActivityName=".Controllers.Activities.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.MainActivity" />
         </activity>
 
         <meta-data

@@ -48,4 +48,8 @@
     <style name="toolBarOtherUsers">
         <item name="android:textSize">19dp</item>
     </style>
+
+    <style name="AppTheme.WhiteTextAppearance">
+        <item name="android:textColor">@android:color/white</item>
+    </style>
 </resources>

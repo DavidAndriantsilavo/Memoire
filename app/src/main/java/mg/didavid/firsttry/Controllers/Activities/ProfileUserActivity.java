@@ -3,7 +3,7 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -29,6 +30,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,6 +50,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -65,6 +72,7 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,10 +81,14 @@ import mg.didavid.firsttry.Controllers.Adapteurs.AdapteursPost;
 import mg.didavid.firsttry.Models.ModelComment;
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.Models.LocationService;
+import mg.didavid.firsttry.Models.User;
+import mg.didavid.firsttry.Models.UserSingleton;
 import mg.didavid.firsttry.R;
+import mg.didavid.firsttry.Utils.AppointmentNotificationDialog;
+import mg.didavid.firsttry.Utils.SelectUserDialog;
 import mg.didavid.firsttry.Views.AppMode;
 
-public class ProfileUserActivity extends AppMode {
+public class ProfileUserActivity extends AppMode implements AppointmentNotificationDialog.AppointmentNotificationDialogListner {
 
     TextView textView_displayLastname, textView_email;
     String user_name, value_name;
@@ -87,6 +99,7 @@ public class ProfileUserActivity extends AppMode {
     FloatingActionButton floatingActionButton_editProfile;
     Button btnAddProfileImage, btnNewPost;
     private Button button_appointment, button_favorite;
+    LinearLayout linearLayout_buttons;
 
     FirebaseFirestore firestore;
     CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
@@ -95,7 +108,7 @@ public class ProfileUserActivity extends AppMode {
     String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
     ProgressDialog progressDialog_editProfile, progressDialog_del_account, progressDialog_logout, progressDialog_loadingProfile;
 
-    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    User currentUser;
 
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int STORAGE_REQUEST_CODE = 200;
@@ -110,20 +123,33 @@ public class ProfileUserActivity extends AppMode {
     List<ModelePost> modelePosts_profile;
     AdapteursPost adapteursPost_profile;
     RecyclerView profile_recyclerView;
-    String user_id = Objects.requireNonNull(user).getUid();
+    String user_id;
+
+    ArrayList<String> notificationList;
+
+    private DatabaseReference mNotificationReference = FirebaseDatabase.getInstance().getReference().child("notification");
+    private String TAG = "ProfileUserActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        currentUser = ((UserSingleton) getApplicationContext()).getUser();
+        user_id = currentUser.getUser_id();
+
         //set tool bar
-        Toolbar toolbar = findViewById(R.id.toolbar_userProile);
+        Toolbar toolbar = findViewById(R.id.toolbar_userProfile);
         if (toolbar != null){
             //set toolbar title
             // Sets the Toolbar
             setSupportActionBar(toolbar);
             this.setTitle("Mon profil");
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
         }
 
         //recuperation des vues
@@ -135,7 +161,13 @@ public class ProfileUserActivity extends AppMode {
         profile_recyclerView = findViewById(R.id.recyclerView_post);
         btnNewPost = findViewById(R.id.button_newPost_profile);
         button_appointment = findViewById(R.id.button_appointment);
-        button_favorite = findViewById(R.id.button_favorite);
+//        button_favorite = findViewById(R.id.button_favorite);
+        linearLayout_buttons = findViewById(R.id.linearLayout_buttons);
+
+        notificationList = new ArrayList<>();
+
+//        button_appointment.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, R.drawable.ic_red_dot, 0);
+//        button_appointment.setCompoundDrawablePadding(10);
 
         //init progressDialog
         progressDialog_del_account = new ProgressDialog(this);
@@ -193,10 +225,67 @@ public class ProfileUserActivity extends AppMode {
             }
         });
 
-        button_appointment.setOnClickListener(new View.OnClickListener() {
+//        button_appointment.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+//                mNotificationReference.child("appointment").child(user_id).child("hasNews").setValue(false);
+//
+//                AppointmentNotificationDialog appointmentNotificationDialog = new AppointmentNotificationDialog(ProfileUserActivity.this, notificationList);
+//                appointmentNotificationDialog.show(getSupportFragmentManager(), "appointment Notification Dialog");
+//            }
+//        });
+
+        //Check for new appointment notification
+        //if yes, show a dialog showing those notifications
+        //if not go to appointmentListActivity
+        mNotificationReference.child("appointment").child(user_id).addValueEventListener(new ValueEventListener() {
             @Override
-            public void onClick(View v) {
-                startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    Map<String, Object> map = (Map<String, Object>) snapshot.getValue();
+                    if((Boolean)map.get("hasNews")){
+                        addAppointmentBadge();
+
+                        map.remove("hasNews");
+
+                        notificationList.clear();
+
+                        Iterator iterator = map.keySet().iterator();
+                        while(iterator.hasNext()) {
+                            String key = (String)iterator.next();
+                            String value = (String)map.get(key);
+
+                            notificationList.add(value);
+                        }
+
+                        button_appointment.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                //startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+//                                mNotificationReference.child("appointment").child(user_id).child("hasNews").setValue(false);
+
+                                AppointmentNotificationDialog appointmentNotificationDialog = new AppointmentNotificationDialog(ProfileUserActivity.this, notificationList);
+                                appointmentNotificationDialog.show(getSupportFragmentManager(), "appointment Notification Dialog");
+                            }
+                        });
+
+                    }else{
+                        button_appointment.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+                            }
+                        });
+
+                        removeBadge();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
             }
         });
 
@@ -204,6 +293,25 @@ public class ProfileUserActivity extends AppMode {
         loadMyPost();
 
         snapshootUserInfo();
+    }
+
+    @Override
+    public void startAppointmentListActivity() {
+        HashMap<String, Boolean> map = new HashMap<>();
+        map.put("hasNews", false);
+        mNotificationReference.child("appointment").child(user_id).setValue(map);
+
+        startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+    }
+
+    private void addAppointmentBadge(){
+        button_appointment.setTextColor(Color.RED);
+        button_appointment.setTextSize(13);
+    }
+
+    private void removeBadge(){
+        button_appointment.setTextColor(Color.BLACK);
+        button_appointment.setTextSize(11);
     }
 
     private void snapshootUserInfo() {
@@ -226,7 +334,7 @@ public class ProfileUserActivity extends AppMode {
     }
 
     private void uploadUserNameEverywhere(final Map<String, Object> nameChanged_result) {
-        //update also current user name in all his publications
+        //update also current currentUser name in all his publications
         collectioonPost.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -249,7 +357,7 @@ public class ProfileUserActivity extends AppMode {
                         Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-        //update also current user name on all comments whom he has commented
+        //update also current currentUser name on all comments whom he has commented
         collectionComment.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -348,7 +456,7 @@ public class ProfileUserActivity extends AppMode {
         return isConnected;
     }
 
-    //check if user has already informations
+    //check if currentUser has already informations
     private void checkingUserInfo() {
         progressDialog_loadingProfile.show();
         docRefProfileUser = collectionUsers.document(user_id);
@@ -392,7 +500,7 @@ public class ProfileUserActivity extends AppMode {
         });
     }
 
-    //setting user's data from Firestore
+    //setting currentUser's data from Firestore
     private void setData(String lastName, String pseudo, String photoDeProfile) {
         textView_displayLastname.setText(lastName);
         textView_email.setText(pseudo);
@@ -517,7 +625,7 @@ public class ProfileUserActivity extends AppMode {
     private void uploadProfileImage(Uri uri) {
         progressDialog_editProfile.show();
         final String timestamp = String.valueOf(System.currentTimeMillis());
-        String filePathAndName = storagePdPPath + timestamp + "_profile_image" + "_" + user.getUid(); //nom de l'image
+        String filePathAndName = storagePdPPath + timestamp + "_profile_image" + "_" + user_id; //nom de l'image
 
         //storing imagge to Firabase Storage
         StorageReference storageReference1 = storageReference.child(filePathAndName);
@@ -570,7 +678,7 @@ public class ProfileUserActivity extends AppMode {
     }
 
     private void uploadProfileImageEverywhere(final Map<String, Object> result) {
-        //update profile image of all user's posts
+        //update profile image of all currentUser's posts
         collectioonPost.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -593,7 +701,7 @@ public class ProfileUserActivity extends AppMode {
                         Toast.makeText(ProfileUserActivity.this, "Update pdp_post failed !\n"+e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
-        //update also profile image of all user's comment on post
+        //update also profile image of all currentUser's comment on post
         collectionComment.get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -626,7 +734,7 @@ public class ProfileUserActivity extends AppMode {
                     showImagePicDialog();
                 }
                 if (which == 1){
-                    //modifier le nom de l'user
+                    //modifier le nom de l'currentUser
                     progressDialog_editProfile.setMessage("Edition de votre nom");
                     showNameUpdateDialog("name");
                 }
@@ -678,7 +786,7 @@ public class ProfileUserActivity extends AppMode {
         progressDialog_editProfile.show();
         nameChanged_result.put(key, value);
 
-        docRefProfileUser = collectionUsers.document(user.getUid());
+        docRefProfileUser = collectionUsers.document(user_id);
         docRefProfileUser.update(nameChanged_result)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -743,7 +851,7 @@ public class ProfileUserActivity extends AppMode {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchPost(query);
                 }else {
@@ -754,7 +862,7 @@ public class ProfileUserActivity extends AppMode {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchPost(newText);
                 }else {
@@ -811,7 +919,7 @@ public class ProfileUserActivity extends AppMode {
 
     //supression du compteUser
     private void deleteAccount() {
-        if(user!=null)
+        if(currentUser !=null)
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(ProfileUserActivity.this);
@@ -1035,7 +1143,7 @@ public class ProfileUserActivity extends AppMode {
     }
 
     private void deleteUser() {
-        user.delete()
+        FirebaseAuth.getInstance().getCurrentUser().delete()
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -1054,7 +1162,7 @@ public class ProfileUserActivity extends AppMode {
     }
 
     private void avertissement() {
-        if(user!=null)
+        if(currentUser !=null)
         {
             //BUILD ALERT DIALOG TO CONFIRM THE SUPPRESSION
             AlertDialog.Builder builder = new AlertDialog.Builder(ProfileUserActivity.this);
@@ -1098,6 +1206,7 @@ public class ProfileUserActivity extends AppMode {
 
         stopService(new Intent(ProfileUserActivity.this, LocationService.class));
 
+        MainActivity.stopActivity.finish();
         this.finish();
     }
 

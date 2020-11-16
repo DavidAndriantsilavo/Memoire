@@ -64,10 +64,10 @@ public class LoginActivity extends AppCompatActivity {
         //verifier a connexion internet dès le démarrage de l'application
         checkConnexion();
 
-        //getting current user who has authenticated
+        //getting current currentUser who has authenticated
         FirebaseUser user = mAuth.getInstance().getCurrentUser();
 
-        //id user still login, redirect to MainActivity
+        //id currentUser still login, redirect to MainActivity
         if(user != null)
         {
             Intent intent =  new Intent(getApplicationContext(), MainActivity.class);
@@ -108,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-        //redirect to register if user hasn't account
+        //redirect to register if currentUser hasn't account
 
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
                                             startActivity(connexion);
                                             finish();
                                         } else {
-                                            // If sign in fails, display a message to the user.
+                                            // If sign in fails, display a message to the currentUser.
                                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                                     Toast.LENGTH_SHORT).show();
@@ -370,16 +370,16 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                // Sign in success, update UI with the signed-in user's information
+                                // Sign in success, update UI with the signed-in currentUser's information
                                 Log.d(TAG, "signInWithCredential:success");
-                                //FirebaseUser user = mAuth.getInstance().getCurrentUser();
+                                //FirebaseUser currentUser = mAuth.getInstance().getCurrentUser();
 
                                 Intent intent =  new Intent(getApplicationContext(), WelcomeActivity.class);
                                 startActivity(intent);
 
                                 finish();
                             } else {
-                                // If sign in fails, display a message to the user.
+                                // If sign in fails, display a message to the currentUser.
                                 Log.w(TAG, "signInWithCredential:failure", task.getException());
                                 Toast.makeText(getApplicationContext(), "Désolé une erreur s'est produite", Toast.LENGTH_SHORT).show();
                             }

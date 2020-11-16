@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -135,7 +136,7 @@ public class ListMenuRestoActivity extends AppMode {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //called when user press search button
+                //called when currentUser press search button
                 if (!TextUtils.isEmpty(query)){
                     searchMenu(query);
                 }else {
@@ -146,7 +147,7 @@ public class ListMenuRestoActivity extends AppMode {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //called as and when user press any lettre
+                //called as and when currentUser press any lettre
                 if (!TextUtils.isEmpty(newText)){
                     searchMenu(newText);
                 }else {
@@ -193,7 +194,7 @@ public class ListMenuRestoActivity extends AppMode {
         switch (item.getItemId()) {
             case R.id.menu_activity_main_addNewPost :
                 //add new menu in menu list
-                //send user to AddMenuListActivity
+                //send currentUser to AddMenuListActivity
                 startActivity(new Intent(ListMenuRestoActivity.this, AddMenuToListActivity.class));
                 break;
         }

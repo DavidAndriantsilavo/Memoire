@@ -4,18 +4,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ModelAppointment {
-    String resto_id, resto_name, date, description;
-    ArrayList<String> selectedUser;
+    String resto_id, resto_name, date, resto_logo, description, timestamp;
+    ArrayList<String> selectedUserId;
+    ArrayList<String> selectedUserName;
+    HashMap<String, Boolean> confirmUser;
 
     public ModelAppointment() {
     }
 
-    public ModelAppointment(String resto_id, String resto_name, String date, String description, ArrayList<String> selectedUser) {
+    public ModelAppointment(String resto_id, String resto_name, String resto_logo,
+                            String date, String description, String timestamp,
+                            ArrayList<String> selectedUserId, ArrayList<String> selectedUserName,
+                            HashMap<String, Boolean> confirmUser) {
         this.resto_id = resto_id;
         this.resto_name = resto_name;
         this.date = date;
+        this.resto_logo = resto_logo;
         this.description = description;
-        this.selectedUser = selectedUser;
+        this.timestamp = timestamp;
+        this.selectedUserId = selectedUserId;
+        this.selectedUserName = selectedUserName;
+        this.confirmUser = confirmUser;
+    }
+
+    public ArrayList<String> getSelectedUserName() {
+        return selectedUserName;
+    }
+
+    public void setSelectedUserName(ArrayList<String> selectedUserName) {
+        this.selectedUserName = selectedUserName;
     }
 
     public String getResto_id() {
@@ -50,12 +67,36 @@ public class ModelAppointment {
         this.description = description;
     }
 
-    public ArrayList<String> getSelectedUser() {
-        return selectedUser;
+    public ArrayList<String> getSelectedUserId() {
+        return selectedUserId;
     }
 
-    public void setSelectedUser(ArrayList<String> selectedUser) {
-        this.selectedUser = selectedUser;
+    public void setSelectedUserId(ArrayList<String> selectedUserId) {
+        this.selectedUserId = selectedUserId;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public HashMap<String, Boolean> getConfirmUser() {
+        return confirmUser;
+    }
+
+    public void setConfirmUser(HashMap<String, Boolean> confirmUser) {
+        this.confirmUser = confirmUser;
+    }
+
+    public String getResto_logo() {
+        return resto_logo;
+    }
+
+    public void setResto_logo(String resto_logo) {
+        this.resto_logo = resto_logo;
     }
 }
 

@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Utils;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,13 +24,13 @@ public class FavoriteDialog extends AppCompatDialogFragment {
     private EditText editText_title;
     private EditText editText_description;
     private FavoriteDialogListner listner;
-    private LatLng latLng;
+    private Location location;
 
     public FavoriteDialog() {
     }
 
-    public FavoriteDialog( LatLng latLng) {
-        this.latLng = latLng;
+    public FavoriteDialog( Location location) {
+        this.location = location;
     }
 
     @NonNull
@@ -57,7 +58,7 @@ public class FavoriteDialog extends AppCompatDialogFragment {
                         if (!TextUtils.isEmpty(editText_title.getText().toString().trim())) {
                             String title = editText_title.getText().toString();
                             String description = editText_description.getText().toString();
-                            listner.getMarkerOptions(title, description, latLng);
+                            listner.getMarkerOptions(title, description, location);
                         }else{
                             editText_title.setError("Veuillez remplir le titre");
                         }
@@ -79,6 +80,6 @@ public class FavoriteDialog extends AppCompatDialogFragment {
     }
 
     public interface FavoriteDialogListner{
-        void getMarkerOptions(String title, String description, LatLng latLng);
+        void getMarkerOptions(String title, String description, Location location);
     }
 }

@@ -19,6 +19,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 import mg.didavid.firsttry.Models.ModelAppointment;
 import mg.didavid.firsttry.Models.ModelResto;
@@ -50,7 +53,9 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
     private ModelResto restoExtra;
     private ArrayList <User> selectedUserList;
     private ArrayList <User> userList;
-    private ArrayList <String> selectedUserListId;
+    private ArrayList <String> selectedUserIdList;
+    private ArrayList <String> selectedUserNameList;
+    private HashMap<String, Boolean> confirmUser;
     private User currentUser;
     private Date date;
     private boolean isDateOk = false, isTagOk = false;
@@ -59,6 +64,7 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
 //    private HashMap <String, HashMap> selectedUserMap;
 
     private CollectionReference userReference = FirebaseFirestore.getInstance().collection("Users");
+    private DatabaseReference mAppointmentNotificationReference = FirebaseDatabase.getInstance().getReference().child("notification").child("appointment");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +81,7 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
         button_cancel = findViewById(R.id.button_cancel);
 
         selectedUserList = new ArrayList<>();
+        confirmUser = new HashMap<>();
         userList = new ArrayList<>();
         date = new Date();
 
@@ -95,7 +102,7 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
             @Override
             public void onClick(View v) {
                 SelectUserDialog selectUserDialog = new SelectUserDialog(NewAppointmentActivity.this, userList, selectedUserList);
-                selectUserDialog.show(getSupportFragmentManager(), "select user dialog");
+                selectUserDialog.show(getSupportFragmentManager(), "select currentUser dialog");
             }
         });
 
@@ -114,13 +121,14 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
 
                     userReference.document(currentUser.getUser_id())
                             .collection("AppointmentCollection")
-                            .document("" + date.getTime())
+                            .document("" + appointment.getTimestamp())
                             .set(appointment)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if(task.isSuccessful()){
                                         Toast.makeText(NewAppointmentActivity.this, "Rendez-vous enregistrer", Toast.LENGTH_SHORT).show();
+                                        writeNotification();
                                         finish();
                                     }else{
                                         Toast.makeText(NewAppointmentActivity.this, "Une erreur s'est produite!", Toast.LENGTH_SHORT).show();
@@ -136,28 +144,50 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
         getRestaurantExtra();
     }
 
+    //put the notification message for each selected user
+    private void writeNotification(){
+        for(int i = 1; i< selectedUserIdList.size(); i++){
+            mAppointmentNotificationReference.child(selectedUserIdList.get(i))
+                    .child(String.valueOf(date.getTime()))
+                    .setValue(currentUser.getName() + " vous a invité pour un rendez-vous le " + format.format(date));
+
+            mAppointmentNotificationReference.child(selectedUserIdList.get(i))
+                    .child("hasNews").setValue(true);
+        }
+    }
+
     //create the appointment object
     //FUCK MY ANONYMOUS MAP WORKS GG
     private ModelAppointment createAppointment(){
 //        selectedUserMap = new HashMap<>();
 //
-//        for(final User user : selectedUserList){
-//                selectedUserMap.put(user.getUser_id(), new HashMap<String, String>(){
+//        for(final User currentUser : selectedUserList){
+//                selectedUserMap.put(currentUser.getUser_id(), new HashMap<String, String>(){
 //////                    {
-//////                        put("user_id", user.getUser_id());
-//////                        put("name   ", user.getName());
-//////                        put("profile_image", user.getProfile_image());
+//////                        put("user_id", currentUser.getUser_id());
+//////                        put("name   ", currentUser.getName());
+//////                        put("profile_image", currentUser.getProfile_image());
 //////                    }
 //////                });
 //        }
-        selectedUserListId = new ArrayList<>();
-        selectedUserListId.add(currentUser.getUser_id());
+        String timestamp = "" + date.getTime();
+
+        selectedUserIdList = new ArrayList<>();
+        selectedUserNameList = new ArrayList<>();
+
+        selectedUserIdList.add(currentUser.getUser_id());
+        selectedUserNameList.add(currentUser.getName());
+        confirmUser.put(currentUser.getUser_id(), true);
+
         for(User user : selectedUserList) {
-            selectedUserListId.add(user.getUser_id());
+            selectedUserIdList.add(user.getUser_id());
+            selectedUserNameList.add(user.getName());
+            confirmUser.put(user.getUser_id(), false);
         }
             ModelAppointment appointment = new ModelAppointment(resto.getUser_id(),
-                    resto.getName_resto(), format.format(date),
-                    editText_why.getText().toString(), selectedUserListId);
+                    resto.getName_resto(), resto.getLogo_resto(),
+                    format.format(date), editText_why.getText().toString(), timestamp,
+                    selectedUserIdList, selectedUserNameList, confirmUser);
             return appointment;
     }
 
@@ -223,7 +253,7 @@ public class NewAppointmentActivity extends AppCompatActivity implements DatePic
         }
     }
 
-    //get all user expect current user
+    //get all currentUser expect current currentUser
     private void getUserList(){
         //path of all post
         final CollectionReference collectionUsers = FirebaseFirestore.getInstance().collection("Users");

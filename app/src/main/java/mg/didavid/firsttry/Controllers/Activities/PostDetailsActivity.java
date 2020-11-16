@@ -3,6 +3,7 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -77,7 +78,7 @@ import mg.didavid.firsttry.Views.AppMode;
 
 public class PostDetailsActivity extends AppMode {
 
-    //to get details of the post and user
+    //to get details of the post and currentUser
     String myName_temp, myName, myPseudo, myUid = FirebaseAuth.getInstance().getCurrentUser().getUid()
             , myProfile_image, post_id, post_kiff, comment_count, hidName, hisProfile_image, hisPseudo,
             postImage1, postImage2, postImage3, postDescription, user_id;
@@ -139,6 +140,13 @@ public class PostDetailsActivity extends AppMode {
         if (toolbar != null){
             // Sets the Toolbar
             setSupportActionBar(toolbar);
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
+
         }
 
         //init views
@@ -222,7 +230,7 @@ public class PostDetailsActivity extends AppMode {
             }
         });
 
-        //user name clicked, send to profile
+        //currentUser name clicked, send to profile
         user_name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -322,7 +330,7 @@ public class PostDetailsActivity extends AppMode {
     private void showMoreOptions(ImageButton moreBtn, final String user_id, final String mCurrentUserId, final String post_id, final String post_image1, final String post_image2, final String post_image3, final String post_description) {
         //create popup menu
         PopupMenu popupMenu = new PopupMenu(PostDetailsActivity.this, moreBtn, Gravity.END);
-        //show popup menu in only posts of currently singed-in user
+        //show popup menu in only posts of currently singed-in currentUser
         if (user_id.contains(mCurrentUserId)){
             //add item in menu
             popupMenu.getMenu().add(Menu.NONE, 0, 0, "Supprimer la publication");
@@ -352,27 +360,27 @@ public class PostDetailsActivity extends AppMode {
                 }else if (item_id == 2) {
                     //option comment as is checked
                     changeAccount();
-                    Toast.makeText(PostDetailsActivity.this, "comment as ... user or resto", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PostDetailsActivity.this, "comment as ... currentUser or resto", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 3) {
                     //option show profile is checked
-                    if (user_id.equals(mCurrentUserId)) { //set user to his profile
+                    if (user_id.equals(mCurrentUserId)) { //set currentUser to his profile
                         if (!getClass().equals(ProfileUserActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, ProfileUserActivity.class);
                             startActivity(intent);
                         }
-                    }else if (user_id.equals("resto_" + mCurrentUserId)) { //send user to hid resto profile
+                    }else if (user_id.equals("resto_" + mCurrentUserId)) { //send currentUser to hid resto profile
                         if (!getClass().equals(ProfileRestoActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, ProfileRestoActivity.class);
                             intent.putExtra("user_id", user_id);
                             startActivity(intent);
                         }
-                    }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send user to other resto profile
+                    }else if (user_id.contains("resto") && !user_id.equals("resto_" + mCurrentUserId)) { //send currentUser to other resto profile
                         if (!getClass().equals(OtherRestoProfileActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, OtherRestoProfileActivity.class);
                             intent.putExtra("id_resto", user_id);
                             startActivity(intent);
                         }
-                    }else { //send user to other user profile
+                    }else { //send currentUser to other currentUser profile
                         if (!getClass().equals(OtherUsersProfileActivity.class)) {
                             Intent intent = new Intent(PostDetailsActivity.this, OtherUsersProfileActivity.class);
                             intent.putExtra("user_id", user_id);
@@ -389,7 +397,7 @@ public class PostDetailsActivity extends AppMode {
                     startActivity(intent);
                 }else if (item_id == 6) {
                     //raitng selected
-                    //check if user has rating resto yet, if not show rating dialog
+                    //check if currentUser has rating resto yet, if not show rating dialog
                     collectionReference_hasRatingResto.document(user_id).get() // here user_id == id_resto
                             .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                 @Override
@@ -423,7 +431,7 @@ public class PostDetailsActivity extends AppMode {
                     loadRestoInfo();
                 }
                 if (which == 1) {
-                    // comment as his user account
+                    // comment as his currentUser account
                     loadUserInfo();
                 }
             }
@@ -435,7 +443,7 @@ public class PostDetailsActivity extends AppMode {
     }
 
     private void loadRestoInfo() {
-        //get current user info
+        //get current currentUser info
         myUid = user_id;
         final DocumentReference documentReference_currentUserResto = FirebaseFirestore.getInstance().collection("Resto").document(user_id);
         documentReference_currentUserResto.get()
@@ -510,7 +518,7 @@ public class PostDetailsActivity extends AppMode {
                                 rating.put("nbrRating_resto", String.valueOf(nbrRatingResto));
                                 documentReference_resto.set(rating, SetOptions.merge());
 
-                                //set user as having rate this restaurant
+                                //set currentUser as having rate this restaurant
                                 HashMap<String, Object> userRating = new HashMap<>();
                                 userRating.put(firebaseUser.getUid(), "rating");
                                 collectionReference_hasRatingResto.document(id_resto).set(userRating, SetOptions.merge());
@@ -699,7 +707,7 @@ public class PostDetailsActivity extends AppMode {
             String comment_time = String.valueOf(System.currentTimeMillis());
             ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName_temp, myPseudo, myProfile_image, "noImage");
             //store data to database
-            DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
+            DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current currentUser's comment
 
             //put data to database
             documentReference_comment.set(modelComment, SetOptions.merge())
@@ -742,7 +750,7 @@ public class PostDetailsActivity extends AppMode {
                             String comment_image = uriTask.getResult().toString();
                             ModelComment modelComment = new ModelComment(comment_time, post_comment,post_id, myUid, myName_temp, myPseudo, myProfile_image, comment_image);
                             //store data to database
-                            DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current user's comment
+                            DocumentReference documentReference_comment = FirebaseFirestore.getInstance().collection("Comments").document(comment_time);//comment_time == the id of current currentUser's comment
 
                             //put data to database
                             documentReference_comment.set(modelComment, SetOptions.merge())
@@ -958,7 +966,7 @@ public class PostDetailsActivity extends AppMode {
 
     private void loadUserInfo() {
         myUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        //get current user info
+        //get current currentUser info
         final DocumentReference documentReference_currentUser = FirebaseFirestore.getInstance().collection("Users").document(myUid);
         documentReference_currentUser.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -1208,11 +1216,11 @@ public class PostDetailsActivity extends AppMode {
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 assert value != null;
                 if (value.get(myUid) != null){
-                    //user has kiffed the post
+                    //currentUser has kiffed the post
                     //change button icon
                     kiff_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_kiff_icon_dark,0,0,0);
                 }else {
-                    //user has not kiff this post
+                    //currentUser has not kiff this post
                     kiff_button.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_jkiff_icon_dark,0,0,0);
                 }
             }
