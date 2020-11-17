@@ -29,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -161,24 +162,22 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
                     }
                     //manage kiff text view
                     if (post_kiff_ds.equals("0")) {
-                        holder.pKiffTv.setVisibility(View.GONE);
-                    } else if (post_kiff_ds.equals("1")) {
+                        holder.pKiffTv.setVisibility(View.INVISIBLE);
+                        holder.pKiffTv.setClickable(false);
+                    } else if (Integer.parseInt(post_kiff_ds) >= 1) {
                         holder.pKiffTv.setVisibility(View.VISIBLE);
-                        holder.pKiffTv.setText(post_kiff_ds + " Kiff");// set kiff word to singular
-                    } else {
-                        holder.pKiffTv.setVisibility(View.VISIBLE);
-                        holder.pKiffTv.setText(post_kiff_ds + " Kiffs");// set kiff word to plural
+                        holder.pKiffTv.setClickable(true);
+                        holder.pKiffTv.setText(post_kiff_ds);// set kiff word to singular
                     }
 
                     //manage comment text view
                     if (comment_count_ds.equals("0")) {
-                        holder.pComment.setVisibility(View.GONE);
-                    } else if (comment_count_ds.equals("1")) {
+                        holder.pComment.setVisibility(View.INVISIBLE);
+                        holder.pComment.setClickable(false);
+                    } else if (Integer.parseInt(comment_count_ds) >= 1) {
                         holder.pComment.setVisibility(View.VISIBLE);
-                        holder.pComment.setText(comment_count_ds + " commentaire");// set commentaire word to singular
-                    } else {
-                        holder.pComment.setVisibility(View.VISIBLE);
-                        holder.pComment.setText(comment_count_ds + " commentaires");// set commentaire word to plural
+                        holder.pComment.setClickable(true);
+                        holder.pComment.setText(comment_count_ds);// set commentaire word to singular
                     }
 
                 }catch (Exception e){
@@ -222,9 +221,13 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
 
         }
         //set post image
+        boolean isCardViewVisible = false;
         if (post_image1.equals("noImage")) {
             holder.pImageIv1.setVisibility(View.GONE);
+            holder.cardView_imagePost.setVisibility(View.GONE);
         }else {
+            holder.cardView_imagePost.setVisibility(View.VISIBLE);
+            isCardViewVisible = true;
             holder.pImageIv1.setVisibility(View.VISIBLE);
             try {
                 Picasso.get().load(post_image1).into(holder.pImageIv1);
@@ -234,6 +237,9 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         }
         if (post_image2.equals("noImage")) {
             holder.pImageIv2.setVisibility(View.GONE);
+            if (!isCardViewVisible){
+                holder.cardView_imagePost.setVisibility(View.GONE);
+            }
         }else {
             holder.pImageIv2.setVisibility(View.VISIBLE);
             try {
@@ -244,6 +250,9 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         }
         if (post_image3.equals("noImage")) {
             holder.pImageIv3.setVisibility(View.GONE);
+            if (!isCardViewVisible){
+                holder.cardView_imagePost.setVisibility(View.GONE);
+            }
         }else {
             holder.pImageIv3.setVisibility(View.VISIBLE);
             try {
@@ -886,6 +895,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
         ImageButton moreBtn;
         Button kiffBtn, commenterBtn, locationbtn;
         RatingBar ratingBar;
+        CardView cardView_imagePost;
 
         public MyHolder(@NonNull View itemView) {
             super(itemView);
@@ -906,6 +916,7 @@ public class AdapteursPost extends RecyclerView.Adapter<AdapteursPost.MyHolder>{
             commenterBtn = itemView.findViewById(R.id.button_commenter_actu);
             locationbtn = itemView.findViewById(R.id.button_location_actu);
             ratingBar = itemView.findViewById(R.id.ratingBar_newPost);
+            cardView_imagePost = itemView.findViewById(R.id.cardViews_photo_post);
         }
     }
 }
