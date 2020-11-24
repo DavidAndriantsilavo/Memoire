@@ -209,8 +209,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "postComments:onCancelled", databaseError.toException());
-                Toast.makeText(getContext(), "Failed to load comments.",
-                        Toast.LENGTH_SHORT).show();
             }
         };
 

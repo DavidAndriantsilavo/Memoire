@@ -48,7 +48,7 @@ import static com.google.common.base.Ascii.toLowerCase;
 public class LoginActivity extends AppCompatActivity {
 
     private Button button_register, button_connexion;
-    private ImageButton button_google, button_facebook;
+    private ImageButton button_google;
 
     private EditText mPseudo_lg, mMotDePasse_lg;
     private TextView erreurLoginTv, erreurPhoneNumber;
@@ -97,7 +97,6 @@ public class LoginActivity extends AppCompatActivity {
         button_register = findViewById(R.id.button_register);
         button_connexion = findViewById(R.id.button_connexion);
         button_google = findViewById(R.id.button_google);
-        button_facebook = findViewById(R.id.button_facebook);
         erreurLoginTv = findViewById(R.id.textView_erreur_login);
         erreurPhoneNumber = findViewById(R.id.textView_erreurPhoneNumber_login);
 
@@ -168,8 +167,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         button_google = findViewById(R.id.button_google);
-        button_facebook = findViewById(R.id.button_facebook);
-
 
         mAuth = FirebaseAuth.getInstance(); //get the instance of authentication
 
@@ -399,7 +396,6 @@ public class LoginActivity extends AppCompatActivity {
                         //Request was successful but it never means that data is found
                         DocumentSnapshot data = task.getResult();
                         if (data.exists()) {
-                            Toast.makeText(LoginActivity.this, "YOU ARE ALREADY SAVED IN THE DATABASE !!!", Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intent);

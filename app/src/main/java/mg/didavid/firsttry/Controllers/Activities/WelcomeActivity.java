@@ -15,6 +15,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -33,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -93,6 +96,7 @@ public class WelcomeActivity extends AppMode {
     private Button button_send;
     private LinearLayout addProfileImage;
     private ImageView profileImage_imageView;
+    private TextView textView_pdp;
 
     StorageReference storageReference; // reference of the Firebase storage
     String storagePdPPath = "UsersPhotoDeProfie/"; // storageReference/UsersPhotoDeProfile/
@@ -124,6 +128,9 @@ public class WelcomeActivity extends AppMode {
         button_send = findViewById(R.id.button_send);
         addProfileImage = findViewById(R.id.linearLayout_add_profileImage_welcome);
         profileImage_imageView = findViewById(R.id.imageView_profileImage_welcome);
+        textView_pdp = findViewById(R.id.textView_pdp);
+
+        int textView_color = textView_pdp.getCurrentTextColor();
 
         //set default profile picture
 
@@ -158,6 +165,8 @@ public class WelcomeActivity extends AppMode {
                 else if(TextUtils.isEmpty(editText_pseudo.getText().toString().trim())){
                     editText_pseudo.setError("Veuillez rensigner cette information");
                     return;
+                }else if(imageCompressed_uri == null){
+                    textView_pdp.setTextColor(Color.RED);
                 }
                 else{
                     radioButton_selected =findViewById(radioGroup_sexe.getCheckedRadioButtonId());
@@ -170,13 +179,7 @@ public class WelcomeActivity extends AppMode {
                     sexe = radioButton_selected.getText().toString();
                     phone = editText_phone.getText().toString();
                     email = editText_email.getText().toString();
-
-                    if(imageCompressed_uri != null){
-                        profileImage_Uri = imageCompressed_uri.toString();
-                    }else{
-                        profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
-
-                    }
+                    profileImage_Uri = imageCompressed_uri.toString();
 
                     final User user = new User(user_id, display_name, sexe,
                             pseudo, email, phone, finalPassword, profileImage_Uri);

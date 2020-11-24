@@ -24,7 +24,7 @@
 
     <item
         android:id="@+id/parametre_nav"
-        android:title="Parammetre"
+        android:title="Paramètres"
         android:icon="@drawable/ic_setting_icon"/>
 
 </menu>
