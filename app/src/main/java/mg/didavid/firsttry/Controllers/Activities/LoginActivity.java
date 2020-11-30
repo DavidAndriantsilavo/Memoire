@@ -178,6 +178,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(checkConnexion()) {
                     signIn();
+                    progressDialog.show();
                 }
             }
         });
@@ -326,6 +327,7 @@ public class LoginActivity extends AppCompatActivity {
 
     //REQUEST GOOGLE FOR SIGN IN
         private void createRequest() {
+
             // Configure Google Sign In
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                     .requestIdToken(getString(R.string.web_client_id))
@@ -349,6 +351,8 @@ public class LoginActivity extends AppCompatActivity {
 
             // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
             if (requestCode == RC_SIGN_IN) {
+                progressDialog.dismiss();
+
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 try {
                     // Google Sign In was successful, authenticate with Firebase
