@@ -724,6 +724,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 });
             }
 
+            progressDialog.dismiss();
 //            mGoogleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 //                @Override
 //                public void onCameraChange(CameraPosition cameraPosition) {
@@ -1127,8 +1128,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                         markerBitmap.put(currentUser.getUser_id(), bitmap);
 
                                         startUserLocationsRunnable();
-
-                                        progressDialog.dismiss();
                                     }
 
                                     @Override
