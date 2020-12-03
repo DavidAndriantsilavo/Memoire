@@ -116,6 +116,7 @@ public class RestoFragment extends Fragment {
                                                         collectionReference_sampleMenu.addSnapshotListener(new EventListener<QuerySnapshot>() {
                                                                     @Override
                                                                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                                                        boolean isEmptySample = true;
                                                                         if (value != null && !value.isEmpty()) {
                                                                             modelRestoSampleMenuList.clear();
                                                                             Log.d("iditra", "" + modelRestoList.size());
@@ -124,28 +125,25 @@ public class RestoFragment extends Fragment {
                                                                             for (int i = 0; i < size; i++) {
                                                                                 if (restoSampleMenus.get(i).getId_resto().contains(id_resto)) {
                                                                                     modelRestoSampleMenuList.add(restoSampleMenus.get(i));
+                                                                                    isEmptySample = false;
                                                                                 }
                                                                             }
                                                                             modelResto.setSampleMenuList(modelRestoSampleMenuList);
-                                                                                modelRestoList.add(modelResto);
                                                                             Log.d("iditra", "" + modelRestoList.size());
-                                                                            //set adapter to thi recycler view
-                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
 
                                                                         }
-                                                                        if (modelResto.getSampleMenuList().isEmpty()){
+                                                                        if (modelResto.getSampleMenuList().isEmpty() || !isEmptySample){
                                                                             Log.d("tafiditra", "affirmatif");
                                                                             modelRestoList.add(modelResto);
                                                                             Log.d("iditra", "" + modelRestoList.size());
                                                                             //set adapter to thi recycler view
-                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                         }
                                                                         Log.d("niditra", "" + modelResto.getName_resto());
                                                                         //set adapter to thi recycler view
-                                                                        adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                        recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+                                                                        /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                        recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
                                                                     }
                                                                 });
                                                     }

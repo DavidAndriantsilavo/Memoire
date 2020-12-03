@@ -3,7 +3,6 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -56,7 +55,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.internal.$Gson$Preconditions;
 import com.iceteck.silicompressorr.FileUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
 import com.squareup.picasso.Picasso;
@@ -65,7 +63,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import mg.didavid.firsttry.Models.ModelePost;
 import mg.didavid.firsttry.R;
@@ -111,7 +108,9 @@ public class NewPostActivity extends AppMode implements LocationListener {
     String[] storagePermission;
     Uri image_uri = null;
 
-    String nomEtPrenonm, pseudo, uid, photoDeProfile;
+    Intent intent;
+
+    String nomEtPrenonm, pseudo, uid, photoDeProfile, key;
 
     List<Uri> getAllUri = new ArrayList<>();
 
@@ -248,8 +247,8 @@ public class NewPostActivity extends AppMode implements LocationListener {
         });
 
         //get data from intent
-        Intent intent = getIntent();
-        String key = intent.getStringExtra("key");
+        intent = getIntent();
+        key = intent.getStringExtra("key");
         if (key != null && key.equals("resto")) {
             nomEtPrenonm = intent.getStringExtra("name"); //resto name
             pseudo = intent.getStringExtra("pseudo"); //resto rating
@@ -399,7 +398,7 @@ public class NewPostActivity extends AppMode implements LocationListener {
                         //imagePost.setMinimumHeight(0);
 
                         //go to main activity when finish
-                        sendToMainActivity();
+                        sendToCurrentActivity();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -427,9 +426,16 @@ public class NewPostActivity extends AppMode implements LocationListener {
         return listUriCompressed;
     }
 
-    private void sendToMainActivity() {
-        Intent intent = new Intent(NewPostActivity.this, MainActivity.class);
-        startActivity(intent);
+    private void sendToCurrentActivity() {
+        Intent intentReturn;
+        if (key.equals("resto")) {
+            intentReturn = new Intent(NewPostActivity.this, ProfileRestoActivity.class);
+        } else if (key.equals("user_profile")) {
+            intentReturn = new Intent(NewPostActivity.this, ProfileUserActivity.class);
+        } else {
+            intentReturn = new Intent(NewPostActivity.this, MainActivity.class);
+        }
+        startActivity(intentReturn);
         progressDialog_uploadPost.dismiss();
         finish();
     }

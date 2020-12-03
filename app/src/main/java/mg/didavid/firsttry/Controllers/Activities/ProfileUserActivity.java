@@ -221,7 +221,10 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         btnNewPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
+                Intent intent = new Intent(ProfileUserActivity.this, NewPostActivity.class);
+                intent.putExtra("key", "user_profile");
+                startActivity(intent);
+                finish();
             }
         });
 
