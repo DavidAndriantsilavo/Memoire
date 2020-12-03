@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ModelResto implements Parcelable {
-    private String user_id, user_email, user_pseudo, id_resto, name_resto, password_resto, phone_resto, email_resto, logo_resto, coverPhoto_resto, speciality_resto;
+    private String user_id, user_email, user_pseudo, id_resto, name_resto, phone_resto, logo_resto, coverPhoto_resto, speciality_resto;
     private String rating_resto, nbrRating_resto;
     private Double latitude, longitude;
     private List<ModelRestoSampleMenu> sampleMenuList;
@@ -16,15 +16,13 @@ public class ModelResto implements Parcelable {
     public ModelResto() {
     }
 
-    public ModelResto(String user_id, String user_email, String user_pseudo, String id_resto, String name_resto, String password_resto, String phone_resto, String email_resto, String logo_resto, String coverPhoto_resto, String speciality_resto, String rating_resto, String nbrRating_resto, Double latitude, Double longitude, List<ModelRestoSampleMenu> sampleMenuList) {
+    public ModelResto(String user_id, String user_email, String user_pseudo, String id_resto, String name_resto, String phone_resto, String logo_resto, String coverPhoto_resto, String speciality_resto, String rating_resto, String nbrRating_resto, Double latitude, Double longitude, List<ModelRestoSampleMenu> sampleMenuList) {
         this.user_id = user_id;
         this.user_email = user_email;
         this.user_pseudo = user_pseudo;
         this.id_resto = id_resto;
         this.name_resto = name_resto;
-        this.password_resto = password_resto;
         this.phone_resto = phone_resto;
-        this.email_resto = email_resto;
         this.logo_resto = logo_resto;
         this.coverPhoto_resto = coverPhoto_resto;
         this.speciality_resto = speciality_resto;
@@ -141,28 +139,12 @@ public class ModelResto implements Parcelable {
         this.name_resto = name_resto;
     }
 
-    public String getPassword_resto() {
-        return password_resto;
-    }
-
-    public void setPassword_resto(String password_resto) {
-        this.password_resto = password_resto;
-    }
-
     public String getPhone_resto() {
         return phone_resto;
     }
 
     public void setPhone_resto(String phone_resto) {
         this.phone_resto = phone_resto;
-    }
-
-    public String getEmail_resto() {
-        return email_resto;
-    }
-
-    public void setEmail_resto(String email_resto) {
-        this.email_resto = email_resto;
     }
 
     public String getLogo_resto() {

@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -90,6 +91,7 @@ public class PostDetailsActivity extends AppMode {
     Button kiff_button, location_button;
     LinearLayout linearLayout_image23;
     RatingBar ratingBar;
+    CardView cardView_image_post;
 
     //comment views
     RecyclerView recyclerView_comments;
@@ -101,8 +103,7 @@ public class PostDetailsActivity extends AppMode {
 
     List<ModelComment> modelComments;
 
-    boolean mPressKiff = false;
-    boolean mProcessComment = false;
+    boolean mPressKiff = false, mProcessComment = false, isCardViewVisible = false;
 
     private static final int CAMERA_REQUEST_CODE = 100;
     private static final int STORAGE_REQUEST_CODE = 200;
@@ -162,6 +163,7 @@ public class PostDetailsActivity extends AppMode {
         post_image1 = findViewById(R.id.imageView_imagePost1_comment);
         post_image2 = findViewById(R.id.imageView_imagePost2_comment);
         post_image3 = findViewById(R.id.imageView_imagePost3_comment);
+        cardView_image_post = findViewById(R.id.cardView_for_images_post_details);
         imageAddedIntoComment = findViewById(R.id.imageView_inputImage_EditComment_comment);
         kiff_button = findViewById(R.id.button_kiff_comment);
         location_button = findViewById(R.id.button_partager_comment);
@@ -1035,7 +1037,7 @@ public class PostDetailsActivity extends AppMode {
                                             calendar.setTimeInMillis(Long.parseLong(postTime));
                                         }catch (Exception e){
                                         }
-                                        String pTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+                                        String pTemps = DateFormat.format("dd MMM yyyy - HH:mm", calendar).toString();
 
                                         //set data to views
                                         if ((myLocation != null && myLocation.isEmpty()) || myLocation == null) {
@@ -1053,22 +1055,16 @@ public class PostDetailsActivity extends AppMode {
                                         //set kiff number
                                         if (post_kiff.equals("0")){
                                             textView_postKiff.setVisibility(View.GONE);
-                                        }else if (post_kiff.equals("1")){
-                                            textView_postKiff.setVisibility(View.VISIBLE);
-                                            textView_postKiff.setText(post_kiff + " Kiff");// set kiff word to singular
                                         }else {
                                             textView_postKiff.setVisibility(View.VISIBLE);
-                                            textView_postKiff.setText(post_kiff + " Kiffs");// set kiff word to plural
+                                            textView_postKiff.setText(post_kiff);// set kiff number
                                         }
                                         //set comment number
                                         if (comment_count.equals("0")){
                                             textView_nbrPosComment.setVisibility(View.GONE);
-                                        }else if (comment_count.equals("1")){
-                                            textView_nbrPosComment.setVisibility(View.VISIBLE);
-                                            textView_nbrPosComment.setText(comment_count + " commentaire");// set commentaire word to singular
                                         }else {
                                             textView_nbrPosComment.setVisibility(View.VISIBLE);
-                                            textView_nbrPosComment.setText(comment_count + " commentaires");// set commentaire word to plural
+                                            textView_nbrPosComment.setText(comment_count);// set commentaire number
                                         }
                                         post_time.setText(pTemps);
                                         user_name.setText(hidName);
@@ -1084,8 +1080,11 @@ public class PostDetailsActivity extends AppMode {
                                         //set image1
                                         if (postImage1.equals("noImage")) {
                                             post_image1.setVisibility(View.GONE);
+                                            cardView_image_post.setVisibility(View.GONE);
                                         }else {
                                             post_image1.setVisibility(View.VISIBLE);
+                                            cardView_image_post.setVisibility(View.VISIBLE);
+                                            isCardViewVisible = true;
                                             try {
                                                 Picasso.get().load(postImage1).into(post_image1);
                                             } catch (Exception e) { }
@@ -1093,6 +1092,9 @@ public class PostDetailsActivity extends AppMode {
                                         //set image2
                                         if (postImage2.equals("noImage")) {
                                             post_image2.setVisibility(View.GONE);
+                                            if (!isCardViewVisible) {
+                                                cardView_image_post.setVisibility(View.GONE);
+                                            }
                                         }else {
                                             post_image2.setVisibility(View.VISIBLE);
                                             try {
@@ -1102,6 +1104,9 @@ public class PostDetailsActivity extends AppMode {
                                         //set image3
                                         if (postImage3.equals("noImage")) {
                                             post_image3.setVisibility(View.GONE);
+                                            if (!isCardViewVisible) {
+                                                cardView_image_post.setVisibility(View.GONE);
+                                            }
                                         }else {
                                             post_image3.setVisibility(View.VISIBLE);
                                             try {

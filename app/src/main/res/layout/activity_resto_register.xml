@@ -137,56 +137,6 @@
             />
 
         <TextView
-            android:id="@+id/textView_prenom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Mot de passe"
-            android:paddingLeft="30dp"
-            android:textSize="15sp"
-            android:layout_marginTop="5dp"
-            android:labelFor="@+id/editText_firstname"
-            />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            app:passwordToggleEnabled="true">
-            <EditText
-                android:id="@+id/editText_restoPassword_registerResto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:lines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
-            android:id="@+id/textView_pseudo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Confirmer mot de passe"
-            android:paddingLeft="30dp"
-            android:textSize="15sp"
-            android:layout_marginTop="5dp"
-            android:labelFor="@+id/editText_pseudo_welcome"
-            />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            app:passwordToggleEnabled="true">
-            <EditText
-                android:id="@+id/editText_confirmRestoPassword_registerResto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:lines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <TextView
             android:id="@+id/textView_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -221,32 +171,6 @@
                 android:inputType="phone"
                 android:lines="1"
                 android:maxLength="10" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginLeft="30dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="email :"
-                android:textSize="17sp"
-                android:layout_weight="4"
-                android:paddingLeft="20dp"
-                android:labelFor="@+id/editText_email"/>
-
-            <EditText
-                android:id="@+id/editText_emailResto_registerResto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="30dp"
-                android:layout_weight="1"
-                android:inputType="textEmailAddress"
-                android:lines="1" />
 
         </LinearLayout>
 

@@ -173,6 +173,7 @@ public class AddMenuToListActivity extends AppMode {
                         Toast.makeText(AddMenuToListActivity.this, "Menu de menu enregister avec succès", Toast.LENGTH_LONG).show();
                         progressDialog_sendSampleMenu.dismiss();
                         imageCompressed_uri = null;
+                        imageView_menuImage.setImageURI(imageCompressed_uri);
                         editText_menuName.setText("");
                         editText_menuIngredient.setText("");
                         editText_menuPrice.setText("");

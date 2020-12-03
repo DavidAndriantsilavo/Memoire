@@ -3,7 +3,6 @@ package mg.didavid.firsttry.Controllers.Activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -23,7 +22,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,9 +45,7 @@ import com.iceteck.silicompressorr.FileUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import mg.didavid.firsttry.Models.ModelResto;
 import mg.didavid.firsttry.Models.ModelRestoSampleMenu;
@@ -60,12 +56,12 @@ import static androidx.constraintlayout.widget.Constraints.TAG;
 
 public class RestoRegisterActivity extends AppMode implements LocationListener {
 
-    private EditText restoName_editText, restoPassword_editText, restoConfirmPassword_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
+    private EditText restoName_editText, restoPhone_editText, restoEmail_editText, culinarySpeciality_editText;
     private ImageView restoLogo_imageView;
     private Button restoLocalisation_button, send_button;
     protected LinearLayout restoAddLogo_linearLayout;
 
-    private String logoResto, nameResto, passwordResto, confirmPasswordResto, phoneResto, emailResto, culinarySpeciality,
+    private String logoResto, nameResto, passwordResto, confirmPasswordResto, phoneResto, culinarySpeciality,
             user_id, user_email, user_pseudo;
     private Double latitude, longitude;
     private List<ModelRestoSampleMenu> sampleMenuList;
@@ -106,10 +102,8 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
 
         //init views
         restoName_editText = findViewById(R.id.editText_nomResto_registerResto);
-        restoPassword_editText = findViewById(R.id.editText_restoPassword_registerResto);
-        restoConfirmPassword_editText = findViewById(R.id.editText_confirmRestoPassword_registerResto);
+
         restoPhone_editText = findViewById(R.id.editText_phoneResto_registerResto);
-        restoEmail_editText = findViewById(R.id.editText_emailResto_registerResto);
         culinarySpeciality_editText = findViewById(R.id.editText_culinarySpeciality_registerResto);
         restoLogo_imageView = findViewById(R.id.imageView_logoResto_registerResto);
         restoLocalisation_button = findViewById(R.id.button_localisationResto_registerResto);
@@ -382,10 +376,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
 
     private void getRestoInformations() {
         nameResto = restoName_editText.getText().toString();
-        passwordResto = restoPassword_editText.getText().toString();
-        confirmPasswordResto = restoConfirmPassword_editText.getText().toString();
         phoneResto = restoPhone_editText.getText().toString();
-        emailResto = restoEmail_editText.getText().toString();
         culinarySpeciality = culinarySpeciality_editText.getText().toString();
 
         //control field culinary speciality
@@ -405,54 +396,6 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
         } else {
             nameResto_boolean = true;
         }
-        //control password
-        boolean control_letter = false;
-        boolean control_number = false;
-        int j;
-        int pwdLength = passwordResto.length();
-        if (pwdLength < 6) {
-            restoPassword_editText.setError("Doit contenir au moins 6 caractères");
-        } else {
-            for (j = 0; j < pwdLength; j++) {
-                char[] ascciiCode_motDePasse = passwordResto.toCharArray();
-                //check if there is one lettre at least
-                if (((ascciiCode_motDePasse[j] > 0x40) && (ascciiCode_motDePasse[j] < 0x5B)) || ((ascciiCode_motDePasse[j] > 0x60) && (ascciiCode_motDePasse[j] < 0x7B))) {
-                    if (!control_letter) {
-                        control_letter = true;
-                    }
-                }
-                //verification de presence d'un chiffre
-                else if ((ascciiCode_motDePasse[j] > 0x29) && (ascciiCode_motDePasse[j] < 0x3A)) {
-                    if (!control_number) {
-                        control_number = true;
-                    }
-                }
-            }
-            //verification presence de lettre dans le mot de passe
-            if (!control_letter) {
-                restoPassword_editText.setError("Doit contenir au moins une lettre");
-            }
-            //verification presence de chiffre dans le mot de passe
-            else if (!control_number) {
-                restoPassword_editText.setError("Doit contenir au moins un Chiffre");
-            }
-
-            //comparaison de mot de passe
-            if (control_letter && control_number) {
-                if (!passwordResto.equals(confirmPasswordResto)) {
-                    restoConfirmPassword_editText.setError("Le mot de passe ne correspond pas");
-                } else {
-                    password_boolean = true;
-                }
-            }
-        }
-
-        //control email
-        if (!Patterns.EMAIL_ADDRESS.matcher(emailResto).matches()) {
-            restoEmail_editText.setError("Email invalid");
-        } else {
-            email_boolean = true;
-        }
 
         //control phone number
         if (phoneResto.length() < 10) {
@@ -467,7 +410,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
         }
 
 
-        if (email_boolean && phone_boolean && location_boolean && phone_boolean && password_boolean && nameResto_boolean && speciality_boolean) {
+        if (phone_boolean && location_boolean && nameResto_boolean && speciality_boolean && imageCompressed_uri != null) {
             progressDialog_registerRestoAccount.show();
             //store image into Firebase Storage
             String filePathName = "LogoResto/" + "logoResto_" + user_id;
@@ -491,8 +434,9 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
     }
 
     private void singinResto() {
+
         String id_resto = "resto_" + user_id;
-        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, passwordResto, phoneResto, emailResto, logoResto, "noImage", culinarySpeciality, "0", "0", latitude, longitude, sampleMenuList);
+        ModelResto modelResto = new ModelResto(user_id, user_email, user_pseudo, id_resto, nameResto, phoneResto, logoResto, "noImage", culinarySpeciality, "0", "0", latitude, longitude, sampleMenuList);
 
         //store data
         collectionReference_resto.document(id_resto).set(modelResto)
@@ -502,7 +446,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
                         Toast.makeText(RestoRegisterActivity.this, "Compte créé avec succès", Toast.LENGTH_SHORT).show();
                         assert manager != null;
                         manager.removeUpdates(RestoRegisterActivity.this);
-                        sendListeMenu();
+                        sendToListeMenu();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -513,7 +457,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
                 });
     }
 
-    private void sendListeMenu() {
+    private void sendToListeMenu() {
         startActivity(new Intent(RestoRegisterActivity.this, ListMenuRestoActivity.class));
         progressDialog_registerRestoAccount.dismiss();
         finish();

@@ -91,7 +91,7 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
             calendar.setTimeInMillis(Long.parseLong(comment_time));
         }catch (Exception e){
         }
-        String commentTemps = DateFormat.format("dd/MM/yyyy hh:mm aa", calendar).toString();
+        String commentTemps = DateFormat.format("dd MMM yyyy - HH:mm", calendar).toString();
 
         //set data
         holder.userName_comment.setText(name);
@@ -182,12 +182,17 @@ public class AdapteurComments extends RecyclerView.Adapter<AdapteurComments.MyHo
         });
 
         //button more action in comment clicked
-        holder.moreAction_comment.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showMoreActionsInComment(holder.moreAction_comment, user_id, post_comment, comment_time, comment_image, post_id);
-            }
-        });
+        if (mCurrentUserId.contains(user_id)) {
+            holder.moreAction_comment.setVisibility(View.VISIBLE);
+            holder.moreAction_comment.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    showMoreActionsInComment(holder.moreAction_comment, user_id, post_comment, comment_time, comment_image, post_id);
+                }
+            });
+        } else {
+            holder.moreAction_comment.setVisibility(View.GONE);
+        }
     }
 
     private void showMoreActionsInComment(ImageButton moreAction_comment, String user_id, final String post_comment, final String comment_id, final String comment_image, final String post_id) {

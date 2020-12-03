@@ -23,7 +23,7 @@
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true">
 
-        <activity android:name=".Controllers.Activities.AppointmentListActivity"></activity>
+        <activity android:name=".Controllers.Activities.AppointmentListActivity" />
         <activity android:name=".Controllers.Activities.NewAppointmentActivity" />
         <activity
             android:name=".Controllers.Activities.UserListActivity"

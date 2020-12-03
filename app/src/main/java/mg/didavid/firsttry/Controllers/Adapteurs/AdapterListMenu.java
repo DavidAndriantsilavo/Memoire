@@ -255,7 +255,7 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
                                     Toast.makeText(context, "Ce menu est déjà dans l'échantillon.", Toast.LENGTH_LONG).show();
                                 }
                             }
-                            if (countSampleMenu < 6 && !isMenuExist) {
+                            if (countSampleMenu < 5 && !isMenuExist) {
                                 ModelRestoSampleMenu modelRestoSampleMenu = new ModelRestoSampleMenu(id_resto, id_menu, "", menuPhoto, menuName, menuPrice);
                                 //store data
                                 collectionReference_sampleMenu.document(id_menu).set(modelRestoSampleMenu)
@@ -266,7 +266,7 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
                                             }
                                         });
                             }
-                            if (countSampleMenu > 5){
+                            if (countSampleMenu == 5){
                                 //user has yet 5 sample menu set
                                 showMessageDialog();
                             }
