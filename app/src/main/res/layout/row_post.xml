@@ -200,7 +200,7 @@
     </androidx.cardview.widget.CardView>
     <RelativeLayout
         android:id="@+id/linearLayout_profile_post"
-        android:layout_width="300dp"
+        android:layout_width="250dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="8dp"

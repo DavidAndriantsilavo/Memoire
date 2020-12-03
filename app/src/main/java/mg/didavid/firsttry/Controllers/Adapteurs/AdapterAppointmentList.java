@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import jp.wasabeef.picasso.transformations.CropCircleTransformation;
 import mg.didavid.firsttry.Models.ModelAppointment;
@@ -82,7 +83,7 @@ public class AdapterAppointmentList extends RecyclerView.Adapter<AdapterAppointm
         final String timestamp = appointment.getTimestamp();
         final HashMap<String, Boolean> confirmUser = appointment.getConfirmUser();
         final ArrayList<String> selectedUserId = appointment.getSelectedUserId();
-//        final ArrayList<String> selectedUsername = appointment.getSelectedUserName();
+        final ArrayList<String> selectedUsername = appointment.getSelectedUserName();
 
         Log.d(TAG, "onBindViewHolder: ");
         try {
@@ -120,20 +121,43 @@ public class AdapterAppointmentList extends RecyclerView.Adapter<AdapterAppointm
                 @Override
                 public void onClick(View v) {
                     selectedUserId.remove(currentUser.getUser_id());
+                    selectedUsername.remove(currentUser.getName());
 
-                    collectionReference_users.document(selectedUserId.get(0)).
-                            collection("AppointmentCollection").document(timestamp)
-                            .update("selectedUser", selectedUserId)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(context,"Rendez-vous annuler", Toast.LENGTH_SHORT).show();
-                                    appointmentList.remove(appointment);
-                                    holder.mainLayout.setVisibility(View.GONE);
+//                    Map<String, Object> update = new HashMap<>();
+//                    update.put("selectedUserId", selectedUserId);
+//                    update.put("selectedUserName", selectedUsername);
 
-                                    notifyAppointmentChange(selectedUserId.get(0), "refusé", date);
-                                }
-                            });
+                    if(selectedUserId.size() > 1){
+                        collectionReference_users.document(selectedUserId.get(0)).
+                                collection("AppointmentCollection").document(timestamp)
+                                .update("selectedUserId", selectedUserId,
+                                        "selectedUserName", selectedUsername)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(context,"Rendez-vous annuler", Toast.LENGTH_SHORT).show();
+                                        appointmentList.remove(appointment);
+                                        holder.mainLayout.setVisibility(View.GONE);
+
+                                        notifyAppointmentChange(selectedUserId.get(0), "refusé", date);
+                                    }
+                                });
+                    }else{
+                        collectionReference_users.document(selectedUserId.get(0))
+                                .collection("AppointmentCollection")
+                                .document(timestamp)
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(context,"Rendez-vous annuler", Toast.LENGTH_SHORT).show();
+                                        appointmentList.remove(appointment);
+                                        holder.mainLayout.setVisibility(View.GONE);
+
+                                        notifyAppointmentChange(selectedUserId.get(0), "refusé", date);
+                                    }
+                                });
+                    }
                 }
             });
 

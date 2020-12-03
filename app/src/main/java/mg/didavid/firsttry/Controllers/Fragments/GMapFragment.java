@@ -174,6 +174,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     private int seekBarProgress = 0, distanceRadius, currentDistance;
     private View linearLayoutCustomViewUser, linearLayoutCustomViewResto;
     private RatingBar ratingBar_restoRating;
+    ProgressDialog progressDialog;
 
     private HashMap<String, Bitmap> markerBitmap = new HashMap<String, Bitmap>();
 
@@ -563,29 +564,29 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 });
 
                 //LongClick on fav markers
-//                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
-//                    @Override
-//                    public void onInfoWindowLongClick(final Marker marker) {
-//                        userReference.document(currentUser.getUser_id())
-//                                .collection("FavoriteCollection")
-//                                .document(marker.getTitle())
-//                                .delete()
-//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void aVoid) {
-//                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
-//
-//                                        favoriteMarkerCollection.remove(marker);
-//                                    }
-//                                })
-//                                .addOnFailureListener(new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
-//                    }
-//                });
+                favoriteMarkerCollection.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+                    @Override
+                    public void onInfoWindowLongClick(final Marker marker) {
+                        userReference.document(currentUser.getUser_id())
+                                .collection("FavoriteCollection")
+                                .document(marker.getTitle())
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(getActivity(), "Le favoris a été supprimer avec succès", Toast.LENGTH_SHORT).show();
+
+                                        favoriteMarkerCollection.remove(marker);
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(getActivity(), "Une erreur s'est produite", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                });
             }
 
             if (mClusterManagerRendererRestaurant == null) {
@@ -723,6 +724,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                 });
             }
 
+            progressDialog.dismiss();
 //            mGoogleMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
 //                @Override
 //                public void onCameraChange(CameraPosition cameraPosition) {
@@ -1354,6 +1356,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         super.onActivityCreated(savedInstanceState);
 
         currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage("Chargement ...");
+        progressDialog.show();
 
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(this); //this is important
@@ -1425,6 +1430,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
+
+        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
 
         item_search = menu.findItem(R.id.menu_search_button);
         searchView = (SearchView) MenuItemCompat.getActionView(item_search);

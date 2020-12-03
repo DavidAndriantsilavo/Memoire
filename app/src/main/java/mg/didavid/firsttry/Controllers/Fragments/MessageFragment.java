@@ -58,6 +58,8 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
 
     User currentUser;
 
+    ProgressDialog progressDialog;
+
     private DatabaseReference mChatroomReference = FirebaseDatabase.getInstance().getReference().child("chatroom");
 
     public static MessageFragment newInstance() {
@@ -124,6 +126,8 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapteursMessage);
+
+        progressDialog.dismiss();
     }
 
     @Override
@@ -158,6 +162,10 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         super.onActivityCreated(savedInstanceState);
 
         currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage("Chargement ...");
+        progressDialog.show();
 
         //start the listner of new message
         ChildEventListener childEventListener = new ChildEventListener() {
@@ -209,8 +217,6 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w(TAG, "postComments:onCancelled", databaseError.toException());
-                Toast.makeText(getContext(), "Failed to load comments.",
-                        Toast.LENGTH_SHORT).show();
             }
         };
 

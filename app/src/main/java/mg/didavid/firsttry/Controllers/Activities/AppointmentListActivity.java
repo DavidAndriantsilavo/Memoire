@@ -1,11 +1,14 @@
 package mg.didavid.firsttry.Controllers.Activities;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -38,12 +41,31 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
     private TextView textView_noAppointment;
     private String TAG = "AppointmentActivityList";
 
+    ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_appointment_list);
 
+        //set tool bar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null){
+            //set toolbar title
+            // Sets the Toolbar
+            setSupportActionBar(toolbar);
+            this.setTitle("Mes rendez-vous");
+
+            // Get a support ActionBar corresponding to this toolbar
+            ActionBar ab = getSupportActionBar();
+            // Enable the Up button
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
         currentUser = ((UserSingleton)getApplicationContext()).getUser();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Chargement ...");
+        progressDialog.show();
 
         textView_noAppointment = findViewById(R.id.textView_noAppointment);
         //recycler view and its proprieties
@@ -100,6 +122,7 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
         adapterAppointmentList = new AdapterAppointmentList(this, list, this);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapterAppointmentList);
+        progressDialog.dismiss();
     }
 
 

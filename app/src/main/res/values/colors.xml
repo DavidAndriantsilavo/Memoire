@@ -6,4 +6,13 @@
     <color name="red">#CF2656</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+
+    <color name="turquoise">#26867C</color>
+    <color name="yellow">#FFC200</color>
+    <color name="fushia">#C60138</color>
+    <color name="purple">#5B1C48</color>
+    <color name="darkGrey">#5E6072</color>
+    <color name="blueGrey">#576B83</color>
+    <color name="middleGrey">#848486</color>
+    <color name="lightGrey">#B3B1B2</color>
 </resources>

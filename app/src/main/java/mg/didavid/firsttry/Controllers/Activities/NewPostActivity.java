@@ -214,8 +214,6 @@ public class NewPostActivity extends AppMode implements LocationListener {
                                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                         Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
                                         while (!uriTask.isSuccessful()) {
-                                            Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
-                                            Toast.makeText(NewPostActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
                                             if (uriTask.isSuccessful()) {
                                                 break;
                                             }

@@ -280,6 +280,13 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
 
                         removeBadge();
                     }
+                }else{
+                    button_appointment.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(new Intent(ProfileUserActivity.this, AppointmentListActivity.class));
+                        }
+                    });
                 }
             }
 
@@ -637,7 +644,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                         Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
                         while (!uriTask.isSuccessful()){
                             Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
-                            Toast.makeText(ProfileUserActivity.this, "mbola tsy succès le tache !", Toast.LENGTH_SHORT).show();
                         }
                         String downloadUri = uriTask.getResult().toString();
 
@@ -736,7 +742,7 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                 if (which == 1){
                     //modifier le nom de l'currentUser
                     progressDialog_editProfile.setMessage("Edition de votre nom");
-                    showNameUpdateDialog("name");
+                    showNameUpdateDialog("nom");
                 }
             }
         });

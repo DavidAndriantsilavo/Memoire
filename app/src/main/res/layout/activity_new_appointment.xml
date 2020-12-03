@@ -127,18 +127,20 @@
         android:gravity="center">
 
         <Button
+            android:id="@+id/button_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Annuler"
+            android:layout_margin="10dp"/>
+
+        <Button
             android:id="@+id/button_confirm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Confirmer"
             android:layout_margin="10dp" />
 
-        <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Annuler"
-            android:layout_margin="10dp"/>
+
     </LinearLayout>
 
 <!--    <Button-->

@@ -123,10 +123,10 @@
             android:src="@drawable/google_logo"
             android:scaleType="fitXY"
             android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
+            android:layout_marginLeft="40dp"/>
 
         <!--Bouton pour se connecter via compte FaceBook-->
-        <ImageButton
+        <!--<ImageButton
             android:layout_height="50dp"
             android:layout_width="50dp"
             android:id="@+id/button_facebook"
@@ -134,7 +134,7 @@
             android:src="@drawable/facebook_square_logo"
             android:layout_gravity="center"
             android:foregroundGravity="center"
-            android:scaleType="fitCenter"/>
+            android:scaleType="fitCenter"/>-->
 
 
     </LinearLayout>

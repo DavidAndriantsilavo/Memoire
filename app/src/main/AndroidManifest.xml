@@ -23,7 +23,13 @@
         android:theme="@style/AppTheme"
         android:requestLegacyExternalStorage="true">
 
-        <activity android:name=".Controllers.Activities.AppointmentListActivity" />
+        <activity
+            android:name=".Controllers.Activities.AppointmentListActivity"
+            android:parentActivityName=".Controllers.Activities.ProfileUserActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".Controllers.Activities.ProfileUserActivity" />
+        </activity>
         <activity android:name=".Controllers.Activities.NewAppointmentActivity" />
         <activity
             android:name=".Controllers.Activities.UserListActivity"
