@@ -150,17 +150,7 @@ public class ListMenuRestoActivity extends AppMode {
 
         //hide others menu
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-
-        if (id_resto != null) {
-            if (id_resto.equals("resto_" + user_id)) {
-                menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
-            }else {
-                menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-            }
-        }else{
-            menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-        }
-
+        
         //searchView to seach post bydescription
         MenuItem item_search =  menu.findItem(R.id.menu_search_button);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
