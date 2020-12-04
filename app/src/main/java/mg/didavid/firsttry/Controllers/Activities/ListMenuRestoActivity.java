@@ -68,39 +68,28 @@ public class ListMenuRestoActivity extends AppMode {
         user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         //get data from intent
-<<<<<<< HEAD
+
         if (getIntent().hasExtra("key")) {
             id_resto = getIntent().getStringExtra("key");
             if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
                 textView_aboutListMenu.setVisibility(View.VISIBLE);
+                floatingActionButton.setVisibility(View.VISIBLE);
             }else {
                 textView_aboutListMenu.setVisibility(View.GONE);
+                floatingActionButton.setVisibility(View.GONE);
             }
+
+            floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //add new menu in menu list
+                    //send currentUser to AddMenuListActivity
+                    startActivity(new Intent(ListMenuRestoActivity.this, AddMenuToListActivity.class));
+                }
+            });
             setData();
         }
 
-=======
-        Intent intent = getIntent();
-        id_resto = intent.getStringExtra("key");
-        if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-            textView_aboutListMenu.setVisibility(View.VISIBLE);
-            floatingActionButton.setVisibility(View.VISIBLE);
-        }else {
-            textView_aboutListMenu.setVisibility(View.GONE);
-            floatingActionButton.setVisibility(View.GONE);
-        }
-
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //add new menu in menu list
-                //send currentUser to AddMenuListActivity
-                startActivity(new Intent(ListMenuRestoActivity.this, AddMenuToListActivity.class));
-            }
-        });
-
-        setData();
->>>>>>> 68977d5df386b7946ba110ee1f22f728200fb5ce
         configureToolbar();
     }
 
@@ -150,7 +139,7 @@ public class ListMenuRestoActivity extends AppMode {
 
         //hide others menu
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-        
+
         //searchView to seach post bydescription
         MenuItem item_search =  menu.findItem(R.id.menu_search_button);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
