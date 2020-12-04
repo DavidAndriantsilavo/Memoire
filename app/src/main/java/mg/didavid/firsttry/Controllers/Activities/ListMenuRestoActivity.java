@@ -65,15 +65,16 @@ public class ListMenuRestoActivity extends AppMode {
         user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         //get data from intent
-        Intent intent = getIntent();
-        id_resto = intent.getStringExtra("key");
-        if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-            textView_aboutListMenu.setVisibility(View.VISIBLE);
-        }else {
-            textView_aboutListMenu.setVisibility(View.GONE);
+        if (getIntent().hasExtra("key")) {
+            id_resto = getIntent().getStringExtra("key");
+            if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                textView_aboutListMenu.setVisibility(View.VISIBLE);
+            }else {
+                textView_aboutListMenu.setVisibility(View.GONE);
+            }
+            setData();
         }
 
-        setData();
         configureToolbar();
     }
 
@@ -123,9 +124,13 @@ public class ListMenuRestoActivity extends AppMode {
 
         //hide others menu
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-        if (id_resto.equals("resto_" + user_id)) {
-            menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
-        }else {
+        if (id_resto != null) {
+            if (id_resto.equals("resto_" + user_id)) {
+                menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
+            }else {
+                menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
+            }
+        }else{
             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         }
         //searchView to seach post bydescription

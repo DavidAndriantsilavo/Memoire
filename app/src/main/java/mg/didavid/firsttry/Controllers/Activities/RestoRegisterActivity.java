@@ -458,7 +458,7 @@ public class RestoRegisterActivity extends AppMode implements LocationListener {
     }
 
     private void sendToListeMenu() {
-        startActivity(new Intent(RestoRegisterActivity.this, ListMenuRestoActivity.class));
+        startActivity(new Intent(RestoRegisterActivity.this, ProfileRestoActivity.class));
         progressDialog_registerRestoAccount.dismiss();
         finish();
     }
