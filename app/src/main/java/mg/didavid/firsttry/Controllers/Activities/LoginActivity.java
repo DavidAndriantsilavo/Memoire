@@ -130,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
                     String motDePasse = mMotDePasse_lg.getText().toString();
                     String uCompletPseudo = toLowerCase(pseudo) + ".mg";
 
-                    if (pseudo.isEmpty() && motDePasse.isEmpty()){
+                    if (pseudo.isEmpty() || motDePasse.isEmpty()){
                         erreurLoginTv.setText("Veillez completer tous les champs !");
                         erreurLoginTv.setVisibility(View.VISIBLE);
                     }else {
@@ -144,6 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                                             //redirection vers la page d'accueil
                                             Intent connexion = new Intent(LoginActivity.this, MainActivity.class);
                                             startActivity(connexion);
+                                            progressDialog.dismiss();
                                             finish();
                                         } else {
                                             // If sign in fails, display a message to the currentUser.
@@ -351,7 +352,6 @@ public class LoginActivity extends AppCompatActivity {
 
             // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
             if (requestCode == RC_SIGN_IN) {
-                progressDialog.dismiss();
 
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 try {
@@ -403,11 +403,13 @@ public class LoginActivity extends AppCompatActivity {
 
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             startActivity(intent);
+                            progressDialog.dismiss();
 
                             finish();
                         } else {
                             Intent intent =  new Intent(LoginActivity.this, WelcomeActivity.class);
                             startActivity(intent);
+                            progressDialog.dismiss();
 
                             finish();
                         }

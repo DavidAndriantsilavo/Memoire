@@ -2,6 +2,7 @@ package mg.didavid.firsttry.Controllers.Fragments;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -62,6 +63,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     ProgressDialog progressDialog;
 
     private DatabaseReference mChatroomReference = FirebaseDatabase.getInstance().getReference().child("chatroom");
+    private Context mContext;
 
     public static MessageFragment newInstance() {
         return (new MessageFragment());
@@ -131,7 +133,7 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         }
 
         //adapter
-        adapteursMessage = new AdapteurMessage(getActivity(), chatroomList, this);
+        adapteursMessage = new AdapteurMessage(mContext, chatroomList, this);
         //set adapter to recyclerView
         recyclerView.setAdapter(adapteursMessage);
 
@@ -165,9 +167,10 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        currentUser = ((UserSingleton) getActivity().getApplicationContext()).getUser();
+        mContext = getActivity();
+        currentUser = ((UserSingleton) mContext.getApplicationContext()).getUser();
 
-        progressDialog = new ProgressDialog(getActivity());
+        progressDialog = new ProgressDialog(mContext);
         progressDialog.setMessage("Chargement ...");
         progressDialog.show();
 

@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -85,6 +86,7 @@ public class WelcomeActivity extends AppMode {
     private String sexe = "NULL";
     private String phone = "NULL";
     private String email = "NULL";
+    private String finalPassword;
     private String profileImage_Uri = "https://firebasestorage.googleapis.com/v0/b/first-try-280722.appspot.com/o/UsersPhotoDeProfie%2Fdefault_profile_picture.png?alt=media&token=16300f76-a703-4983-adc7-7f8645b3d8f5";
     private final String TAG= "MainActivity";
 
@@ -112,10 +114,15 @@ public class WelcomeActivity extends AppMode {
     Uri image_uri = null;
     Uri imageCompressed_uri = null;
 
+    ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Création de votre compte ...");
 
         editText_nom = findViewById(R.id.editText_nom);
         editText_prenom = findViewById(R.id.editText_prenom);
@@ -144,12 +151,6 @@ public class WelcomeActivity extends AppMode {
         cameraPermission = new String[] {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         storagePermission = new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-        Intent intent = getIntent();
-        String singinPseudo = "" + intent.getStringExtra("key");
-        String register_pseudo = "" + intent.getStringExtra("pseudo");
-        String register_pwd = "" + intent.getStringExtra("password");
-        String password = null;
-        final String finalPassword = password;
         button_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -169,6 +170,8 @@ public class WelcomeActivity extends AppMode {
                     textView_pdp.setTextColor(Color.RED);
                 }
                 else{
+                    progressDialog.show();
+
                     radioButton_selected =findViewById(radioGroup_sexe.getCheckedRadioButtonId());
 
                     user_id = firebaseUser.getUid();
@@ -190,10 +193,13 @@ public class WelcomeActivity extends AppMode {
         });
 
         //IF USER IS AUTH TO FIREBASE AND NO SINGLETON SET
-        if (singinPseudo.equals("Pseudo and Password")) {
+        if (getIntent().hasExtra("key") && getIntent().hasExtra("pseudo")) {
+            Intent intent = getIntent();
+            pseudo = intent.getStringExtra("pseudo");
+            finalPassword = intent.getStringExtra("password");
+
             editText_pseudo.setEnabled(false);
-            editText_pseudo.setText(register_pseudo);
-            password = register_pwd;
+            editText_pseudo.setText(pseudo);
         }else {
                 configureUser();
         }
@@ -288,6 +294,8 @@ public class WelcomeActivity extends AppMode {
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
                                     createPreferences(user.getUser_id());
+
+                                    progressDialog.dismiss();
 
                                     final AlertDialog.Builder builder = new AlertDialog.Builder(WelcomeActivity.this);
                                     builder.setMessage("Votre compte a été créé avec succes");

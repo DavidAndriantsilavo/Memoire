@@ -939,8 +939,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(getActivity(), "Seek bar progress is :" + seekBarProgress,
-                        Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), "Seek bar progress is :" + seekBarProgress,
+//                        Toast.LENGTH_SHORT).show();
 
                 if (seekBarProgress == 0) {
                     stopOtherLocationUpdates();
@@ -1148,8 +1148,8 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
                                                 lastKnownLocation.getLongitude()))
                                         .radius(seekBarProgress * 100)
                                         .strokeWidth(1)
-                                        .strokeColor(Color.GREEN)
-                                        .fillColor(Color.argb(128, 255, 0, 0))
+                                        .strokeColor(getResources().getColor(R.color.colorPrimary))
+                                        .fillColor(Color.argb(20, 198, 1, 56))
                                         .clickable(false));
 
                                 TimeZone timezone = TimeZone.getTimeZone("GMT+03:00"); //MADAGASCAR TIMEZONE
