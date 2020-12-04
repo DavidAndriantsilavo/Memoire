@@ -303,7 +303,6 @@ public class ParametreFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_activity_main, menu);
         menu.findItem(R.id.menu_search_button).setVisible(false);
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 

@@ -1431,8 +1431,6 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
         inflater.inflate(R.menu.menu_activity_main, menu);
         super.onCreateOptionsMenu(menu, inflater);
 
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-
         item_search = menu.findItem(R.id.menu_search_button);
         searchView = (SearchView) MenuItemCompat.getActionView(item_search);
 
@@ -1562,13 +1560,9 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
-        switch (item.getItemId()) {
-            case R.id.menu_activity_main_profile:
-                startActivity(new Intent(getContext(), ProfileUserActivity.class));
-                return true;
-            case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getContext(), NewPostActivity.class));
-                return true;
+        if (item.getItemId() == R.id.menu_activity_main_profile) {
+            startActivity(new Intent(getContext(), ProfileUserActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

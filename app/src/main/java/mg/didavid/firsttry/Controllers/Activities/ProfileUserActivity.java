@@ -221,7 +221,10 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         btnNewPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(ProfileUserActivity.this, NewPostActivity.class));
+                Intent intent = new Intent(ProfileUserActivity.this, NewPostActivity.class);
+                intent.putExtra("key", "user_profile");
+                startActivity(intent);
+                finish();
             }
         });
 
@@ -846,7 +849,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
         //hide others menu
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
         menu.findItem(R.id.menu_logout_profil).setVisible(false);
 

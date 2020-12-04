@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -36,6 +37,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import mg.didavid.firsttry.Controllers.Activities.NewPostActivity;
 import mg.didavid.firsttry.Controllers.Activities.ProfileRestoActivity;
 import mg.didavid.firsttry.Controllers.Activities.RestoRegisterActivity;
 import mg.didavid.firsttry.Controllers.Adapteurs.AdapterRestoPresentation;
@@ -53,6 +55,8 @@ public class RestoFragment extends Fragment {
     private AdapterRestoPresentation adapterRestoPresentation;
     private List<ModelResto> modelRestoList;
     private TextView textView_aboutSinginResto;
+
+    private FloatingActionButton floatingActionButton;
 
     private String user_id;
 
@@ -72,7 +76,59 @@ public class RestoFragment extends Fragment {
         //recyclerView_restoFragment.setHasFixedSize(true);
         recyclerView_restoFragment.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
+        floatingActionButton = view.findViewById(R.id.floatingbtn_resto);
+
         setData();
+
+
+        final boolean[] userHasRestoAccount = {false};
+
+        CollectionReference collectionReference_resto = FirebaseFirestore.getInstance().collection("Resto");
+        collectionReference_resto.get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (!queryDocumentSnapshots.isEmpty()) {
+                            List<ModelResto> modelRestos = queryDocumentSnapshots.toObjects(ModelResto.class);
+                            int size = modelRestos.size();
+                            for (int i = 0; i < size; i++) {
+                                if (!userHasRestoAccount[0]) {
+                                    if (modelRestos.get(i).getId_resto().contains(user_id)) {
+                                        //the currentUser have already one restaurant account so, hide menu add restaurant account and show menu view profile
+                                        floatingActionButton.setImageResource(R.drawable.ic__floatting_button_resto_fragment_foreground);
+                                        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                startActivity(new Intent(getContext(), ProfileRestoActivity.class));
+                                            }
+                                        });
+                                        textView_aboutSinginResto.setVisibility(View.GONE);
+                                        userHasRestoAccount[0] = true;
+                                        break;
+                                    }else {
+                                        //current currentUser doesn't have resto account, allow him to add new resto account
+                                        floatingActionButton.setImageResource(R.drawable.ic_add_new_post_floatting_button_foreground);
+                                        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                startActivity(new Intent(getContext(), RestoRegisterActivity.class));
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }else {
+                            //current currentUser doesn't have resto account, allow him to add new resto account
+                            floatingActionButton.setImageResource(R.drawable.ic_add_new_post_floatting_button_foreground);
+                            floatingActionButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    startActivity(new Intent(getContext(), RestoRegisterActivity.class));
+                                }
+                            });
+                        }
+                    }
+                });
 
         return view;
     }
@@ -116,6 +172,7 @@ public class RestoFragment extends Fragment {
                                                         collectionReference_sampleMenu.addSnapshotListener(new EventListener<QuerySnapshot>() {
                                                                     @Override
                                                                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                                                                        boolean isEmptySample = true;
                                                                         if (value != null && !value.isEmpty()) {
                                                                             modelRestoSampleMenuList.clear();
                                                                             Log.d("iditra", "" + modelRestoList.size());
@@ -124,28 +181,25 @@ public class RestoFragment extends Fragment {
                                                                             for (int i = 0; i < size; i++) {
                                                                                 if (restoSampleMenus.get(i).getId_resto().contains(id_resto)) {
                                                                                     modelRestoSampleMenuList.add(restoSampleMenus.get(i));
+                                                                                    isEmptySample = false;
                                                                                 }
                                                                             }
                                                                             modelResto.setSampleMenuList(modelRestoSampleMenuList);
-                                                                                modelRestoList.add(modelResto);
                                                                             Log.d("iditra", "" + modelRestoList.size());
-                                                                            //set adapter to thi recycler view
-                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
 
                                                                         }
-                                                                        if (modelResto.getSampleMenuList().isEmpty()){
+                                                                        if (modelResto.getSampleMenuList().isEmpty() || !isEmptySample){
                                                                             Log.d("tafiditra", "affirmatif");
                                                                             modelRestoList.add(modelResto);
                                                                             Log.d("iditra", "" + modelRestoList.size());
                                                                             //set adapter to thi recycler view
-                                                                            /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
+                                                                            adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                            recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
                                                                         }
                                                                         Log.d("niditra", "" + modelResto.getName_resto());
                                                                         //set adapter to thi recycler view
-                                                                        adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
-                                                                        recyclerView_restoFragment.setAdapter(adapterRestoPresentation);
+                                                                        /*adapterRestoPresentation = new AdapterRestoPresentation(getContext(), modelRestoList, getFragmentManager());
+                                                                        recyclerView_restoFragment.setAdapter(adapterRestoPresentation);*/
                                                                     }
                                                                 });
                                                     }
@@ -178,39 +232,6 @@ public class RestoFragment extends Fragment {
         inflater.inflate(R.menu.menu_activity_main, menu);
 
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-
-        final boolean[] userHasRestoAccount = {false};
-
-        CollectionReference collectionReference_resto = FirebaseFirestore.getInstance().collection("Resto");
-        collectionReference_resto.get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        if (!queryDocumentSnapshots.isEmpty()) {
-                            List<ModelResto> modelRestos = queryDocumentSnapshots.toObjects(ModelResto.class);
-                            int size = modelRestos.size();
-                            for (int i = 0; i < size; i++) {
-                                if (!userHasRestoAccount[0]) {
-                                    if (modelRestos.get(i).getId_resto().contains(user_id)) {
-                                        //the currentUser have already one restaurant account so, hide menu add restaurant account and show menu view profile
-                                        menu.findItem(R.id.menu_activity_main_profile).setVisible(true);
-                                        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
-                                        textView_aboutSinginResto.setVisibility(View.GONE);
-                                        userHasRestoAccount[0] = true;
-                                        break;
-                                    }else {
-                                        //current currentUser doesn't have resto account, allow him to add new resto account
-                                        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
-                                    }
-                                }
-                            }
-                        }else {
-                            //current currentUser doesn't have resto account, allow him to add new resto account
-                            menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
-                        }
-                    }
-                });
 
         //searchView to seach post bydescription
         MenuItem item_search =  menu.findItem(R.id.menu_search_button);
@@ -276,13 +297,9 @@ public class RestoFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
-        switch (item.getItemId()) {
-            case R.id.menu_activity_main_profile:
-                startActivity(new Intent(getContext(), ProfileRestoActivity.class));
-                return true;
-            case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getContext(), RestoRegisterActivity.class));
-                return true;
+        if (item.getItemId() == R.id.menu_activity_main_profile) {
+            startActivity(new Intent(getContext(), ProfileRestoActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

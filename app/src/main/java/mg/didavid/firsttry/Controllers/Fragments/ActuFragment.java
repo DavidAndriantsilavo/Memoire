@@ -35,6 +35,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -104,6 +105,13 @@ public class ActuFragment extends Fragment {
         loadPosts();
 
         listenDocumentChanges();
+
+        (view.findViewById(R.id.floatingbtn_actu)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getContext(), NewPostActivity.class));
+            }
+        });
 
         return view;
     }
@@ -226,13 +234,9 @@ public class ActuFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
-        switch (item.getItemId()) {
-           case R.id.menu_activity_main_profile:
-                startActivity(new Intent(getContext(), ProfileUserActivity.class));
-                return true;
-            case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getContext(), NewPostActivity.class));
-                return true;
+        if (item.getItemId() == R.id.menu_activity_main_profile) {
+            startActivity(new Intent(getContext(), ProfileUserActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

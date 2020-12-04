@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
@@ -46,6 +47,7 @@ public class ListMenuRestoActivity extends AppMode {
     private List<ModelRestoSampleMenu> modelRestoSampleMenuList;
     private AdapterListMenu adapterListMenu;
     private TextView textView_aboutListMenu;
+    private FloatingActionButton floatingActionButton;
 
     private String id_resto, user_id;
 
@@ -57,6 +59,7 @@ public class ListMenuRestoActivity extends AppMode {
 
         //init recycler view
         textView_aboutListMenu = findViewById(R.id.textView_indication_menuList);
+        floatingActionButton = findViewById(R.id.floatingbtn_listMenu);
         recyclerView = findViewById(R.id.recyclerView_menuList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
@@ -65,6 +68,7 @@ public class ListMenuRestoActivity extends AppMode {
         user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         //get data from intent
+<<<<<<< HEAD
         if (getIntent().hasExtra("key")) {
             id_resto = getIntent().getStringExtra("key");
             if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
@@ -75,6 +79,28 @@ public class ListMenuRestoActivity extends AppMode {
             setData();
         }
 
+=======
+        Intent intent = getIntent();
+        id_resto = intent.getStringExtra("key");
+        if (id_resto.contains(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+            textView_aboutListMenu.setVisibility(View.VISIBLE);
+            floatingActionButton.setVisibility(View.VISIBLE);
+        }else {
+            textView_aboutListMenu.setVisibility(View.GONE);
+            floatingActionButton.setVisibility(View.GONE);
+        }
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //add new menu in menu list
+                //send currentUser to AddMenuListActivity
+                startActivity(new Intent(ListMenuRestoActivity.this, AddMenuToListActivity.class));
+            }
+        });
+
+        setData();
+>>>>>>> 68977d5df386b7946ba110ee1f22f728200fb5ce
         configureToolbar();
     }
 
@@ -124,6 +150,7 @@ public class ListMenuRestoActivity extends AppMode {
 
         //hide others menu
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
+
         if (id_resto != null) {
             if (id_resto.equals("resto_" + user_id)) {
                 menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(true);
@@ -133,6 +160,7 @@ public class ListMenuRestoActivity extends AppMode {
         }else{
             menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         }
+
         //searchView to seach post bydescription
         MenuItem item_search =  menu.findItem(R.id.menu_search_button);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(item_search);
@@ -193,17 +221,6 @@ public class ListMenuRestoActivity extends AppMode {
         });
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_activity_main_addNewPost :
-                //add new menu in menu list
-                //send currentUser to AddMenuListActivity
-                startActivity(new Intent(ListMenuRestoActivity.this, AddMenuToListActivity.class));
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void configureToolbar(){

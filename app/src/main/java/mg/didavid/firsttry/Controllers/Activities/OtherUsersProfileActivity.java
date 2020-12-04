@@ -279,7 +279,6 @@ public class OtherUsersProfileActivity extends AppMode {
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
         //hide others menu
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
 
         //searchView to seach post bydescription
