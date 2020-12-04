@@ -149,7 +149,6 @@
                 android:id="@+id/recyclerView_restoPresentation_restoFragment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/grey"
                 android:layout_marginHorizontal="5dp"/>
 
     </LinearLayout>

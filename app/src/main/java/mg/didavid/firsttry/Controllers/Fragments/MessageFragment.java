@@ -30,6 +30,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.internal.$Gson$Preconditions;
 
 import org.w3c.dom.Comment;
 
@@ -86,6 +87,13 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
         recyclerView.setLayoutManager(linearLayoutManager);
         //init post list
         chatroomList = new ArrayList<>();
+
+        (view.findViewById(R.id.floatingbtn_message)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getContext(), UserListActivity.class));
+            }
+        });
 
         return view;
     }
@@ -146,13 +154,9 @@ public class MessageFragment extends Fragment implements AdapteurMessage.OnChatR
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         //3 - Handle actions on menu items
-        switch (item.getItemId()) {
-            case R.id.menu_activity_main_profile:
-                startActivity(new Intent(getContext(), ProfileUserActivity.class));
-                return true;
-            case R.id.menu_activity_main_addNewPost:
-                startActivity(new Intent(getContext(), UserListActivity.class));
-                return true;
+        if (item.getItemId() == R.id.menu_activity_main_profile) {
+            startActivity(new Intent(getContext(), ProfileUserActivity.class));
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

@@ -849,7 +849,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
         //hide others menu
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
         menu.findItem(R.id.menu_logout_profil).setVisible(false);
 

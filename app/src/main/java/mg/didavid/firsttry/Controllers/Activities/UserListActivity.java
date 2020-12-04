@@ -142,7 +142,6 @@ public class UserListActivity extends AppMode implements AdapteurUserList.OnUser
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
         //hide other menu
-        menu.findItem(R.id.menu_activity_main_addNewPost).setVisible(false);
         menu.findItem(R.id.menu_activity_main_profile).setVisible(false);
 
         //searchView to seach post bydescription
