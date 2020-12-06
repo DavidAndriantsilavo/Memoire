@@ -185,19 +185,20 @@ public class NewPostActivity extends AppMode implements LocationListener {
             @Override
             public void onClick(View v) {
                 progressDialog_uploadPost.setMessage("Publication de votre post ...");
-                progressDialog_uploadPost.show();
                 progressDialog_uploadPost.setCancelable(false);
                 progressDialog_uploadPost.setCanceledOnTouchOutside(false);
                 final String description = postDescription.getText().toString();
 
-                if (!(getAllUri != null) || getAllUri.isEmpty()) {
-                    if (TextUtils.isEmpty(description)) {
+                if (getAllUri.isEmpty()){
+                    if (postDescription.getText().toString().trim().isEmpty()) {
                         Toast.makeText(NewPostActivity.this, "Veillez entrer une description à votre publication", Toast.LENGTH_SHORT).show();
                     } else {
                         //post without image
                         uploadPost(description);
+                        progressDialog_uploadPost.show();
                     }
-                } else if (getAllUri != null) {
+                } else{
+                    progressDialog_uploadPost.show();
                     //post with image
                     final String[] downloadUri = new String[countImage];
                     final String timestamp = String.valueOf(System.currentTimeMillis());
@@ -248,51 +249,54 @@ public class NewPostActivity extends AppMode implements LocationListener {
 
         //get data from intent
         intent = getIntent();
-        key = intent.getStringExtra("key");
-        if (key != null && key.equals("resto")) {
-            nomEtPrenonm = intent.getStringExtra("name"); //resto name
-            pseudo = intent.getStringExtra("pseudo"); //resto rating
-            uid = intent.getStringExtra("user_id"); //resto id
-            photoDeProfile = intent.getStringExtra("logo_resto"); //logo resto
+        if(intent.hasExtra("key")){
+            key = getIntent().getStringExtra("key");
+            if (key.equals("resto")) {
+                nomEtPrenonm = intent.getStringExtra("name"); //resto name
+                pseudo = intent.getStringExtra("pseudo"); //resto rating
+                uid = intent.getStringExtra("user_id"); //resto id
+                photoDeProfile = intent.getStringExtra("logo_resto"); //logo resto
 
-            //set image profile and name
-            try {
-                Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
-            } catch (Exception e) {
-            }
-            textView_name.setText(nomEtPrenonm);
-        } else {
-            //get some info of current currentUser to include in post
-            uid = user.getUid();
-            docRefProfileUser = collectionUsers.document(uid);
-            docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    if (documentSnapshot.exists()) {
-                        docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                            @Override
-                            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                                nomEtPrenonm = value.getString("name");
-                                pseudo = value.getString("pseudo");
-                                photoDeProfile = value.getString("profile_image");
+                //set image profile and name
+                try {
+                    Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
+                } catch (Exception e) {
+                }
+                textView_name.setText(nomEtPrenonm);
+            } else {
+                //get some info of current currentUser to include in post
+                uid = user.getUid();
+                docRefProfileUser = collectionUsers.document(uid);
+                docRefProfileUser.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            docRefProfileUser.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    nomEtPrenonm = value.getString("name");
+                                    pseudo = value.getString("pseudo");
+                                    photoDeProfile = value.getString("profile_image");
 
-                                //set image profile and name
-                                try {
-                                    Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
-                                } catch (Exception e) {
+                                    //set image profile and name
+                                    try {
+                                        Picasso.get().load(photoDeProfile).placeholder(R.drawable.ic_image_profile_icon_dark).into(imageView_ImageProfile);
+                                    } catch (Exception e) {
+                                    }
+                                    textView_name.setText(nomEtPrenonm);
                                 }
-                                textView_name.setText(nomEtPrenonm);
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
-                }
-            });
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(NewPostActivity.this, "il y a eu une erreur lors de la verification de vos informations", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         }
+
     }
 
     private void addMyLocation() {
@@ -397,8 +401,10 @@ public class NewPostActivity extends AppMode implements LocationListener {
                         //imagePost.setImageURI(null);
                         //imagePost.setMinimumHeight(0);
 
+                        progressDialog_uploadPost.dismiss();
+
                         //go to main activity when finish
-                        sendToCurrentActivity();
+                        finish();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -406,6 +412,7 @@ public class NewPostActivity extends AppMode implements LocationListener {
                 progressDialog_uploadPost.dismiss();
                 Log.d("message important", "******************************" + e.getMessage());
                 Toast.makeText(NewPostActivity.this, "Erreur lors de la mise à jour", Toast.LENGTH_SHORT).show();
+                progressDialog_uploadPost.dismiss();
             }
         });
     }
