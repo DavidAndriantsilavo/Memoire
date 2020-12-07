@@ -226,7 +226,6 @@ public class ProfileRestoActivity extends AppMode {
                 intent.putExtra("user_id", id_resto);
                 intent.putExtra("logo_resto", logo_resto);
                 startActivity(intent);
-                finish();
             }
         });
 
@@ -427,6 +426,7 @@ public class ProfileRestoActivity extends AppMode {
         super.onPostResume();
         checkConnexion();
         checkingRestoInfo();
+        loadMyRestoPost();
     }
 
     // CHECK IF INTERNET CONNEXION IS AVAILABLE

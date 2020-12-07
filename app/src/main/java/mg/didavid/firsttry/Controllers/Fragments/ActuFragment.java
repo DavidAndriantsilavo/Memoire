@@ -109,7 +109,8 @@ public class ActuFragment extends Fragment {
         (view.findViewById(R.id.floatingbtn_actu)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getContext(), NewPostActivity.class));
+                startActivity(new Intent(getContext(), NewPostActivity.class).putExtra("key", "user"));
+
             }
         });
 
