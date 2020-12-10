@@ -99,7 +99,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
     FloatingActionButton floatingActionButton_editProfile;
     Button btnAddProfileImage, btnNewPost;
     private Button button_appointment, button_favorite;
-    LinearLayout linearLayout_buttons;
 
     FirebaseFirestore firestore;
     CollectionReference collectionUsers, collectioonPost, collectionComment; // Firestore's collection reference : root/reference
@@ -162,7 +161,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         btnNewPost = findViewById(R.id.button_newPost_profile);
         button_appointment = findViewById(R.id.button_appointment);
 //        button_favorite = findViewById(R.id.button_favorite);
-        linearLayout_buttons = findViewById(R.id.linearLayout_buttons);
 
         notificationList = new ArrayList<>();
 

@@ -77,6 +77,9 @@ dependencies {
 
     implementation 'com.google.maps.android:android-maps-utils:2.0.3'
 
+    //popup window
+    implementation 'com.kcrimi.tooltipdialog:tooltipdialog:1.1.0'
+
 //    implementation "androidx.recyclerview:recyclerview:1.1.0"
 //    implementation "androidx.recyclerview:recyclerview-selection:1.0.0"
 }

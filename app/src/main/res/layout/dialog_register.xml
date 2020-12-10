@@ -43,7 +43,7 @@
         android:id="@+id/pwd_til"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:passwordToggleEnabled="false"
+        app:passwordToggleEnabled="true"
         android:layout_marginTop="20dp">
         <EditText
             android:id="@+id/pwd_et"

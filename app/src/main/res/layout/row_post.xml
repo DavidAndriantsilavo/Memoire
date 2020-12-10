@@ -204,9 +204,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="8dp"
-        android:layout_marginStart="75dp"
         android:paddingVertical="7dp"
-        android:background="@drawable/rounded_primary_button">
+        android:background="@drawable/rounded_primary_button"
+        android:layout_toRightOf="@+id/cardViewProfile_post"
+        android:layout_marginStart="20dp">
 
 
         <LinearLayout
@@ -225,7 +226,7 @@
                 android:clickable="true"
                 android:text="Nom"
                 android:textColor="?attr/white"
-                android:textSize="18dp" />
+                android:textSize="15dp" />
 
             <TextView
                 android:id="@+id/texteView_pseudo"
@@ -244,7 +245,8 @@
                 android:isIndicator="true"
                 android:numStars="5"
                 android:rating="3.5"
-                android:stepSize="0.1" />
+                android:stepSize="0.1"
+                android:progressBackgroundTint="@color/white"/>
 
 
         </LinearLayout>

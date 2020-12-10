@@ -31,6 +31,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.kcrimi.tooltipdialog.ToolTipDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +90,7 @@ public class ListMenuRestoActivity extends AppMode {
             });
             setData();
         }
+
 
         configureToolbar();
     }

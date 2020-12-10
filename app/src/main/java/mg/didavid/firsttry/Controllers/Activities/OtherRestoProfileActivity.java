@@ -551,6 +551,7 @@ public class OtherRestoProfileActivity extends AppMode {
         return super.onOptionsItemSelected(item);
     }
 
+    @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void configureToolbar(String name, String pseudo){
         // Get the toolbar view inside the activity layout
@@ -562,6 +563,7 @@ public class OtherRestoProfileActivity extends AppMode {
             this.setTitle(name);
             toolbar.setSubtitle(pseudo);
             toolbar.setTitleTextAppearance(this, R.style.toolBarOtherUsers);
+            toolbar.setSubtitleTextColor(R.color.colorPrimary);
 
             // Get a support ActionBar corresponding to this toolbar
             ActionBar ab = getSupportActionBar();

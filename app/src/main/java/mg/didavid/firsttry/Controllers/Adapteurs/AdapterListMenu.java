@@ -155,18 +155,13 @@ public class AdapterListMenu extends RecyclerView.Adapter<AdapterListMenu.MyHold
     }
 
     private void showChoiceDialog(final String id_resto) {
-        String[] options = {"Appeler", "Envoyer un email"};
+        String[] options = {"Appeler"};
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setItems(options, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        callRestaurant(id_resto);
-                        break;
-                    case 1:
-                        sendEmailToRestaurant(id_resto);
-                        break;
+                if (which == 1) {
+                    callRestaurant(id_resto);
                 }
             }
         });
