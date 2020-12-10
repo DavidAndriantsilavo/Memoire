@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:src="@drawable/ic_moret_icon_dark_foreground"
-                    android:layout_marginStart="356dp"
+                    android:layout_marginStart="306dp"
                     android:layout_marginTop="13dp"/>
 
                 <TextView
