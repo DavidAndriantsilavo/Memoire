@@ -10,6 +10,7 @@ import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -256,6 +257,7 @@ public class OtherUsersProfileActivity extends AppMode {
         startActivity(intent);
     }
 
+    @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void configureToolbar(String name_resto, String phone_resto){
         // Get the toolbar view inside the activity layout
@@ -267,6 +269,7 @@ public class OtherUsersProfileActivity extends AppMode {
             this.setTitle(name_resto);
             toolbar.setSubtitle(phone_resto);
             toolbar.setTitleTextAppearance(this, R.style.toolBarOtherUsers);
+            toolbar.setSubtitleTextColor(R.color.colorPrimary);
         }else {
             Toast.makeText(this, "Tsy misy titre :-(", Toast.LENGTH_SHORT).show();
         }

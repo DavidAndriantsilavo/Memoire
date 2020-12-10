@@ -1,5 +1,6 @@
 package mg.didavid.firsttry.Controllers.Fragments;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -19,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +60,8 @@ public class RestoFragment extends Fragment {
 
     private FloatingActionButton floatingActionButton;
 
+    private ProgressDialog progressDialog;
+
     private String user_id;
 
     public static RestoFragment newInstance() {
@@ -77,6 +81,13 @@ public class RestoFragment extends Fragment {
         recyclerView_restoFragment.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         floatingActionButton = view.findViewById(R.id.floatingbtn_resto);
+
+        //initialize prograssbar
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Chargement...");
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
 
         setData();
 
@@ -208,6 +219,8 @@ public class RestoFragment extends Fragment {
                                 }
                             }
                         });
+                //hide progressDialog
+                progressDialog.dismiss();
                     }
                 });
     }

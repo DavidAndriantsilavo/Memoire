@@ -6,27 +6,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Controllers.Activities.ProfileUserActivity"
     android:background="?attr/browser_actions_divider_color">
+
+    <include
+        android:id="@+id/toolbar_userProfile"
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
     
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar_userProfile">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <include
-                android:id="@+id/toolbar_userProfile"
-                layout="@layout/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"/>
 
             <RelativeLayout
                 android:id="@+id/relativeLayout_pdc_userProfile"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginTop="60dp"
-                android:layout_below="@+id/toolbar_userProfile">
+                android:layout_height="120dp">
+
                 <ImageView
                     android:id="@+id/imageView_photoDeCouverture_profile"
                     android:layout_width="match_parent"
@@ -40,27 +40,45 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="85dp"
-                android:layout_below="@+id/toolbar_userProfile">
+                android:layout_marginTop="15dp">
+
+                <Button
+                    android:id="@+id/button_newPost_profile"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:padding="7dp"
+                    android:drawableStart="@drawable/ic_add_new_post_foreground"
+                    android:background="@drawable/rounded_grey_button"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginStart="40dp"
+                    android:layout_marginTop="90dp"/>
+
+                <Button
+                    android:id="@+id/button_appointment"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:padding="7dp"
+                    android:drawableStart="@drawable/ic_appoitment_foreground"
+                    android:background="@drawable/rounded_grey_button"
+                    android:gravity="center"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="40dp"
+                    android:layout_marginTop="90dp"/>
 
                 <RelativeLayout
                     android:id="@+id/relativeLayout_pdp"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    android:layout_marginStart="20dp"
-                    android:gravity="center"
-                    android:foregroundGravity="center">
+                    android:layout_centerInParent="true">
                     <androidx.cardview.widget.CardView
                         android:id="@+id/card_root"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:cardCornerRadius="37.5dp"
-                        android:foregroundGravity="center"
-                        app:cardBackgroundColor="@color/colorPrimary">
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="73.5dp">
                         <androidx.cardview.widget.CardView
                             android:layout_width="145dp"
                             android:layout_height="145dp"
-                            app:cardCornerRadius="36.25dp"
+                            app:cardCornerRadius="72.5dp"
                             android:layout_gravity="center"
                             app:cardBackgroundColor="@color/colorPrimary">
                             <ImageView
@@ -68,128 +86,76 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:src="@drawable/ic_image_profile_icon_dark"
-                                />
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                app:cardCornerRadius="8dp"
-                                app:cardBackgroundColor="@color/white"
-                                android:alpha="0.5">
-                                <androidx.cardview.widget.CardView
-                                    android:layout_width="28dp"
-                                    android:layout_height="28dp"
-                                    app:cardCornerRadius="7dp"
-                                    android:layout_gravity="center"
-                                    app:cardBackgroundColor="@color/colorPrimary">
+                                android:scaleType="centerCrop"/>
 
-                                    <Button
-                                        android:id="@+id/add_profile_photo_profile"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent"
-                                        android:background="@drawable/ic_image_add_photo_de_profile_profile_icon_dark"
-                                        android:autoLink="all"
-                                        android:layout_margin="3dp"/>
+                        </androidx.cardview.widget.CardView>
 
-                                </androidx.cardview.widget.CardView>
+                    </androidx.cardview.widget.CardView>
 
-                            </androidx.cardview.widget.CardView>
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        app:cardCornerRadius="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:alpha="0.5"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginStart="5dp">
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            app:cardCornerRadius="7dp"
+                            android:layout_gravity="center"
+                            app:cardBackgroundColor="@color/colorPrimary">
+
+                            <Button
+                                android:id="@+id/add_profile_photo_profile"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/ic_image_add_photo_de_profile_profile_icon_dark"
+                                android:layout_margin="3dp"/>
 
                         </androidx.cardview.widget.CardView>
 
                     </androidx.cardview.widget.CardView>
                 </RelativeLayout>
 
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:orientation="vertical"
-                    android:layout_toRightOf="@id/relativeLayout_pdp"
-                    tools:ignore="NotSibling"
-                    android:background="@color/black"
-                    android:alpha="0.8"
-                    android:layout_marginTop="35dp"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/texteView_lastname_profile"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5sp"
-                        android:layout_marginLeft="5sp"
-                        android:text="Name"
-                        android:textColor="@color/white"
-                        android:textSize="14dp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/texteView_email_profile"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="5sp"
-                        android:layout_marginLeft="5sp"
-                        android:text="Email - pseudo"
-                        android:textSize="11dp"
-                        android:textColor="@color/white"
-                        android:textStyle="italic"/>
-
-                </LinearLayout>
-
             </RelativeLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayout_buttons"
+                android:id="@+id/lL_name_profil_user"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/relativeLayout_profile"
-                android:layout_marginTop="11dp"
-                android:layout_marginBottom="10dp"
-                android:paddingRight="10dp"
-                android:paddingLeft="10dp">
-                <Button
-                    android:id="@+id/button_newPost_profile"
-                    android:layout_width="0dp"
-                    android:layout_height="30dp"
-                    android:layout_weight="1"
-                    android:text="Nouvelle publication"
-                    android:textSize="11sp"
-                    android:textAllCaps="false"
-                    android:gravity="center"
-                    android:background="@drawable/rounded_grey_button"
-                    tools:ignore="RtlCompat"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginLeft="20dp"/>
+                android:orientation="vertical"
+                android:layout_below="@+id/relativeLayout_profile">
 
-                <Button
-                    android:id="@+id/button_appointment"
-                    android:layout_width="0dp"
-                    android:layout_height="30dp"
-                    android:layout_weight="1"
-                    android:layout_marginRight="10dp"
-                    android:background="@drawable/rounded_grey_button"
-                    android:textAllCaps="false"
-                    android:gravity="center"
-                    android:textSize="11sp"
-                    android:text="Rendez-vous" />
+                <TextView
+                    android:id="@+id/texteView_lastname_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Name"
+                    android:textColor="@color/black"
+                    android:textSize="14dp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
 
-<!--                <Button-->
-<!--                    android:id="@+id/button_favorite"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="30dp"-->
-<!--                    android:layout_weight="1"-->
-<!--                    android:background="@drawable/rounded_grey_button"-->
-<!--                    android:textAllCaps="false"-->
-<!--                    android:gravity="center"-->
-<!--                    android:textSize="11sp"-->
-<!--                    android:text="Favoris"/>-->
+                <TextView
+                    android:id="@+id/texteView_email_profile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Email - pseudo"
+                    android:textSize="11dp"
+                    android:textColor="@color/black"
+                    android:textStyle="italic"
+                    android:gravity="center"/>
+
             </LinearLayout>
 
             <ScrollView
                 android:id="@+id/scrollView_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/linearLayout_buttons"
-                android:layout_marginTop="10dp">
+                android:layout_below="@+id/lL_name_profil_user"
+                android:layout_marginTop="30dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView_post"
