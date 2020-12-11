@@ -105,6 +105,7 @@ public class AppointmentListActivity extends AppCompatActivity implements Adapte
                             configureAdapter(appointmentList);
                         }else{
                             textView_noAppointment.setVisibility(TextView.VISIBLE);
+                            progressDialog.dismiss();
                             Log.d(TAG, "0 appointmentList : ");
                         }
                     }

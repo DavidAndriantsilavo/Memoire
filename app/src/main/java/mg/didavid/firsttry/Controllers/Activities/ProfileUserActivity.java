@@ -222,7 +222,6 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                 Intent intent = new Intent(ProfileUserActivity.this, NewPostActivity.class);
                 intent.putExtra("key", "user_profile");
                 startActivity(intent);
-                finish();
             }
         });
 
@@ -313,13 +312,11 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
     }
 
     private void addAppointmentBadge(){
-        button_appointment.setTextColor(Color.RED);
-        button_appointment.setTextSize(13);
+        button_appointment.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_appoitment_foreground_notification,0,0,0);
     }
 
     private void removeBadge(){
-        button_appointment.setTextColor(Color.BLACK);
-        button_appointment.setTextSize(11);
+        button_appointment.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_appoitment_foreground,0,0,0);
     }
 
     private void snapshootUserInfo() {
