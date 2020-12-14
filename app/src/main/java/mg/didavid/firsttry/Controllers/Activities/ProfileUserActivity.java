@@ -299,7 +299,7 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
         checkingUserInfo();
         loadMyPost();
 
-        snapshootUserInfo();
+        // snapshootUserInfo();
     }
 
     @Override
@@ -379,6 +379,10 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                         }
                     }
                 });
+
+        DatabaseReference mUserLocationReference = FirebaseDatabase.getInstance().getReference().child("userLocation");
+
+        mUserLocationReference.child(currentUser.getUser_id()).updateChildren(nameChanged_result);
     }
 
     private void goToShowImage(String imageUri) {
@@ -722,6 +726,10 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                         }
                     }
                 });
+
+        DatabaseReference mUserLocationReference = FirebaseDatabase.getInstance().getReference().child("userLocation");
+
+        mUserLocationReference.child(currentUser.getUser_id()).updateChildren(result);
     }
 
     private void showDialogEditProfile() {
@@ -740,7 +748,7 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
                 if (which == 1){
                     //modifier le nom de l'currentUser
                     progressDialog_editProfile.setMessage("Edition de votre nom");
-                    showNameUpdateDialog("nom");
+                    showNameUpdateDialog("name");
                 }
             }
         });
@@ -750,7 +758,7 @@ public class ProfileUserActivity extends AppMode implements AppointmentNotificat
     private void showNameUpdateDialog(final String key) {
         //custom dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Modifier votre " + key);
+        builder.setTitle("Modifier votre nom");
         //set layout of dialog
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);

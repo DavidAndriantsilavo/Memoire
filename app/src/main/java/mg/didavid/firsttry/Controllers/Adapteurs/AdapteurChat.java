@@ -2,6 +2,7 @@ package mg.didavid.firsttry.Controllers.Adapteurs;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,6 +71,7 @@ public class AdapteurChat extends RecyclerView.Adapter<AdapteurChat.MyHolder>{
                     holder.textView_message.setLayoutParams(params);
                 }else{
                     holder.textView_message.setBackgroundResource(R.drawable.chat_receive);
+                    holder.textView_message.setTextColor(Color.WHITE);
 
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     params.gravity = Gravity.LEFT;

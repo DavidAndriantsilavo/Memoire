@@ -216,6 +216,8 @@ public class ActuFragment extends Fragment {
                         recyclerView.setAdapter(adapteursPost);
 
                         progressDialog_loadPost.dismiss();
+                }else{
+                    progressDialog_loadPost.dismiss();
                 }
             }
         }).addOnFailureListener(new OnFailureListener() {

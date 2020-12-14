@@ -420,6 +420,7 @@ public class GMapFragment extends Fragment implements OnMapReadyCallback, Adapte
             if (mLocationPermissionGranted) {
                 mGoogleMap.setMyLocationEnabled(true);
                 mGoogleMap.getUiSettings().setMyLocationButtonEnabled(true);
+                mGoogleMap.getUiSettings().setCompassEnabled(true);
                 Log.d(TAG, "FT : UI Updated!!");
 
                 setUserLocation();

@@ -138,6 +138,8 @@ public class OtherUsersProfileActivity extends AppMode {
                                 profile_recyclerView.setAdapter(adapteursPost_profile);
                                 progressDialog_loadingProfile.dismiss();
                             }
+                        }else{
+                            progressDialog_loadingProfile.dismiss();
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {

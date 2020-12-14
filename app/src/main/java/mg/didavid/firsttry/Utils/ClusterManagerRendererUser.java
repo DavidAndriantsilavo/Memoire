@@ -77,7 +77,7 @@ public ClusterManagerRendererUser(Context context, GoogleMap map,
 
                 //change the marker's border color
                 if(user_id.equals(currentUser.getUser_id())){
-                        cardView_border.setCardBackgroundColor(Color.rgb(00, 85, 77));
+                        cardView_border.setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.fushia));
                 }else{
                         cardView_border.setCardBackgroundColor(Color.BLACK);
                 }

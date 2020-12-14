@@ -6,5 +6,7 @@
         android:title="Se déconnecter" />
     <item
         android:id="@+id/menu_deleteprofile_profile"
-        android:title="Suprimer mon compte"/>
+        android:title="Suprimer mon compte" />
+
+    <item name="android:itemTextAppearance">@style/myCustomMenuTextApearance</item>
 </menu>

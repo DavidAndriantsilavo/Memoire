@@ -288,6 +288,14 @@ public class WelcomeActivity extends AppMode {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         DocumentReference documentReference = userCollectionReference.document(user_id);
 
+                        Task<Uri> uriTask = taskSnapshot.getStorage().getDownloadUrl();
+                        while (!uriTask.isSuccessful()){
+                            Log.d("Messege importaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaannnnnnnnnnnnnnnnnnnnt", "mbola tsy succès le tache !");
+                        }
+                        String downloadUri = uriTask.getResult().toString();
+
+                        user.setProfile_image(downloadUri);
+
                         //Writing data and using call-back functions
                         documentReference.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override

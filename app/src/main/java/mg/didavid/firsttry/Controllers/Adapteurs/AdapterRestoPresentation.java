@@ -197,7 +197,6 @@ public class AdapterRestoPresentation extends RecyclerView.Adapter<AdapterRestoP
                     gMapFramgent.setArguments(bundleRestaurantPosition);
                     fragmentManager.beginTransaction().replace(R.id.content_nav, gMapFramgent).commit();
 
-                    Toast.makeText(context, "voir lieu", Toast.LENGTH_SHORT).show();
                 }else if (item_id == 4) {
                     //raitng selected
                     //check if user has rating resto yet, if not show rating dialog

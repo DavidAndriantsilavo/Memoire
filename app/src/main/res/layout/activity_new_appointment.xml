@@ -36,7 +36,7 @@
             android:layout_weight="8"
             android:text="Restaurant"
             android:textSize="17sp"
-            android:textColor="@color/red"
+            android:textColor="@color/fushia"
             android:layout_marginLeft="20sp"/>
     </LinearLayout>
 
@@ -61,7 +61,7 @@
             android:layout_weight="8"
             android:text="Ajouter"
             android:textSize="17sp"
-            android:textColor="@color/red"
+            android:textColor="@color/fushia"
             android:layout_marginLeft="20sp"/>
     </LinearLayout>
 
@@ -86,7 +86,7 @@
             android:layout_weight="8"
             android:text="Selectionner la date"
             android:textSize="17sp"
-            android:textColor="@color/red"
+            android:textColor="@color/fushia"
             android:layout_marginLeft="20sp"/>
     </LinearLayout>
 
@@ -113,7 +113,7 @@
             android:background="@drawable/edit_text_border"
             android:maxHeight="200dp"
             android:minHeight="100dp"
-            android:hint="Description du rend-vous"
+            android:hint="Description du rendez-vous"
             android:gravity="start"
             android:textSize="15sp"
             android:padding="2dp"/>
@@ -131,14 +131,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Annuler"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:background="@drawable/rounded_grey_button"/>
 
         <Button
             android:id="@+id/button_confirm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Confirmer"
-            android:layout_margin="10dp" />
+            android:textColor="@color/white"
+            android:layout_margin="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:background="@drawable/rounded_primary_button"/>
 
 
     </LinearLayout>
